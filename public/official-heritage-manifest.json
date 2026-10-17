@@ -1,0 +1,1888 @@
+{
+  "generated": "2026-10-17",
+  "models": 29,
+  "images": 99,
+  "photos": [
+    {
+      "modelId": "e46",
+      "src": "images/official-heritage/e46-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1185,
+      "height": 533,
+      "bytes": 58758,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e46-portraet.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-e46/bmw-e46-m3-cabrio-standard-detail-02.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M3 Convertible — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e46-portraet.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-e46/bmw-e46-m3-cabrio-standard-detail-02.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e92",
+      "src": "images/official-heritage/e92-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1185,
+      "height": 790,
+      "bytes": 87346,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e92-e90-and-e93.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2020/m3-e90-portraet/bmw-m3-e92-ai-01.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M3 — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e92-e90-and-e93.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2020/m3-e90-portraet/bmw-m3-e92-ai-01.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e60",
+      "src": "images/official-heritage/e60-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1280,
+      "height": 720,
+      "bytes": 83804,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-bmw-m5-of-2005.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2017/bmw-m5-von-2005/bmw-m5-e60-para-01.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M5 — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-bmw-m5-of-2005.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2017/bmw-m5-von-2005/bmw-m5-e60-para-01.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e39",
+      "src": "images/official-heritage/e39-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1280,
+      "height": 720,
+      "bytes": 102250,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-bmw-m5-of-1998.html.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2017/der-m5-von-1998/bmw-m5-e39-stage-teaser.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M5 — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-bmw-m5-of-1998.html.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2017/der-m5-von-1998/bmw-m5-e39-stage-teaser.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e46",
+      "src": "images/official-heritage/e46-1.webp",
+      "angle": "Rear three-quarter",
+      "width": 1185,
+      "height": 533,
+      "bytes": 65840,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e46-portraet.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-e46/bmw-e46-m3-cabrio-standard-detail-01.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M3 Convertible — Rear three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e46-portraet.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-e46/bmw-e46-m3-cabrio-standard-detail-01.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e92",
+      "src": "images/official-heritage/e92-1.webp",
+      "angle": "Rear three-quarter",
+      "width": 1185,
+      "height": 790,
+      "bytes": 76830,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e92-e90-and-e93.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2020/m3-e90-portraet/bmw-m3-e92-ai-02.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M3 — Rear three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e92-e90-and-e93.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2020/m3-e90-portraet/bmw-m3-e92-ai-02.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e60",
+      "src": "images/official-heritage/e60-1.webp",
+      "angle": "Rear three-quarter",
+      "width": 1280,
+      "height": 720,
+      "bytes": 71966,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-bmw-m5-of-2005.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2017/bmw-m5-von-2005/bmw-m5-e60-para-02.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M5 — Rear three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-bmw-m5-of-2005.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2017/bmw-m5-von-2005/bmw-m5-e60-para-02.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e39",
+      "src": "images/official-heritage/e39-1.webp",
+      "angle": "Rear three-quarter",
+      "width": 1280,
+      "height": 720,
+      "bytes": 57324,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-bmw-m5-of-1998.html.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2017/der-m5-von-1998/bmw-m5-e39-nsc.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M5 — Rear three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-bmw-m5-of-1998.html.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2017/der-m5-von-1998/bmw-m5-e39-nsc.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e46",
+      "src": "images/official-heritage/e46-2.webp",
+      "angle": "Side profile",
+      "width": 1185,
+      "height": 533,
+      "bytes": 52168,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e46-portraet.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-e46/bmw-e46-m3-cabrio-standard-detail-03.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M3 Convertible — Side profile",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e46-portraet.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-e46/bmw-e46-m3-cabrio-standard-detail-03.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e92",
+      "src": "images/official-heritage/e92-2.webp",
+      "angle": "Interior",
+      "width": 890,
+      "height": 501,
+      "bytes": 37618,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e92-e90-and-e93.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2020/m3-e90-portraet/bmw-m3-e92-gallery-01.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M3 — Interior",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e92-e90-and-e93.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2020/m3-e90-portraet/bmw-m3-e92-gallery-01.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e60",
+      "src": "images/official-heritage/e60-2.webp",
+      "angle": "Side profile",
+      "width": 1280,
+      "height": 960,
+      "bytes": 70648,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-bmw-m5-of-2005.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2017/bmw-m5-von-2005/bmw-m5-e60-gal-11.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M5 — Side profile",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-bmw-m5-of-2005.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2017/bmw-m5-von-2005/bmw-m5-e60-gal-11.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e39",
+      "src": "images/official-heritage/e39-2.webp",
+      "angle": "Side profile",
+      "width": 1280,
+      "height": 719,
+      "bytes": 59064,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-bmw-m5-of-1998.html.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2017/der-m5-von-1998/bmw-m5-e39-ai-01.2.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M5 — Side profile",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-bmw-m5-of-1998.html.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2017/der-m5-von-1998/bmw-m5-e39-ai-01.2.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e46-m3-csl",
+      "src": "images/official-heritage/e46-m3-csl-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1280,
+      "height": 720,
+      "bytes": 84128,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-bmw-m3-csl.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2019/bmw-m3-csl/bmw-m3-csl-mg-011.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M3 CSL — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-bmw-m3-csl.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2019/bmw-m3-csl/bmw-m3-csl-mg-011.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e92-m3-gts",
+      "src": "images/official-heritage/e92-m3-gts-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1280,
+      "height": 576,
+      "bytes": 107842,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-gts-portrait.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-gts/bmw-m3-gts-stage-teaser-XL.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M3 GTS — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-gts-portrait.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-gts/bmw-m3-gts-stage-teaser-XL.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e46-m3-csl",
+      "src": "images/official-heritage/e46-m3-csl-1.webp",
+      "angle": "Rear three-quarter",
+      "width": 890,
+      "height": 501,
+      "bytes": 58654,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-bmw-m3-csl.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2019/bmw-m3-csl/bmw-m3-csl-ms-02.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M3 CSL — Rear three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-bmw-m3-csl.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2019/bmw-m3-csl/bmw-m3-csl-ms-02.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e39",
+      "src": "images/official-heritage/e39-3.webp",
+      "angle": "Interior",
+      "width": 1280,
+      "height": 960,
+      "bytes": 107916,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-bmw-m5-of-1998.html.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2017/der-m5-von-1998/bmw-m5-e39-gal-03.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M5 — Interior",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-bmw-m5-of-1998.html.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2017/der-m5-von-1998/bmw-m5-e39-gal-03.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e60",
+      "src": "images/official-heritage/e60-3.webp",
+      "angle": "Interior",
+      "width": 1280,
+      "height": 960,
+      "bytes": 96272,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-bmw-m5-of-2005.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2017/bmw-m5-von-2005/bmw-m5-e60-gal-20.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M5 — Interior",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-bmw-m5-of-2005.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2017/bmw-m5-von-2005/bmw-m5-e60-gal-20.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e92-m3-gts",
+      "src": "images/official-heritage/e92-m3-gts-1.webp",
+      "angle": "Rear three-quarter",
+      "width": 1185,
+      "height": 533,
+      "bytes": 75516,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-gts-portrait.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-gts/bmw-m3-gts-article-image-02.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M3 GTS — Rear three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-gts-portrait.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-gts/bmw-m3-gts-article-image-02.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e46-m3-csl",
+      "src": "images/official-heritage/e46-m3-csl-2.webp",
+      "angle": "Side profile",
+      "width": 1280,
+      "height": 576,
+      "bytes": 61146,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-bmw-m3-csl.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2019/bmw-m3-csl/bmw-m3-csl-cp-01.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M3 CSL — Side profile",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-bmw-m3-csl.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2019/bmw-m3-csl/bmw-m3-csl-cp-01.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e30-m3-sport-evo",
+      "src": "images/official-heritage/e30-m3-sport-evo-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 890,
+      "height": 501,
+      "bytes": 50438,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e30-portraet.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-e30/bmw-m3-e30-sport-evolution-gallery-01.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M3 Sport Evolution — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e30-portraet.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-e30/bmw-m3-e30-sport-evolution-gallery-01.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e92-m3-gts",
+      "src": "images/official-heritage/e92-m3-gts-2.webp",
+      "angle": "Side profile",
+      "width": 1185,
+      "height": 533,
+      "bytes": 96400,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-gts-portrait.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-gts/bmw-m3-gts-article-image-01.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M3 GTS — Side profile",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-gts-portrait.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-gts/bmw-m3-gts-article-image-01.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e90-m3",
+      "src": "images/official-heritage/e90-m3-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1185,
+      "height": 790,
+      "bytes": 156266,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e92-e90-and-e93.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2020/m3-e90-portraet/bmw-m3-e90-ai-01.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M3 Sedan — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e92-e90-and-e93.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2020/m3-e90-portraet/bmw-m3-e90-ai-01.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e30-m3-sport-evo",
+      "src": "images/official-heritage/e30-m3-sport-evo-1.webp",
+      "angle": "Rear three-quarter",
+      "width": 890,
+      "height": 501,
+      "bytes": 49296,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e30-portraet.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-e30/bmw-m3-e30-sport-evolution-gallery-02.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M3 Sport Evolution — Rear three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e30-portraet.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-e30/bmw-m3-e30-sport-evolution-gallery-02.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e46-m3-csl",
+      "src": "images/official-heritage/e46-m3-csl-3.webp",
+      "angle": "Interior",
+      "width": 1185,
+      "height": 533,
+      "bytes": 86288,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-bmw-m3-csl.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2019/bmw-m3-csl/bmw-m3-csl-standard-detail-06.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M3 CSL — Interior",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-bmw-m3-csl.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2019/bmw-m3-csl/bmw-m3-csl-standard-detail-06.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e92-m3-gts",
+      "src": "images/official-heritage/e92-m3-gts-3.webp",
+      "angle": "Interior",
+      "width": 890,
+      "height": 501,
+      "bytes": 51678,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-gts-portrait.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-gts/bmw-m3-gts-gallery-03.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M3 GTS — Interior",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-gts-portrait.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-gts/bmw-m3-gts-gallery-03.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e30-m3-sport-evo",
+      "src": "images/official-heritage/e30-m3-sport-evo-2.webp",
+      "angle": "Interior",
+      "width": 890,
+      "height": 501,
+      "bytes": 95850,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e30-portraet.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-e30/bmw-m3-e30-sport-evolution-gallery-03.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M3 Sport Evolution — Interior",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e30-portraet.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-e30/bmw-m3-e30-sport-evolution-gallery-03.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e46-330i",
+      "src": "images/official-heritage/e46-330i-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1280,
+      "height": 895,
+      "bytes": 68140,
+      "source": "https://www.bmwgroup-classic.com/en/models/bmw-classics/product-description-page.ad-867-1.bmw-330i-e46.html",
+      "original": "https://www.bmwgroup-classic.com/content/dam/grpw/websites/bmwgroup-classic_com/productcatalog2/images_pc/AF-53449-1.png/_jcr_content/renditions/original?imwidth=1280",
+      "credit": {
+        "label": "BMW 330i — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmwgroup-classic.com/en/models/bmw-classics/product-description-page.ad-867-1.bmw-330i-e46.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmwgroup-classic.com/content/dam/grpw/websites/bmwgroup-classic_com/productcatalog2/images_pc/AF-53449-1.png/_jcr_content/renditions/original?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e60-530i",
+      "src": "images/official-heritage/e60-530i-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1280,
+      "height": 815,
+      "bytes": 116610,
+      "source": "https://www.press.bmwgroup.com/austria/photo/compilation/T0034896DE/die-neue-bmw-5er-limousine?language=de",
+      "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0010165.zip&dokNo=P0010165&actEvent=fourMB",
+      "credit": {
+        "label": "BMW 530i — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.press.bmwgroup.com/austria/photo/compilation/T0034896DE/die-neue-bmw-5er-limousine?language=de",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0010165.zip&dokNo=P0010165&actEvent=fourMB",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e90-m3",
+      "src": "images/official-heritage/e90-m3-1.webp",
+      "angle": "Rear three-quarter",
+      "width": 1280,
+      "height": 815,
+      "bytes": 119322,
+      "source": "https://www.press.bmwgroup.com/global/photo/compilation/T0011998EN/the-new-bmw-m3-saloon?language=en",
+      "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0040175.zip&dokNo=P0040175&actEvent=fourMB",
+      "credit": {
+        "label": "BMW M3 Sedan — Rear three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.press.bmwgroup.com/global/photo/compilation/T0011998EN/the-new-bmw-m3-saloon?language=en",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0040175.zip&dokNo=P0040175&actEvent=fourMB",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e90-335i",
+      "src": "images/official-heritage/e90-335i-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1280,
+      "height": 747,
+      "bytes": 123544,
+      "source": "https://www.press.bmwgroup.com/usa/photo/compilation/T0018045EN_US/the-new-bmw-3-series-usa-press-information",
+      "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0044473.zip&dokNo=P0044473&actEvent=fourMB",
+      "credit": {
+        "label": "BMW 335i — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.press.bmwgroup.com/usa/photo/compilation/T0018045EN_US/the-new-bmw-3-series-usa-press-information",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0044473.zip&dokNo=P0044473&actEvent=fourMB",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e92-335i",
+      "src": "images/official-heritage/e92-335i-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1280,
+      "height": 815,
+      "bytes": 95058,
+      "source": "https://www.press.bmwgroup.com/usa/photo/compilation/T0017624EN_US/the-all-new-2007-bmw-3-series-coupe?language=en_US",
+      "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0024435.zip&dokNo=P0024435&actEvent=fourMB",
+      "credit": {
+        "label": "BMW 335i Coupé — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.press.bmwgroup.com/usa/photo/compilation/T0017624EN_US/the-all-new-2007-bmw-3-series-coupe?language=en_US",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0024435.zip&dokNo=P0024435&actEvent=fourMB",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e60-530i",
+      "src": "images/official-heritage/e60-530i-1.webp",
+      "angle": "Rear three-quarter",
+      "width": 1280,
+      "height": 814,
+      "bytes": 58796,
+      "source": "https://www.press.bmwgroup.com/austria/photo/compilation/T0034896DE/die-neue-bmw-5er-limousine?language=de",
+      "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0010158.zip&dokNo=P0010158&actEvent=fourMB",
+      "credit": {
+        "label": "BMW 530i — Rear three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.press.bmwgroup.com/austria/photo/compilation/T0034896DE/die-neue-bmw-5er-limousine?language=de",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0010158.zip&dokNo=P0010158&actEvent=fourMB",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e92-335i",
+      "src": "images/official-heritage/e92-335i-1.webp",
+      "angle": "Rear three-quarter",
+      "width": 1280,
+      "height": 815,
+      "bytes": 126580,
+      "source": "https://www.press.bmwgroup.com/usa/photo/compilation/T0017624EN_US/the-all-new-2007-bmw-3-series-coupe?language=en_US",
+      "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0024437.zip&dokNo=P0024437&actEvent=fourMB",
+      "credit": {
+        "label": "BMW 335i Coupé — Rear three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.press.bmwgroup.com/usa/photo/compilation/T0017624EN_US/the-all-new-2007-bmw-3-series-coupe?language=en_US",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0024437.zip&dokNo=P0024437&actEvent=fourMB",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e90-335i",
+      "src": "images/official-heritage/e90-335i-1.webp",
+      "angle": "Rear three-quarter",
+      "width": 1280,
+      "height": 747,
+      "bytes": 101902,
+      "source": "https://www.press.bmwgroup.com/usa/photo/compilation/T0018045EN_US/the-new-bmw-3-series-usa-press-information",
+      "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0044480.zip&dokNo=P0044480&actEvent=fourMB",
+      "credit": {
+        "label": "BMW 335i — Rear three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.press.bmwgroup.com/usa/photo/compilation/T0018045EN_US/the-new-bmw-3-series-usa-press-information",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0044480.zip&dokNo=P0044480&actEvent=fourMB",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e92-335i",
+      "src": "images/official-heritage/e92-335i-2.webp",
+      "angle": "Side profile",
+      "width": 1280,
+      "height": 815,
+      "bytes": 97430,
+      "source": "https://www.press.bmwgroup.com/usa/photo/compilation/T0017624EN_US/the-all-new-2007-bmw-3-series-coupe?language=en_US",
+      "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0024441.zip&dokNo=P0024441&actEvent=fourMB",
+      "credit": {
+        "label": "BMW 335i Coupé — Side profile",
+        "author": "BMW AG",
+        "page": "https://www.press.bmwgroup.com/usa/photo/compilation/T0017624EN_US/the-all-new-2007-bmw-3-series-coupe?language=en_US",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0024441.zip&dokNo=P0024441&actEvent=fourMB",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e90-m3",
+      "src": "images/official-heritage/e90-m3-2.webp",
+      "angle": "Side profile",
+      "width": 1280,
+      "height": 815,
+      "bytes": 181822,
+      "source": "https://www.press.bmwgroup.com/global/photo/compilation/T0011998EN/the-new-bmw-m3-saloon?language=en",
+      "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0040172.zip&dokNo=P0040172&actEvent=fourMB",
+      "credit": {
+        "label": "BMW M3 Sedan — Side profile",
+        "author": "BMW AG",
+        "page": "https://www.press.bmwgroup.com/global/photo/compilation/T0011998EN/the-new-bmw-m3-saloon?language=en",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0040172.zip&dokNo=P0040172&actEvent=fourMB",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e60-530i",
+      "src": "images/official-heritage/e60-530i-2.webp",
+      "angle": "Side profile",
+      "width": 1280,
+      "height": 815,
+      "bytes": 90048,
+      "source": "https://www.press.bmwgroup.com/austria/photo/compilation/T0034896DE/die-neue-bmw-5er-limousine?language=de",
+      "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0010155.zip&dokNo=P0010155&actEvent=fourMB",
+      "credit": {
+        "label": "BMW 530i — Side profile",
+        "author": "BMW AG",
+        "page": "https://www.press.bmwgroup.com/austria/photo/compilation/T0034896DE/die-neue-bmw-5er-limousine?language=de",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0010155.zip&dokNo=P0010155&actEvent=fourMB",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e90-335i",
+      "src": "images/official-heritage/e90-335i-2.webp",
+      "angle": "Side profile",
+      "width": 1280,
+      "height": 747,
+      "bytes": 104404,
+      "source": "https://www.press.bmwgroup.com/usa/photo/compilation/T0018045EN_US/the-new-bmw-3-series-usa-press-information",
+      "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0044474.zip&dokNo=P0044474&actEvent=fourMB",
+      "credit": {
+        "label": "BMW 335i — Side profile",
+        "author": "BMW AG",
+        "page": "https://www.press.bmwgroup.com/usa/photo/compilation/T0018045EN_US/the-new-bmw-3-series-usa-press-information",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0044474.zip&dokNo=P0044474&actEvent=fourMB",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e90-m3",
+      "src": "images/official-heritage/e90-m3-3.webp",
+      "angle": "Interior",
+      "width": 1280,
+      "height": 815,
+      "bytes": 101056,
+      "source": "https://www.press.bmwgroup.com/global/photo/compilation/T0011998EN/the-new-bmw-m3-saloon?language=en",
+      "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0040185.zip&dokNo=P0040185&actEvent=fourMB",
+      "credit": {
+        "label": "BMW M3 Sedan — Interior",
+        "author": "BMW AG",
+        "page": "https://www.press.bmwgroup.com/global/photo/compilation/T0011998EN/the-new-bmw-m3-saloon?language=en",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0040185.zip&dokNo=P0040185&actEvent=fourMB",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e92-335i",
+      "src": "images/official-heritage/e92-335i-3.webp",
+      "angle": "Interior",
+      "width": 1280,
+      "height": 815,
+      "bytes": 83724,
+      "source": "https://www.press.bmwgroup.com/usa/photo/compilation/T0017624EN_US/the-all-new-2007-bmw-3-series-coupe?language=en_US",
+      "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0024423.zip&dokNo=P0024423&actEvent=fourMB",
+      "credit": {
+        "label": "BMW 335i Coupé — Interior",
+        "author": "BMW AG",
+        "page": "https://www.press.bmwgroup.com/usa/photo/compilation/T0017624EN_US/the-all-new-2007-bmw-3-series-coupe?language=en_US",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0024423.zip&dokNo=P0024423&actEvent=fourMB",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e21-323i",
+      "src": "images/official-heritage/e21-323i-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1280,
+      "height": 895,
+      "bytes": 72604,
+      "source": "https://www.bmwgroup-classic.com/en/models/bmw-classics/product-description-page.ad-102-1.bmw-323i-e21.html",
+      "original": "https://www.bmwgroup-classic.com/content/dam/grpw/websites/bmwgroup-classic_com/productcatalog2/images_pc/AF-40674-1.png/_jcr_content/renditions/original?imwidth=1280",
+      "credit": {
+        "label": "BMW 323i — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmwgroup-classic.com/en/models/bmw-classics/product-description-page.ad-102-1.bmw-323i-e21.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmwgroup-classic.com/content/dam/grpw/websites/bmwgroup-classic_com/productcatalog2/images_pc/AF-40674-1.png/_jcr_content/renditions/original?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e368-z3m-coupe",
+      "src": "images/official-heritage/e368-z3m-coupe-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1185,
+      "height": 790,
+      "bytes": 94100,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z3-m-coupe.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/z3-m-coupe/bmw-z3-m-coupe-di-01.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW Z3 M Coupé — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z3-m-coupe.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/z3-m-coupe/bmw-z3-m-coupe-di-01.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e20-2002-turbo",
+      "src": "images/official-heritage/e20-2002-turbo-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1280,
+      "height": 576,
+      "bytes": 103664,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-2002-turbo-e20.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/2002-turbo/bmw-2002-turbo-stage-teaser.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW 2002 turbo — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-2002-turbo-e20.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/2002-turbo/bmw-2002-turbo-stage-teaser.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e20-2002-turbo",
+      "src": "images/official-heritage/e20-2002-turbo-1.webp",
+      "angle": "Rear three-quarter",
+      "width": 1185,
+      "height": 789,
+      "bytes": 162698,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-2002-turbo-e20.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/2002-turbo/bmw-2002-turbo-ai-02.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW 2002 turbo — Rear three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-2002-turbo-e20.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/2002-turbo/bmw-2002-turbo-ai-02.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e20-2002-turbo",
+      "src": "images/official-heritage/e20-2002-turbo-2.webp",
+      "angle": "Side profile",
+      "width": 1185,
+      "height": 789,
+      "bytes": 108140,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-2002-turbo-e20.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/2002-turbo/bmw-2002-turbo-ai-01.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW 2002 turbo — Side profile",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-2002-turbo-e20.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/2002-turbo/bmw-2002-turbo-ai-01.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e368-z3m-coupe",
+      "src": "images/official-heritage/e368-z3m-coupe-1.webp",
+      "angle": "Rear three-quarter",
+      "width": 1185,
+      "height": 790,
+      "bytes": 95442,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z3-m-coupe.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/z3-m-coupe/bmw-z3-m-coupe-ai-09.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW Z3 M Coupé — Rear three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z3-m-coupe.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/z3-m-coupe/bmw-z3-m-coupe-ai-09.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e368-z3m-coupe",
+      "src": "images/official-heritage/e368-z3m-coupe-2.webp",
+      "angle": "Side profile",
+      "width": 1280,
+      "height": 576,
+      "bytes": 34176,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z3-m-coupe.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/z3-m-coupe/bmw-z3-m-coupe-cp-01.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW Z3 M Coupé — Side profile",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z3-m-coupe.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/z3-m-coupe/bmw-z3-m-coupe-cp-01.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e20-2002-turbo",
+      "src": "images/official-heritage/e20-2002-turbo-3.webp",
+      "angle": "Interior",
+      "width": 1185,
+      "height": 789,
+      "bytes": 106314,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-2002-turbo-e20.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/2002-turbo/bmw-2002-turbo-ai-07.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW 2002 turbo — Interior",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-2002-turbo-e20.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/2002-turbo/bmw-2002-turbo-ai-07.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e90-335i",
+      "src": "images/official-heritage/e90-335i-3.webp",
+      "angle": "Interior",
+      "width": 1280,
+      "height": 747,
+      "bytes": 75244,
+      "source": "https://www.press.bmwgroup.com/usa/photo/compilation/T0018045EN_US/the-new-bmw-3-series-usa-press-information",
+      "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0044497.zip&dokNo=P0044497&actEvent=fourMB",
+      "credit": {
+        "label": "BMW 335i — Interior",
+        "author": "BMW AG",
+        "page": "https://www.press.bmwgroup.com/usa/photo/compilation/T0018045EN_US/the-new-bmw-3-series-usa-press-information",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0044497.zip&dokNo=P0044497&actEvent=fourMB",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e31-850csi",
+      "src": "images/official-heritage/e31-850csi-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1280,
+      "height": 576,
+      "bytes": 62440,
+      "source": "https://www.bmw-m.com/de/topics/magazine-article-pool/bmw-850-csi-e31.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2023/850csi/bmw-850csi-stage-teaser.png?imwidth=1280",
+      "credit": {
+        "label": "BMW 850CSi — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/de/topics/magazine-article-pool/bmw-850-csi-e31.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2023/850csi/bmw-850csi-stage-teaser.png?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e368-z3m-coupe",
+      "src": "images/official-heritage/e368-z3m-coupe-3.webp",
+      "angle": "Interior",
+      "width": 1185,
+      "height": 790,
+      "bytes": 66278,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z3-m-coupe.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/z3-m-coupe/bmw-z3-m-coupe-ai-08.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW Z3 M Coupé — Interior",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z3-m-coupe.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/z3-m-coupe/bmw-z3-m-coupe-ai-08.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e38-750i",
+      "src": "images/official-heritage/e38-750i-cover.webp",
+      "angle": "Side profile",
+      "width": 1280,
+      "height": 895,
+      "bytes": 41848,
+      "source": "https://www.bmwgroup-classic.com/de/modelle/bmw-klassiker/product-description-page.ad-209-1.bmw-750il-e38.html",
+      "original": "https://www.bmwgroup-classic.com/content/dam/grpw/websites/bmwgroup-classic_com/productcatalog2/images_pc/AF-181-1.png/_jcr_content/renditions/original?imwidth=1280",
+      "credit": {
+        "label": "BMW 750iL — Side profile",
+        "author": "BMW AG",
+        "page": "https://www.bmwgroup-classic.com/de/modelle/bmw-klassiker/product-description-page.ad-209-1.bmw-750il-e38.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmwgroup-classic.com/content/dam/grpw/websites/bmwgroup-classic_com/productcatalog2/images_pc/AF-181-1.png/_jcr_content/renditions/original?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e9-30-csl",
+      "src": "images/official-heritage/e9-30-csl-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1280,
+      "height": 576,
+      "bytes": 94776,
+      "source": "https://www.bmw-m.com/de/topics/magazine-article-pool/bmw-3-0-csl.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/3punkt0-csl-heritage/bmw-3.0-csl-stage-teaser.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW 3.0 CSL — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/de/topics/magazine-article-pool/bmw-3-0-csl.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/3punkt0-csl-heritage/bmw-3.0-csl-stage-teaser.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e31-850csi",
+      "src": "images/official-heritage/e31-850csi-1.webp",
+      "angle": "Rear three-quarter",
+      "width": 1185,
+      "height": 790,
+      "bytes": 68990,
+      "source": "https://www.bmw-m.com/de/topics/magazine-article-pool/bmw-850-csi-e31.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2023/850csi/bmw-850csi-12-ai.png?imwidth=1280",
+      "credit": {
+        "label": "BMW 850CSi — Rear three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/de/topics/magazine-article-pool/bmw-850-csi-e31.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2023/850csi/bmw-850csi-12-ai.png?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e86-z4m-coupe",
+      "src": "images/official-heritage/e86-z4m-coupe-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1185,
+      "height": 790,
+      "bytes": 65442,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z4-m-coupe-e86.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/z4-m-heritage/bmw-z4-m-coupe-ai-05.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW Z4 M Coupé — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z4-m-coupe-e86.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/z4-m-heritage/bmw-z4-m-coupe-ai-05.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e9-30-csl",
+      "src": "images/official-heritage/e9-30-csl-1.webp",
+      "angle": "Rear three-quarter",
+      "width": 1185,
+      "height": 790,
+      "bytes": 71822,
+      "source": "https://www.bmw-m.com/de/topics/magazine-article-pool/bmw-3-0-csl.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/3punkt0-csl-heritage/bmw-3.0-csl-ai-01.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW 3.0 CSL — Rear three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/de/topics/magazine-article-pool/bmw-3-0-csl.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/3punkt0-csl-heritage/bmw-3.0-csl-ai-01.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e86-z4m-coupe",
+      "src": "images/official-heritage/e86-z4m-coupe-1.webp",
+      "angle": "Rear three-quarter",
+      "width": 1185,
+      "height": 790,
+      "bytes": 56838,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z4-m-coupe-e86.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/z4-m-heritage/bmw-z4-m-coupe-di-02.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW Z4 M Coupé — Rear three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z4-m-coupe-e86.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/z4-m-heritage/bmw-z4-m-coupe-di-02.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e9-30-csl",
+      "src": "images/official-heritage/e9-30-csl-2.webp",
+      "angle": "Rear three-quarter",
+      "width": 1185,
+      "height": 790,
+      "bytes": 156936,
+      "source": "https://www.bmw-m.com/de/topics/magazine-article-pool/bmw-3-0-csl.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/3punkt0-csl-heritage/bmw-3.0-csl-ai-02.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW 3.0 CSL — Rear three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/de/topics/magazine-article-pool/bmw-3-0-csl.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/3punkt0-csl-heritage/bmw-3.0-csl-ai-02.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e31-850csi",
+      "src": "images/official-heritage/e31-850csi-2.webp",
+      "angle": "Side profile",
+      "width": 1280,
+      "height": 576,
+      "bytes": 46868,
+      "source": "https://www.bmw-m.com/de/topics/magazine-article-pool/bmw-850-csi-e31.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2023/850csi/bmw-850csi-cp.png?imwidth=1280",
+      "credit": {
+        "label": "BMW 850CSi — Side profile",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/de/topics/magazine-article-pool/bmw-850-csi-e31.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2023/850csi/bmw-850csi-cp.png?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e86-z4m-coupe",
+      "src": "images/official-heritage/e86-z4m-coupe-2.webp",
+      "angle": "Side profile",
+      "width": 1280,
+      "height": 576,
+      "bytes": 49948,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z4-m-coupe-e86.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/z4-m-heritage/bmw-z4-m-coupe-cp-01.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW Z4 M Coupé — Side profile",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z4-m-coupe-e86.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/z4-m-heritage/bmw-z4-m-coupe-cp-01.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e9-30-csl",
+      "src": "images/official-heritage/e9-30-csl-3.webp",
+      "angle": "Interior",
+      "width": 890,
+      "height": 501,
+      "bytes": 65956,
+      "source": "https://www.bmw-m.com/de/topics/magazine-article-pool/bmw-3-0-csl.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/3punkt0-csl-heritage/bmw-3.0-csl-gallery-07.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW 3.0 CSL — Interior",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/de/topics/magazine-article-pool/bmw-3-0-csl.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/3punkt0-csl-heritage/bmw-3.0-csl-gallery-07.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e31-850csi",
+      "src": "images/official-heritage/e31-850csi-3.webp",
+      "angle": "Interior",
+      "width": 890,
+      "height": 501,
+      "bytes": 50024,
+      "source": "https://www.bmw-m.com/de/topics/magazine-article-pool/bmw-850-csi-e31.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2023/850csi/bmw-850csi-interior-01-gallery.png?imwidth=1280",
+      "credit": {
+        "label": "BMW 850CSi — Interior",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/de/topics/magazine-article-pool/bmw-850-csi-e31.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2023/850csi/bmw-850csi-interior-01-gallery.png?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e86-z4m-coupe",
+      "src": "images/official-heritage/e86-z4m-coupe-3.webp",
+      "angle": "Interior",
+      "width": 1185,
+      "height": 787,
+      "bytes": 82950,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z4-m-coupe-e86.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/z4-m-heritage/bmw-z4-m-coupe-ai-04.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW Z4 M Coupé — Interior",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z4-m-coupe-e86.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2021/z4-m-heritage/bmw-z4-m-coupe-ai-04.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e26-m1",
+      "src": "images/official-heritage/e26-m1-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1280,
+      "height": 576,
+      "bytes": 62384,
+      "source": "https://www.bmw-m.com/de/topics/magazine-article-pool/bmw-m1-vom-procar-zur-ikone.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m1-portraet/bmw-m1-stage.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M1 — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/de/topics/magazine-article-pool/bmw-m1-vom-procar-zur-ikone.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m1-portraet/bmw-m1-stage.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e60-530i",
+      "src": "images/official-heritage/e60-530i-3.webp",
+      "angle": "Interior",
+      "width": 1280,
+      "height": 815,
+      "bytes": 138950,
+      "source": "https://www.press.bmwgroup.com/austria/photo/compilation/T0034896DE/die-neue-bmw-5er-limousine?language=de",
+      "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0010352.zip&dokNo=P0010352&actEvent=fourMB",
+      "credit": {
+        "label": "BMW 530i — Interior",
+        "author": "BMW AG",
+        "page": "https://www.press.bmwgroup.com/austria/photo/compilation/T0034896DE/die-neue-bmw-5er-limousine?language=de",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://mediapool.bmwgroup.com/download/edown/pressclub/public?filename=P0010352.zip&dokNo=P0010352&actEvent=fourMB",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e82-1m",
+      "src": "images/official-heritage/e82-1m-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1185,
+      "height": 533,
+      "bytes": 65832,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-1er-m-coupe.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-1er-m-coupe/bmw-1er-m-coupe-standard-detail-01.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW 1 Series M Coupé — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-1er-m-coupe.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-1er-m-coupe/bmw-1er-m-coupe-standard-detail-01.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e26-m1",
+      "src": "images/official-heritage/e26-m1-1.webp",
+      "angle": "Side profile",
+      "width": 890,
+      "height": 501,
+      "bytes": 35244,
+      "source": "https://www.bmw-m.com/de/topics/magazine-article-pool/bmw-m1-vom-procar-zur-ikone.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m1-portraet/bmw-m1-gallery-2.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M1 — Side profile",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/de/topics/magazine-article-pool/bmw-m1-vom-procar-zur-ikone.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m1-portraet/bmw-m1-gallery-2.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e30-m3",
+      "src": "images/official-heritage/e30-m3-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1185,
+      "height": 790,
+      "bytes": 158280,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e30-portraet.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-e30/bmw-m3-e30-article-image-02.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M3 — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e30-portraet.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-e30/bmw-m3-e30-article-image-02.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e82-1m",
+      "src": "images/official-heritage/e82-1m-1.webp",
+      "angle": "Rear three-quarter",
+      "width": 1185,
+      "height": 533,
+      "bytes": 62598,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-1er-m-coupe.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-1er-m-coupe/bmw-1er-m-coupe-standard-detail-03.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW 1 Series M Coupé — Rear three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-1er-m-coupe.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-1er-m-coupe/bmw-1er-m-coupe-standard-detail-03.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e36-m3",
+      "src": "images/official-heritage/e36-m3-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1280,
+      "height": 720,
+      "bytes": 45430,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e36-portraet.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2020/bmw-m3-e36/bmw-m3-e36-stage-01-16x9.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M3 3.0 Coupé — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e36-portraet.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2020/bmw-m3-e36/bmw-m3-e36-stage-01-16x9.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e26-m1",
+      "src": "images/official-heritage/e26-m1-2.webp",
+      "angle": "Rear view",
+      "width": 890,
+      "height": 501,
+      "bytes": 35934,
+      "source": "https://www.bmw-m.com/de/topics/magazine-article-pool/bmw-m1-vom-procar-zur-ikone.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m1-portraet/bmw-m1-gallery-3.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M1 — Rear view",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/de/topics/magazine-article-pool/bmw-m1-vom-procar-zur-ikone.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m1-portraet/bmw-m1-gallery-3.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e82-1m",
+      "src": "images/official-heritage/e82-1m-2.webp",
+      "angle": "Side profile",
+      "width": 1185,
+      "height": 533,
+      "bytes": 56158,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-1er-m-coupe.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-1er-m-coupe/bmw-1er-m-coupe-standard-detail-02.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW 1 Series M Coupé — Side profile",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-1er-m-coupe.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-1er-m-coupe/bmw-1er-m-coupe-standard-detail-02.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e28-m5",
+      "src": "images/official-heritage/e28-m5-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1280,
+      "height": 720,
+      "bytes": 77420,
+      "source": "https://www.bmw-m.com/en/topics/about-bmw-m-gmbh/automobile.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/about-m/bmw-m-about-automobile-19-16x9.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M5 — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/about-bmw-m-gmbh/automobile.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/about-m/bmw-m-about-automobile-19-16x9.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e36-m3",
+      "src": "images/official-heritage/e36-m3-1.webp",
+      "angle": "Rear three-quarter",
+      "width": 1185,
+      "height": 690,
+      "bytes": 89772,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e36-portraet.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2020/bmw-m3-e36/bmw-e36-m3-coup%C3%A9-article-image-01.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M3 3.0 Coupé — Rear three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e36-portraet.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2020/bmw-m3-e36/bmw-e36-m3-coup%C3%A9-article-image-01.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e82-1m",
+      "src": "images/official-heritage/e82-1m-3.webp",
+      "angle": "Interior",
+      "width": 890,
+      "height": 501,
+      "bytes": 39508,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-1er-m-coupe.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-1er-m-coupe/bmw-1er-m-coupe-micro-story-02.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW 1 Series M Coupé — Interior",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-1er-m-coupe.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-1er-m-coupe/bmw-1er-m-coupe-micro-story-02.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e28-m5",
+      "src": "images/official-heritage/e28-m5-1.webp",
+      "angle": "Side profile",
+      "width": 1185,
+      "height": 533,
+      "bytes": 77356,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-generations-of-the-bmw-m5-an-overview.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2020/m5-generationen/bmw-m5-generationen-e28-sd-02.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M5 — Side profile",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-generations-of-the-bmw-m5-an-overview.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2020/m5-generationen/bmw-m5-generationen-e28-sd-02.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e36-m3",
+      "src": "images/official-heritage/e36-m3-2.webp",
+      "angle": "Front view",
+      "width": 1185,
+      "height": 690,
+      "bytes": 84884,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e36-portraet.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2020/bmw-m3-e36/bmw-e36-m3-coup%C3%A9-article-image-02.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M3 3.0 Coupé — Front view",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e36-portraet.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2020/bmw-m3-e36/bmw-e36-m3-coup%C3%A9-article-image-02.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e34-m5",
+      "src": "images/official-heritage/e34-m5-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1280,
+      "height": 720,
+      "bytes": 47026,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-generations-of-the-bmw-m5-an-overview.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2017/die-zweite-generation-des-m5/bmw-m5-e34-stage.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M5 3.6 — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-generations-of-the-bmw-m5-an-overview.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2017/die-zweite-generation-des-m5/bmw-m5-e34-stage.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e30-m3",
+      "src": "images/official-heritage/e30-m3-1.webp",
+      "angle": "Rear three-quarter",
+      "width": 1185,
+      "height": 790,
+      "bytes": 110554,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e30-portraet.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-e30/bmw-m3-e30-article-image-01.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M3 — Rear three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e30-portraet.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-e30/bmw-m3-e30-article-image-01.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e28-m5",
+      "src": "images/official-heritage/e28-m5-2.webp",
+      "angle": "Rear view",
+      "width": 1185,
+      "height": 533,
+      "bytes": 55376,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-generations-of-the-bmw-m5-an-overview.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2020/m5-generationen/bmw-m5-generationen-e28-sd-03.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M5 — Rear view",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-generations-of-the-bmw-m5-an-overview.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2020/m5-generationen/bmw-m5-generationen-e28-sd-03.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e24-m635csi",
+      "src": "images/official-heritage/e24-m635csi-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1185,
+      "height": 690,
+      "bytes": 66798,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m635csi-top-model-of-the-e24-series.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2019/bmw-m635csi/bmw-m635csi-article-image-01.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M635CSi — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m635csi-top-model-of-the-e24-series.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2019/bmw-m635csi/bmw-m635csi-article-image-01.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e34-m5",
+      "src": "images/official-heritage/e34-m5-1.webp",
+      "angle": "Side profile",
+      "width": 1185,
+      "height": 533,
+      "bytes": 73724,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-generations-of-the-bmw-m5-an-overview.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2020/m5-generationen/bmw-m5-generationen-e34-sd-02.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M5 3.6 — Side profile",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-generations-of-the-bmw-m5-an-overview.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2020/m5-generationen/bmw-m5-generationen-e34-sd-02.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e30-m3",
+      "src": "images/official-heritage/e30-m3-2.webp",
+      "angle": "Side profile",
+      "width": 890,
+      "height": 501,
+      "bytes": 74020,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e30-portraet.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-e30/bmw-m3-e30-gallery-01.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M3 — Side profile",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m3-e30-portraet.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2018/bmw-m3-e30/bmw-m3-e30-gallery-01.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e28-m5",
+      "src": "images/official-heritage/e28-m5-3.webp",
+      "angle": "Interior",
+      "width": 1280,
+      "height": 720,
+      "bytes": 61590,
+      "source": "https://www.bmw-m.com/en/topics/about-bmw-m-gmbh/automobile.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/about-m/bmw-m-about-automobile-23-16x9.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M5 — Interior",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/about-bmw-m-gmbh/automobile.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/about-m/bmw-m-about-automobile-23-16x9.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e24-m635csi",
+      "src": "images/official-heritage/e24-m635csi-1.webp",
+      "angle": "Side profile",
+      "width": 1185,
+      "height": 690,
+      "bytes": 66818,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m635csi-top-model-of-the-e24-series.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2019/bmw-m635csi/bmw-m635csi-article-image-02.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M635CSi — Side profile",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m635csi-top-model-of-the-e24-series.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2019/bmw-m635csi/bmw-m635csi-article-image-02.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e63-m6",
+      "src": "images/official-heritage/e63-m6-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 890,
+      "height": 501,
+      "bytes": 43116,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m6-e63-e64.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2023/bmw-m6-e63-e64/bmw-m6-e63-01-gallery.png?imwidth=1280",
+      "credit": {
+        "label": "BMW M6 Coupé — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m6-e63-e64.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2023/bmw-m6-e63-e64/bmw-m6-e63-01-gallery.png?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e34-m5",
+      "src": "images/official-heritage/e34-m5-2.webp",
+      "angle": "Rear view",
+      "width": 1185,
+      "height": 533,
+      "bytes": 52040,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-generations-of-the-bmw-m5-an-overview.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2020/m5-generationen/bmw-m5-generationen-e34-sd-03.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M5 3.6 — Rear view",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/the-generations-of-the-bmw-m5-an-overview.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2020/m5-generationen/bmw-m5-generationen-e34-sd-03.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "z3-m",
+      "src": "images/official-heritage/z3-m-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1185,
+      "height": 790,
+      "bytes": 76166,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z3-m-roadster.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2022/z3-m-roadster/BMW-Z3-M-Roadster-ai-3.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW Z3 M Roadster — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z3-m-roadster.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2022/z3-m-roadster/BMW-Z3-M-Roadster-ai-3.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e24-m635csi",
+      "src": "images/official-heritage/e24-m635csi-2.webp",
+      "angle": "Rear view",
+      "width": 1280,
+      "height": 576,
+      "bytes": 47624,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m635csi-top-model-of-the-e24-series.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2019/bmw-m635csi/bmw-m635csi-content-presentation_02.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW M635CSi — Rear view",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m635csi-top-model-of-the-e24-series.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2019/bmw-m635csi/bmw-m635csi-content-presentation_02.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "z4-m",
+      "src": "images/official-heritage/z4-m-cover.webp",
+      "angle": "Front three-quarter",
+      "width": 1280,
+      "height": 720,
+      "bytes": 70992,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z4-m-roadster-e85.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2026/bmw-z4-m-roadster-e85/bmw-z4-m-roadster-e85-15-16x9-ig.JPG?imwidth=1280",
+      "credit": {
+        "label": "BMW Z4 M Roadster — Front three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z4-m-roadster-e85.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2026/bmw-z4-m-roadster-e85/bmw-z4-m-roadster-e85-15-16x9-ig.JPG?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e63-m6",
+      "src": "images/official-heritage/e63-m6-1.webp",
+      "angle": "Rear three-quarter",
+      "width": 1185,
+      "height": 790,
+      "bytes": 140352,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m6-e63-e64.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2023/bmw-m6-e63-e64/bmw-m6-e63-02-ai.png?imwidth=1280",
+      "credit": {
+        "label": "BMW M6 Coupé — Rear three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m6-e63-e64.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2023/bmw-m6-e63-e64/bmw-m6-e63-02-ai.png?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "z3-m",
+      "src": "images/official-heritage/z3-m-1.webp",
+      "angle": "Rear three-quarter",
+      "width": 1280,
+      "height": 576,
+      "bytes": 96566,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z3-m-roadster.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2022/z3-m-roadster/BMW-Z3-M-Roadster-quer-unten.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW Z3 M Roadster — Rear three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z3-m-roadster.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2022/z3-m-roadster/BMW-Z3-M-Roadster-quer-unten.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e63-m6",
+      "src": "images/official-heritage/e63-m6-2.webp",
+      "angle": "Side profile",
+      "width": 1280,
+      "height": 576,
+      "bytes": 44646,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m6-e63-e64.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2023/bmw-m6-e63-e64/bmw-m6-e63-03-stage.png?imwidth=1280",
+      "credit": {
+        "label": "BMW M6 Coupé — Side profile",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m6-e63-e64.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2023/bmw-m6-e63-e64/bmw-m6-e63-03-stage.png?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "z3-m",
+      "src": "images/official-heritage/z3-m-2.webp",
+      "angle": "Side profile",
+      "width": 890,
+      "height": 501,
+      "bytes": 29916,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z3-m-roadster.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2022/z3-m-roadster/BMW-Z3-M-Roadster-galerie-3.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW Z3 M Roadster — Side profile",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z3-m-roadster.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2022/z3-m-roadster/BMW-Z3-M-Roadster-galerie-3.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "z4-m",
+      "src": "images/official-heritage/z4-m-1.webp",
+      "angle": "Rear three-quarter",
+      "width": 1280,
+      "height": 719,
+      "bytes": 127888,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z4-m-roadster-e85.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2026/bmw-z4-m-roadster-e85/bmw-z4-m-roadster-e85-05-16x9-px.JPG?imwidth=1280",
+      "credit": {
+        "label": "BMW Z4 M Roadster — Rear three-quarter",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z4-m-roadster-e85.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2026/bmw-z4-m-roadster-e85/bmw-z4-m-roadster-e85-05-16x9-px.JPG?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "e63-m6",
+      "src": "images/official-heritage/e63-m6-3.webp",
+      "angle": "Interior",
+      "width": 1185,
+      "height": 533,
+      "bytes": 72930,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m6-e63-e64.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2023/bmw-m6-e63-e64/bmw-m6-e63-interior-01-detail.png?imwidth=1280",
+      "credit": {
+        "label": "BMW M6 Coupé — Interior",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m6-e63-e64.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2023/bmw-m6-e63-e64/bmw-m6-e63-interior-01-detail.png?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "z3-m",
+      "src": "images/official-heritage/z3-m-3.webp",
+      "angle": "Interior",
+      "width": 1185,
+      "height": 790,
+      "bytes": 80660,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z3-m-roadster.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2022/z3-m-roadster/BMW-Z3-M-Roadster-ai-4.jpg?imwidth=1280",
+      "credit": {
+        "label": "BMW Z3 M Roadster — Interior",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z3-m-roadster.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2022/z3-m-roadster/BMW-Z3-M-Roadster-ai-4.jpg?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "z4-m",
+      "src": "images/official-heritage/z4-m-2.webp",
+      "angle": "Side profile",
+      "width": 1280,
+      "height": 720,
+      "bytes": 182968,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z4-m-roadster-e85.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2026/bmw-z4-m-roadster-e85/bmw-z4-m-roadster-e85-13-16x9-tx.JPG?imwidth=1280",
+      "credit": {
+        "label": "BMW Z4 M Roadster — Side profile",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z4-m-roadster-e85.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2026/bmw-z4-m-roadster-e85/bmw-z4-m-roadster-e85-13-16x9-tx.JPG?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    },
+    {
+      "modelId": "z4-m",
+      "src": "images/official-heritage/z4-m-3.webp",
+      "angle": "Interior",
+      "width": 1280,
+      "height": 960,
+      "bytes": 138102,
+      "source": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z4-m-roadster-e85.html",
+      "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2026/bmw-z4-m-roadster-e85/bmw-z4-m-roadster-e85-07-4x3-gy.JPG?imwidth=1280",
+      "credit": {
+        "label": "BMW Z4 M Roadster — Interior",
+        "author": "BMW AG",
+        "page": "https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-z4-m-roadster-e85.html",
+        "license": "© BMW AG. Manufacturer editorial reference; all rights reserved.",
+        "url": "https://www.press.bmwgroup.com/global/info/legal",
+        "original": "https://www.bmw-m.com/content/dam/bmw/marketBMW_M/www_bmw-m_com/topics/magazine-article-pool/2026/bmw-z4-m-roadster-e85/bmw-z4-m-roadster-e85-07-4x3-gy.JPG?imwidth=1280",
+        "photoType": "Manufacturer editorial reference"
+      }
+    }
+  ]
+}

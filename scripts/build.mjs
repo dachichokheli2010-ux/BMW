@@ -1,2 +1,45 @@
-import fs from 'node:fs';import path from 'node:path';import {createHash} from 'node:crypto';
-fs.rmSync('dist',{recursive:true,force:true});const assets={};function collect(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:true})){const p=path.join(dir,entry.name);if(entry.isDirectory()){if(entry.name!=='vendor')collect(p);}else{const ext=path.extname(p),binary=['.jpg','.webp'].includes(ext);assets['/'+path.relative('public',p).split(path.sep).join('/')]= {body:fs.readFileSync(p,binary?undefined:'utf8').toString(binary?'base64':undefined),encoding:binary?'base64':'utf8',type:ext==='.js'?'text/javascript; charset=utf-8':ext==='.css'?'text/css; charset=utf-8':ext==='.html'?'text/html; charset=utf-8':ext==='.jpg'?'image/jpeg':ext==='.webp'?'image/webp':'text/plain; charset=utf-8'};}}}collect('public');const version=createHash('sha256').update(Object.entries(assets).filter(([name])=>/\.(js|css|html)$/.test(name)).map(([name,a])=>name+a.body).sort().join('')).digest('hex').slice(0,16);for(const [name,asset] of Object.entries(assets)){if(name.endsWith('.js'))asset.body=asset.body.replace(/(from\s*['"])(\.\/[^'"]+\.js)(['"])/g,`$1$2?v=${version}$3`);if(name.endsWith('.html'))asset.body=asset.body.replace(/((?:src|href)=["])([^"]+\.(?:js|css))(["])/g,`$1$2?v=${version}$3`);}fs.mkdirSync('dist/server',{recursive:true});fs.writeFileSync('dist/server/assets.js','export const assets='+JSON.stringify(assets)+';');fs.copyFileSync('worker/index.js','dist/server/index.js');console.log('Built '+Object.keys(assets).length+' locally served assets with the authenticated garage API.');
+import fs from 'node:fs';
+import path from 'node:path';
+import {createHash} from 'node:crypto';
+
+const project=fs.realpathSync('.');
+const output=path.join(project,'dist');
+if(path.relative(project,output)!=='dist'||fs.lstatSync(output,{throwIfNoEntry:false})?.isSymbolicLink())throw new Error('Build output must be the project’s own dist directory.');
+fs.rmSync(output,{recursive:true,force:true});
+const assets={};
+const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.png':'image/png','.avif':'image/avif','.gif':'image/gif','.ico':'image/x-icon','.woff':'font/woff','.woff2':'font/woff2'};
+const binaryTypes=new Set(['.jpg','.jpeg','.webp','.png','.avif','.gif','.ico','.woff','.woff2']);
+function collect(directory){
+  for(const entry of fs.readdirSync(directory,{withFileTypes:true})){
+    const filename=path.join(directory,entry.name);
+    if(entry.isDirectory()){collect(filename);continue;}
+    const extension=path.extname(filename),binary=binaryTypes.has(extension);
+    const key='/'+path.relative('public',filename).split(path.sep).join('/');
+    assets[key]={body:fs.readFileSync(filename,binary?undefined:'utf8').toString(binary?'base64':undefined),encoding:binary?'base64':'utf8',type:types[extension]||'text/plain; charset=utf-8'};
+  }
+}
+collect('public');
+const version=createHash('sha256').update(Object.entries(assets).filter(([name])=>/\.(js|css|html)$/.test(name)).map(([name,asset])=>name+asset.body).sort().join('')).digest('hex').slice(0,16);
+for(const [name,asset] of Object.entries(assets)){
+  if(name.endsWith('.js'))asset.body=asset.body.replace(/(from\s*['"])(\.\/[^'"]+\.js)(['"])/g,`$1$2?v=${version}$3`);
+  if(name.endsWith('.html'))asset.body=asset.body.replace(/((?:src|href)=["])([^"]+\.(?:js|css))(["])/g,`$1$2?v=${version}$3`);
+}
+
+// Keep generated modules below the source repository’s per-object size limit.
+// The Worker receives the same asset map; photographs stay local and unchanged.
+const server=path.join(output,'server');
+fs.mkdirSync(server,{recursive:true});
+const chunkLimit=4*1024*1024,chunks=[];
+let current=[],currentBytes=32;
+function flush(){if(!current.length)return;const filename=`assets-${String(chunks.length).padStart(2,'0')}.js`;fs.writeFileSync(path.join(server,filename),'export const assets={'+current.join(',')+'};\n');chunks.push(filename);current=[];currentBytes=32;}
+for(const [name,asset] of Object.entries(assets).sort(([a],[b])=>a<b?-1:a>b?1:0)){
+  const entry=JSON.stringify(name)+':'+JSON.stringify(asset),bytes=Buffer.byteLength(entry,'utf8')+1;
+  if(bytes+32>chunkLimit)throw new Error(`Asset ${name} exceeds the build module limit; optimize it before building.`);
+  if(currentBytes+bytes>chunkLimit)flush();
+  current.push(entry);currentBytes+=bytes;
+}
+flush();
+fs.writeFileSync(path.join(server,'assets.js'),chunks.map((filename,index)=>`import {assets as block${index}} from './${filename}';`).join('\n')+'\nexport const assets={'+chunks.map((_,index)=>'...block'+index).join(',')+'};\n');
+fs.copyFileSync('worker/index.js',path.join(server,'index.js'));
+fs.copyFileSync('worker/chat.js',path.join(server,'chat.js'));
+console.log(`Built ${Object.keys(assets).length} locally served assets in ${chunks.length} modules with the authenticated garage API.`);

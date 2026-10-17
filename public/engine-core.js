@@ -15,7 +15,8 @@ export const profiles={
  B48:{body:.72,rasp:.25,intake:.15,turbo:.12,weights:[1,.9,1.07,.93]},
  B46:{body:.7,rasp:.23,intake:.14,turbo:.12,weights:[1,.92,1.05,.94]},
  B38:{body:.76,rasp:.28,intake:.18,turbo:.12,weights:[1,.87,1.06]},
- S14:{body:.66,rasp:.38,intake:.29,turbo:0,weights:[1,.94,1.06,.97]}
+ S14:{body:.66,rasp:.38,intake:.29,turbo:0,weights:[1,.94,1.06,.97]},
+ M70:{body:.84,rasp:.12,intake:.2,turbo:0,weights:[1,.98,1.02,.97,1.03,.99,1.01,.96,1.04,.98,1.02,1]}
 };
 // Unknown engines receive an illustrative profile with the matching cylinder
 // count and aspiration. Engine-family matching is not an acoustic measurement.
@@ -30,6 +31,7 @@ function soundProfile(m){
   case 4:return turbo?profiles.B48:profiles.S14;
   case 8:return turbo?profiles.S63:profiles.S62;
   case 10:return profiles.S85;
+  case 12:return profiles.M70;
   default:return turbo?profiles.N55:profiles.M54;
  }
 }
