@@ -12,7 +12,9 @@ const binaryTypes=new Set(['.jpg','.jpeg','.webp','.png','.avif','.gif','.ico','
 function collect(directory){
   for(const entry of fs.readdirSync(directory,{withFileTypes:true})){
     const filename=path.join(directory,entry.name);
-    if(entry.isDirectory()){collect(filename);continue;}
+    // Keep source research on disk; unused contact sheets and rejected candidates
+    // are not runtime assets and otherwise add hundreds of Worker entries.
+    if(entry.isDirectory()){if(entry.name!=='_candidates')collect(filename);continue;}
     const extension=path.extname(filename),binary=binaryTypes.has(extension);
     const key='/'+path.relative('public',filename).split(path.sep).join('/');
     assets[key]={body:fs.readFileSync(filename,binary?undefined:'utf8').toString(binary?'base64':undefined),encoding:binary?'base64':'utf8',type:types[extension]||'text/plain; charset=utf-8'};
@@ -41,5 +43,4 @@ for(const [name,asset] of Object.entries(assets).sort(([a],[b])=>a<b?-1:a>b?1:0)
 flush();
 fs.writeFileSync(path.join(server,'assets.js'),chunks.map((filename,index)=>`import {assets as block${index}} from './${filename}';`).join('\n')+'\nexport const assets={'+chunks.map((_,index)=>'...block'+index).join(',')+'};\n');
 fs.copyFileSync('worker/index.js',path.join(server,'index.js'));
-fs.copyFileSync('worker/chat.js',path.join(server,'chat.js'));
 console.log(`Built ${Object.keys(assets).length} locally served assets in ${chunks.length} modules with the authenticated garage API.`);

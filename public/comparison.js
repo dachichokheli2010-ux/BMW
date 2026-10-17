@@ -73,6 +73,15 @@ export function createComparisonController({catalog, getSelected, onSelectionCha
         {name:'Induction', value:model => electric(model) ? missing : t(model.induction || missing)},
         {name:'Battery energy', value:battery, optional:true}
       ]},
+      {name:'Performance & dimensions', rows:[
+        {name:'0–100 km/h (factory)', value:model => positive(model.acceleration100) === null ? missing : `${model.acceleration100} s`},
+        {name:'Top speed (factory)', value:model => positive(model.topSpeed) === null ? missing : `${model.topSpeed} km/h`},
+        {name:'Transmission', value:model => model.transmission || missing},
+        {name:'Mass & convention', value:model => positive(model.weightKg) === null ? missing : `${model.weightKg} kg · ${model.weightConvention || 'See source'}`},
+        {name:'Length / width / height', value:model => [model.lengthMm,model.widthMm,model.heightMm].every(v=>positive(v)!==null) ? `${model.lengthMm} / ${model.widthMm} / ${model.heightMm} mm` : missing},
+        {name:'Wheelbase', value:model => positive(model.wheelbaseMm) === null ? missing : `${model.wheelbaseMm} mm`},
+        {name:'Expanded specification context', value:model => model.verified?.specification || missing}
+      ]},
       {name:'Source & context', rows:[
         {name:'Factory specification', value:model => model.market || missing}
       ]}

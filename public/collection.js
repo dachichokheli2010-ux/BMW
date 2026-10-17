@@ -1,5 +1,5 @@
 import {t, translatePage} from './preferences.js';
-import {createComparisonController} from './comparison.js';
+import {createComparisonController, torqueInNm} from './comparison.js';
 
 const icons = {
   heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg>',
@@ -30,28 +30,35 @@ export function mountCollection({models, catalog=models, getCurrent=()=>null, se
   let active='all',limit=12,quick='',viewStyle='grid',compareController;
   try{viewStyle=localStorage.getItem('apex-view')==='list'?'list':'grid';}catch{}
   const filters=[['all','All models'],['m','BMW M'],['electric','Electric'],['sedan','Sedans'],['coupe','Coupes'],['suv','SUVs'],['roadster','Roadsters'],['touring','Touring'],['heritage','Heritage'],['saved','Saved'],['3d','3D cars']];
+  document.querySelector('.quick-picks')?.insertAdjacentHTML('beforeend',`<button data-quick="suv">${esc(t('SUV versatility'))}</button><button data-quick="classic">${esc(t('Classic icons'))}</button>`);
   $('#filters').innerHTML=filters.map(([id,label])=>`<button data-filter="${id}" aria-pressed="${id==='all'}" class="${id==='all'?'active':''}">${id==='saved'?icons.heart:''}<span>${esc(t(label))}</span>${id==='m'?'<i class="m-stripes" aria-hidden="true"></i>':''}</button>`).join('');
   const seriesNames=[...new Set(models.map(series))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
   $('#series-filter').innerHTML='<option value="all">'+esc(t('All series'))+'</option>'+seriesNames.map(s=>`<option>${esc(s)}</option>`).join('');
-  $('#modelsort').innerHTML=[['collection','Collection order'],['name','Model name'],['newest','Newest first'],['power-desc','Power: high to low'],['power-asc','Power: low to high'],['generation','Generation code']].map(([value,label])=>`<option value="${value}">${esc(t(label))}</option>`).join('');
+  $('#modelsort').innerHTML=[['collection','Collection order'],['name','Model name'],['newest','Newest first'],['power-desc','Power: high to low'],['power-asc','Power: low to high'],['torque-desc','Torque: high to low'],['torque-asc','Torque: low to high'],['generation','Generation code']].map(([value,label])=>`<option value="${value}">${esc(t(label))}</option>`).join('');
   const normalized=value=>String(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const chassis=m=>m.generation.split(' / ').at(-1).trim();
+  for(const [id,values] of [['#engine-filter',models.map(m=>m.code)],['#generation-filter',models.map(chassis)],['#year-filter',models.map(yearOf).filter(Boolean)]]){
+    const valuesSorted=[...new Set(values)].sort((a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true}));
+    $(id).insertAdjacentHTML('beforeend',valuesSorted.map(value=>`<option value="${esc(value)}">${esc(value)}</option>`).join(''));
+  }
   function matches(m) {
     const category=active==='all'||active==='m'&&isM(m)||active==='electric'&&isElectric(m)||active==='sedan'&&bodyOf(m)==='sedan'||active==='coupe'&&bodyOf(m)==='coupe'||active==='suv'&&bodyOf(m)==='suv'||active==='roadster'&&bodyOf(m)==='open'||active==='touring'&&bodyOf(m)==='touring'||active==='heritage'&&yearOf(m)&&yearOf(m)<2000||active==='saved'&&favorites.has(m.id)||active==='3d'&&!!threeModels[m.id];
     const query=normalized($('#modelsearch').value).trim().split(/\s+/).filter(Boolean);
     const haystack=normalized([m.name,m.id,m.series,m.generation,m.code,m.layout,m.body,t(m.body==='Coupés'?'Coupes':m.body),series(m),yearOf(m),'BMW ბმვ бмв',isM(m)?'BMW M M cars performance':'',isElectric(m)?'electric ev '+t('Electric'):'',fuelOf(m)==='hybrid'?'hybrid '+t('Plug-in hybrid'):''].join(' '));
     const era=$('#era-filter').value,year=yearOf(m),fuel=$('#powertrain-filter').value,body=$('#body-filter').value;
     const eraMatches=era==='all'||era==='classic'&&year&&year<2000||era==='modern'&&year>=2000&&year<2020||era==='recent'&&year>=2020;
-    const quickMatches=quick!=='daily'||!isM(m)&&['sedan','hatch'].includes(bodyOf(m));
-    return category&&quickMatches&&eraMatches&&(fuel==='all'||fuelOf(m)===fuel)&&(body==='all'||bodyOf(m)===body)&&powerHP(m)>=Number($('#power-filter').value)&&($('#series-filter').value==='all'||series(m)===$('#series-filter').value)&&query.every(term=>haystack.includes(term));
+    const quickMatches=quick!=='daily'||!isM(m)&&['sedan','hatch','touring','suv'].includes(bodyOf(m));
+    return category&&quickMatches&&eraMatches&&(fuel==='all'||fuelOf(m)===fuel)&&(body==='all'||bodyOf(m)===body)&&powerHP(m)>=Number($('#power-filter').value)&&($('#series-filter').value==='all'||series(m)===$('#series-filter').value)&&($('#engine-filter').value==='all'||m.code===$('#engine-filter').value)&&($('#generation-filter').value==='all'||chassis(m)===$('#generation-filter').value)&&($('#year-filter').value==='all'||String(year)===$('#year-filter').value)&&query.every(term=>haystack.includes(term));
   }
   function card(m,i) {
-    return `<article class="model-card"><a class="model" data-model="${esc(m.id)}" href="${electricPage?'/electric':'/'}?model=${encodeURIComponent(m.id)}" aria-label="${esc(t('Explore model'))}: ${esc(m.name)} ${esc(m.generation.split(' / ')[1]?.trim())}"><div class="model-image"><img src="${esc(m.car)}" alt="${esc(m.name)} ${esc(m.generation.split(' / ')[1]?.trim())}" loading="lazy" decoding="async"><span class="model-chassis">${esc(m.generation.split(' / ')[1]?.trim())}</span>${isM(m)?'<span class="model-tag"><i class="m-stripes" aria-hidden="true"></i> M</span>':isElectric(m)?'<span class="model-tag electric-tag">'+esc(t('Electric'))+'</span>':''}</div><div class="model-info"><div><span class="model-category">${esc(t(m.body==='Coupés'?'Coupes':m.body))}</span><h3>${esc(m.name.replace('BMW ',''))}</h3><small>${esc(m.code)} <span>·</span> ${esc(m.power)} ${esc(m.powerUnit)}</small></div><span class="model-arrow">${icons.arrow}</span></div></a><div class="card-actions"><button data-save="${esc(m.id)}" class="icon-button save-model ${favorites.has(m.id)?'is-saved':''}" aria-label="${esc(t(favorites.has(m.id)?'Remove from garage':'Save to garage'))}: ${esc(m.name)}" aria-pressed="${favorites.has(m.id)}" title="${esc(t(favorites.has(m.id)?'Remove from garage':'Save to garage'))}">${icons.heart}</button><button data-compare="${esc(m.id)}" class="compare-model ${comparison.has(m.id)?'is-selected':''}" aria-pressed="${comparison.has(m.id)}">${icons.compare}<span>${esc(t(comparison.has(m.id)?'Remove':'Compare'))}</span></button></div></article>`;
+    return `<article class="model-card"><a class="model" data-model="${esc(m.id)}" href="${electricPage?'/electric':'/'}?model=${encodeURIComponent(m.id)}" aria-label="${esc(t('Explore model'))}: ${esc(m.name)} ${esc(m.generation.split(' / ')[1]?.trim())}"><div class="model-image"><img src="${esc(m.car)}" alt="${esc(m.name)} ${esc(m.generation.split(' / ')[1]?.trim())}" loading="lazy" decoding="async"><span class="model-chassis">${esc(m.generation.split(' / ')[1]?.trim())}</span>${isM(m)?'<span class="model-tag"><i class="m-stripes" aria-hidden="true"></i> M</span>':isElectric(m)?'<span class="model-tag electric-tag">'+esc(t('Electric'))+'</span>':''}</div><div class="model-info"><div><span class="model-category">${esc(t(m.body==='Coupés'?'Coupes':m.body))}</span><h3>${esc(m.name.replace('BMW ',''))}</h3><small>${esc(m.code)} <span>·</span> ${esc(m.power)} ${esc(m.powerUnit)} <span>·</span> ${esc(m.torque)} ${esc(m.torqueUnit)}</small></div><span class="model-arrow">${icons.arrow}</span></div></a><div class="card-actions"><button data-save="${esc(m.id)}" class="icon-button save-model ${favorites.has(m.id)?'is-saved':''}" aria-label="${esc(t(favorites.has(m.id)?'Remove from garage':'Save to garage'))}: ${esc(m.name)}" aria-pressed="${favorites.has(m.id)}" title="${esc(t(favorites.has(m.id)?'Remove from garage':'Save to garage'))}">${icons.heart}</button><button data-compare="${esc(m.id)}" class="compare-model ${comparison.has(m.id)?'is-selected':''}" aria-pressed="${comparison.has(m.id)}">${icons.compare}<span>${esc(t(comparison.has(m.id)?'Remove':'Compare'))}</span></button></div></article>`;
   }
   function render() {
     const list=models.filter(matches), order=$('#modelsort').value;
     if(order==='name')list.sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
     if(order==='generation')list.sort((a,b)=>a.generation.split(' / ')[1].trim().localeCompare(b.generation.split(' / ')[1].trim(),undefined,{numeric:true}));
     if(order==='power-desc'||order==='power-asc')list.sort((a,b)=>(powerHP(a)-powerHP(b))*(order==='power-desc'?-1:1));
+    if(order==='torque-desc'||order==='torque-asc')list.sort((a,b)=>((torqueInNm(Number(a.torque),a.torqueUnit)||0)-(torqueInNm(Number(b.torque),b.torqueUnit)||0))*(order==='torque-desc'?-1:1));
     if(order==='newest')list.sort((a,b)=>(yearOf(b)||0)-(yearOf(a)||0));
     $('#models').innerHTML=list.slice(0,limit).map(card).join('');
     $('#models').classList.toggle('list-view',viewStyle==='list');
@@ -78,19 +85,19 @@ export function mountCollection({models, catalog=models, getCurrent=()=>null, se
     compareController?.refresh();
   }
   function openComparison(){compareController.open();}
-  function clearAdvanced(){for(const id of ['#powertrain-filter','#era-filter','#body-filter'])$(id).value='all';$('#power-filter').value='0';}
-  function syncFilterUrl(write=true){const params=new URLSearchParams();if(active!=='all')params.set('collection',active);if(quick==='daily')params.set('pick','daily');for(const [key,id] of [['series','#series-filter'],['fuel','#powertrain-filter'],['era','#era-filter'],['body','#body-filter'],['power','#power-filter']]){const value=$(id).value;if(value!=='all'&&value!=='0')params.set(key,value);}if($('#modelsearch').value.trim())params.set('q',$('#modelsearch').value.trim());const address=(electricPage?'/electric':'/')+(params.size?'?'+params:'')+'#collection';if(write)history.replaceState(null,'',address);return address;}
+  function clearAdvanced(){for(const id of ['#powertrain-filter','#era-filter','#body-filter','#engine-filter','#generation-filter','#year-filter'])$(id).value='all';$('#power-filter').value='0';}
+  function syncFilterUrl(write=true){const params=new URLSearchParams();if(active!=='all')params.set('collection',active);if(quick==='daily')params.set('pick','daily');for(const [key,id] of [['series','#series-filter'],['fuel','#powertrain-filter'],['era','#era-filter'],['body','#body-filter'],['power','#power-filter'],['engine','#engine-filter'],['chassis','#generation-filter'],['year','#year-filter']]){const value=$(id).value;if(value!=='all'&&value!=='0')params.set(key,value);}if($('#modelsearch').value.trim())params.set('q',$('#modelsearch').value.trim());const address=(electricPage?'/electric':'/')+(params.size?'?'+params:'')+'#collection';if(write)history.replaceState(null,'',address);return address;}
   function renderActiveFilters(){
     const chips=[];
     if(active!=='all')chips.push(['category',t(filters.find(([id])=>id===active)?.[1]||'All models')]);
     if(quick==='daily')chips.push(['daily',t('Daily drivers')]);
     if($('#modelsearch').value.trim())chips.push(['query',t('Search')+': '+$('#modelsearch').value.trim()]);
-    for(const id of ['#series-filter','#powertrain-filter','#era-filter','#body-filter','#power-filter'])if($(id).value!=='all'&&$(id).value!=='0')chips.push([id,$(id).selectedOptions[0].textContent]);
+    for(const id of ['#series-filter','#powertrain-filter','#era-filter','#body-filter','#power-filter','#engine-filter','#generation-filter','#year-filter'])if($(id).value!=='all'&&$(id).value!=='0')chips.push([id,$(id).selectedOptions[0].textContent]);
     $('#active-filters').hidden=!chips.length;
     $('#active-filters').innerHTML=chips.map(([id,label])=>`<button data-remove-filter="${id}" aria-label="${esc(t('Remove filter'))}: ${esc(label)}">${esc(label)} <span aria-hidden="true">×</span></button>`).join('');
     $('#filter-count').hidden=!chips.length;$('#filter-count').textContent=String(chips.length);
   }
-  function miniCard(m){return `<a class="mini-model" data-model="${esc(m.id)}" href="/?model=${encodeURIComponent(m.id)}"><img src="${esc(m.car)}" alt="${esc(m.name)}" loading="lazy"><span><strong>${esc(m.name.replace('BMW ',''))}</strong><small>${esc(m.generation.split(' / ')[1])} · ${esc(m.power)} ${esc(m.powerUnit)}</small></span><span aria-hidden="true">↗</span></a>`;}
+  function miniCard(m){return `<a class="mini-model" data-model="${esc(m.id)}" href="/?model=${encodeURIComponent(m.id)}"><img src="${esc(m.car)}" alt="${esc(m.name)}" loading="lazy"><span><strong>${esc(m.name.replace('BMW ',''))}</strong><small>${esc(m.generation.split(' / ')[1])} · ${esc(m.power)} ${esc(m.powerUnit)} · ${esc(m.torque)} ${esc(m.torqueUnit)}</small></span><span aria-hidden="true">↗</span></a>`;}
   function renderRecent(){const section=$('#recent-section');if(!section)return;const recent=stored('apex-recent').map(id=>catalog.find(m=>m.id===id)).filter(Boolean).slice(0,4);section.hidden=!recent.length||!!getCurrent();$('#recent-models').innerHTML=recent.map(miniCard).join('');}
   function recordViewed(id){save('apex-recent',new Set([id,...stored('apex-recent').filter(value=>value!==id)].slice(0,8)));renderRecent();renderDetailActions();}
   function renderDetailActions(){const m=getCurrent();if(!m)return;$('#detail-save').setAttribute('aria-pressed',String(favorites.has(m.id)));$('#detail-save span').textContent=t(favorites.has(m.id)?'Saved':'Save to garage');$('#detail-compare').setAttribute('aria-pressed',String(comparison.has(m.id)));const score=other=>(isM(m)===isM(other)?3:0)+(fuelOf(m)===fuelOf(other)?3:0)+(bodyOf(m)===bodyOf(other)?2:0)+(series(m)===series(other)?4:0)-Math.min(2,Math.abs(powerHP(m)-powerHP(other))/200);const related=models.filter(other=>other.id!==m.id).sort((a,b)=>score(b)-score(a)).slice(0,3);$('#related-models').innerHTML=related.map(miniCard).join('');}
@@ -111,7 +118,7 @@ export function mountCollection({models, catalog=models, getCurrent=()=>null, se
     if(compareButton){const id=compareButton.dataset.compare||compareButton.dataset.uncompare;if(comparison.has(id))comparison.delete(id);else if(comparison.size<4)comparison.add(id);else{toast(t('Select up to 4 models to compare.'));return;}save('apex-comparison',comparison);render();$(`[data-compare="${id}"]`)?.focus({preventScroll:true});return;}
     const modelLink=event.target.closest('a[data-model]');
     if(modelLink&&models.some(m=>m.id===modelLink.dataset.model)&&!event.ctrlKey&&!event.metaKey&&!event.shiftKey&&event.button===0){event.preventDefault();selectModel(modelLink.dataset.model);}
-    const quickButton=event.target.closest('[data-quick]');if(quickButton){const id=quickButton.dataset.quick;setFilter(id==='m'?'m':id==='electric'?'electric':id==='open'?'roadster':'all');quick=id;limit=12;syncFilterUrl();render();}
+    const quickButton=event.target.closest('[data-quick]');if(quickButton){const id=quickButton.dataset.quick,filtersByQuick={m:'m',electric:'electric',open:'roadster',suv:'suv',classic:'heritage'};setFilter(filtersByQuick[id]||'all');quick=id;limit=12;syncFilterUrl();render();}
     const removeFilter=event.target.closest('[data-remove-filter]');if(removeFilter){const id=removeFilter.dataset.removeFilter;if(id==='category'){active='all';quick='';}else if(id==='query')$('#modelsearch').value='';else if(id==='daily')quick='';else $(id).value=id==='#power-filter'?'0':'all';limit=12;syncFilterUrl();render();}
     const preset=event.target.closest('[data-compare-preset]');if(preset){setComparison(preset.dataset.comparePreset.split(','));openComparison();}
     if(event.target.closest('[data-start-compare]'))openComparison();
@@ -122,7 +129,7 @@ export function mountCollection({models, catalog=models, getCurrent=()=>null, se
   $('#clearsearch').onclick=()=>{$('#modelsearch').value='';limit=12;syncFilterUrl();render();$('#modelsearch').focus();};
   $('#resetfilters').onclick=()=>setFilter('all');
   $('#series-filter').onchange=$('#modelsort').onchange=()=>{limit=12;syncFilterUrl();render();};
-  for(const id of ['#powertrain-filter','#era-filter','#body-filter','#power-filter'])$(id).onchange=()=>{limit=12;syncFilterUrl();render();};
+  for(const id of ['#powertrain-filter','#era-filter','#body-filter','#power-filter','#engine-filter','#generation-filter','#year-filter'])$(id).onchange=()=>{limit=12;syncFilterUrl();render();};
   $('#filter-toggle').onclick=()=>{const open=$('#advanced-filters').hidden;$('#advanced-filters').hidden=!open;$('#filter-toggle').setAttribute('aria-expanded',String(open));};
   $('#reset-advanced').onclick=()=>setFilter('all');
   for(const style of ['grid','list'])$('#'+style+'-view').onclick=()=>{viewStyle=style;try{localStorage.setItem('apex-view',style);}catch{}render();};
@@ -137,7 +144,7 @@ export function mountCollection({models, catalog=models, getCurrent=()=>null, se
   const initial=new URLSearchParams(location.search).get('collection');
   if(initial&&filters.some(([id])=>id===initial))active=initial;
   const params=new URLSearchParams(location.search);
-  for(const [param,id] of [['series','#series-filter'],['fuel','#powertrain-filter'],['era','#era-filter'],['body','#body-filter'],['power','#power-filter']]){const value=params.get(param);if(value&&[...$(id).options].some(o=>o.value===value))$(id).value=value;}
+  for(const [param,id] of [['series','#series-filter'],['fuel','#powertrain-filter'],['era','#era-filter'],['body','#body-filter'],['power','#power-filter'],['engine','#engine-filter'],['chassis','#generation-filter'],['year','#year-filter']]){const value=params.get(param);if(value&&[...$(id).options].some(o=>o.value===value))$(id).value=value;}
   if(params.get('q'))$('#modelsearch').value=params.get('q');
   if(params.get('pick')==='daily')quick='daily';
   compareController=createComparisonController({catalog,getSelected:()=>[...comparison],onSelectionChange:setComparison,dialog,toast});
