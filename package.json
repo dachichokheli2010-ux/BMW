@@ -1,0 +1,17 @@
+{
+  "name": "chokh-bmw-lab",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "db:generate": "drizzle-kit generate",
+    "start": "node scripts/preview-local.mjs"
+  },
+  "dependencies": {
+    "drizzle-orm": "0.44.7"
+  },
+  "devDependencies": {
+    "drizzle-kit": "0.31.5"
+  }
+}
