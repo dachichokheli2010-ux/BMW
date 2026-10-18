@@ -1,3 +1,4 @@
+import {inject} from '@vercel/analytics';
 import {mountSmartSearch} from './smart-search.js';
 import {partCatalog} from './parts.js';
 import {mountSystemGuide,systemComponents} from './system-guide.js';
@@ -17,14 +18,8 @@ const pages={
 };
 
 export function mountPlatform({catalog,getCurrent,selectModel,showCollection,openPart,compareModels,mountComparison,dialog,toast}) {
-  if(!['localhost','127.0.0.1'].includes(location.hostname)&&!document.getElementById('vercel-analytics-script')){
-    window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};
-    const analyticsScript=document.createElement('script');
-    analyticsScript.id='vercel-analytics-script';
-    analyticsScript.defer=true;
-    analyticsScript.src='/_vercel/insights/script.js';
-    document.head.append(analyticsScript);
-  }
+  // Initialize Vercel Web Analytics
+  inject();
   const abort=new AbortController(),instances={};
   const path=location.pathname.replace(/\/+$/,'')||'/',page=pages[path];
   const nav=document.querySelector('.site-header nav');
