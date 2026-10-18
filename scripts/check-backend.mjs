@@ -12,6 +12,7 @@ import {partCatalog} from '../public/parts.js';
 import {createCurriculum} from '../public/academy-content.js';
 import {emptyProgress,beginSession,recordAnswer,finishSession} from '../public/academy-state.js';
 import {garageDefaults} from '../public/garage.js';
+import vercelApi from '../api/[...path].js';
 
 const directory=await fs.mkdtemp(path.join(os.tmpdir(),'bmw-backend-'));
 const filename=path.join(directory,'test.sqlite');
@@ -110,6 +111,16 @@ try{
   let limited;
   for(let attempt=0;attempt<31;attempt++)limited=await call('/api/auth/login',{method:'POST',body:{}});
   check(limited.status===429&&limited.headers.get('Retry-After'),'Repeated auth requests are limited in SQLite.');
+  const databaseVariables=['DATABASE_URL','DATABASE_URL_UNPOOLED','POSTGRES_URL','POSTGRES_URL_NON_POOLING'];
+  const previousVariables=databaseVariables.map(name=>[name,process.env[name]]);
+  try{
+    databaseVariables.forEach(name=>delete process.env[name]);
+    const response=await vercelApi.fetch(new Request('https://apex.example/api/auth/session'));
+    const data=await response.json();
+    check(response.status===503&&data.error.includes('Neon Postgres'),'Vercel sign-in explains the Neon setup when no database is configured.');
+  }finally{
+    for(const [name,value] of previousVariables)if(value===undefined)delete process.env[name];else process.env[name]=value;
+  }
   console.log(`Backend: ${checks} checks passed (accounts, session security, CSRF, identity isolation, validation, conflicts, persistence).`);
 }finally{
   DB.close();

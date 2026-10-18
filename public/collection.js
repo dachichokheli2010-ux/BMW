@@ -27,7 +27,7 @@ function series(m) {
 
 export function mountCollection({models, catalog=models, getCurrent=()=>null, selectModel, showCollection, dialog, toast, threeModels, electricPage}) {
   const $=s=>document.querySelector(s), favorites=new Set(stored('apex-favorites').filter(id=>catalog.some(m=>m.id===id))), comparison=new Set(stored('apex-comparison').filter(id=>catalog.some(m=>m.id===id)).slice(0,3));
-  let active='all',limit=12,quick='',viewStyle='grid',compareController;
+  let active='all',limit=electricPage?models.length:12,quick='',viewStyle='grid',compareController;
   try{viewStyle=localStorage.getItem('apex-view')==='list'?'list':'grid';}catch{}
   const filters=[['all','All models'],['m','BMW M'],['electric','Electric'],['sedan','Sedans'],['coupe','Coupes'],['suv','SUVs'],['roadster','Roadsters'],['touring','Touring'],['heritage','Heritage'],['saved','Saved'],['3d','3D cars']];
   document.querySelector('.quick-picks')?.insertAdjacentHTML('beforeend',`<button data-quick="suv">${esc(t('SUV versatility'))}</button><button data-quick="classic">${esc(t('Classic icons'))}</button>`);

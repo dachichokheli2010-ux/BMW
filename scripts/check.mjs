@@ -40,7 +40,7 @@ check('Comparison units retain real horsepower definitions and missing data',()=
   assert.equal(convertedTorque({torque:0,torqueUnit:'Nm'}),null);
 });
 check('Application JavaScript parses',()=>{
-  for(const directory of ['public','scripts','worker'])for(const filename of fs.readdirSync(directory)){
+  for(const directory of ['public','scripts','worker','server','api'])for(const filename of fs.readdirSync(directory)){
     if(!/\.(?:mjs|js)$/.test(filename))continue;
     const file=path.join(directory,filename), result=spawnSync(process.execPath,['--check',file],{encoding:'utf8'});
     assert.equal(result.status,0,`${file}: ${result.stderr}`);
@@ -51,7 +51,8 @@ check('Catalog identities and local vehicle/engine photos are intact',()=>{
   assert.equal(new Set(allModels.map(m=>m.id)).size,allModels.length);
   assert.ok(allModels.length>=89);
   for(const m of allModels){assert.match(m.source,/^https:\/\//);assert.ok(m.parts.length,m.id);for(const photo of [m.car,m.engine].filter(Boolean))assert.ok(fs.existsSync('public/'+photo)||fs.existsSync('public/'+photo.replace(/\.jpg$/,'.webp')),`${m.id}: ${photo}`);}
-  assert.ok(allElectricModels.length>0);
+  assert.equal(allModels.length,93);assert.equal(allElectricModels.length,16);
+  for(const id of ['i4-edrive35','i4-xdrive40','u11-ix1-edrive20','u10-ix2-edrive20'])assert.ok(allElectricModels.some(model=>model.id===id),`${id} is catalogued as electric.`);
 });
 check('Expanded data retains exact launch configurations and units',()=>{
   const m=allModels.find(m=>m.id==='f10-m5');assert.equal(m.powerUnit,'PS');assert.equal(m.acceleration100,4.4);assert.equal(m.weightKg,1870);assert.equal(m.verified.weightEU,1945);
@@ -101,7 +102,7 @@ check('Tuning estimates preserve factory reset and physical power/torque units',
 });
 check('Educational content is linked, sourced and uniquely identified',()=>{
   assert.equal(academyLessons.length,8);assert.equal(new Set(academyLessons.map(l=>l.id)).size,8);
-  assert.ok(systemComponents.length>=16);assert.ok(systemComponents.every(p=>p.sources.length&&p.connections.length>=2&&p.symptoms&&p.location));
+  assert.ok(systemComponents.length>=26);assert.equal(new Set(systemComponents.map(p=>p.id)).size,systemComponents.length);assert.ok(systemComponents.every(p=>p.sources.length&&p.connections.length>=2&&p.symptoms&&p.location));
   assert.ok(partCatalog.every(p=>p.photo.license&&p.photo.author&&fs.existsSync('public/'+p.photo.src)));
 });
 console.log(`All ${checks} verification groups passed.`);

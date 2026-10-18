@@ -143,7 +143,7 @@ export function createAccountController({fetchImpl=(...args)=>fetch(...args),sto
   async function retry(){
     if(authenticating||writing)return;
     setStatus('loading','Reconnecting to your account…');
-    try{const data=await request('/api/auth/session');await openSession(data);}catch{setStatus('offline','The account service is unavailable. You can keep exploring and try again.');}
+    try{const data=await request('/api/auth/session');await openSession(data);}catch(error){setStatus('offline',error.message||'The account service is unavailable. You can keep exploring and try again.');}
   }
   async function authenticate(mode,fields){
     if(authenticating)throw new Error('Please wait for the current request.');
@@ -187,7 +187,7 @@ export function createAccountController({fetchImpl=(...args)=>fetch(...args),sto
   async function start(){
     if(starting)return starting;if(started)return snapshot();started=true;
     localEvents.forEach(event=>eventTarget?.addEventListener(event,changed));eventTarget?.addEventListener('storage',handleStorage);eventTarget?.addEventListener('online',online);globalThis.document?.addEventListener('visibilitychange',pageHidden);
-    starting=(async()=>{try{const data=await request('/api/auth/session');await openSession(data,{initial:true});}catch{requireGuest('account-unavailable',{preserveCache:true,notify:false});ready=true;setStatus('offline','Account service unavailable. Exploring as a guest; your guest data stays in this browser.');}return snapshot();})();
+    starting=(async()=>{try{const data=await request('/api/auth/session');await openSession(data,{initial:true});}catch(error){requireGuest('account-unavailable',{preserveCache:true,notify:false});ready=true;setStatus('offline',error.message||'Account service unavailable. Exploring as a guest; your guest data stays in this browser.');}return snapshot();})();
     return starting;
   }
   return {start,retry,login:fields=>authenticate('login',fields),signup:fields=>authenticate('signup',fields),logout,importGuest,resolveConflict,updateName,flush,getSnapshot:snapshot,subscribe(fn){listeners.add(fn);fn(snapshot());return()=>listeners.delete(fn);},destroy(){stopped=true;identity++;clearTimeout(debounce);clearTimeout(retryTimer);localEvents.forEach(event=>eventTarget?.removeEventListener(event,changed));eventTarget?.removeEventListener('storage',handleStorage);eventTarget?.removeEventListener('online',online);globalThis.document?.removeEventListener('visibilitychange',pageHidden);listeners.clear();}};

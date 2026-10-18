@@ -445,6 +445,26 @@ export const catalogMeta = {
       "id": "i20-ix-m60",
       "combustion": false,
       "turbo": false
+    },
+    {
+      "id": "i4-edrive35",
+      "combustion": false,
+      "turbo": false
+    },
+    {
+      "id": "i4-xdrive40",
+      "combustion": false,
+      "turbo": false
+    },
+    {
+      "id": "u11-ix1-edrive20",
+      "combustion": false,
+      "turbo": false
+    },
+    {
+      "id": "u10-ix2-edrive20",
+      "combustion": false,
+      "turbo": false
     }
   ],
   "lessons": [

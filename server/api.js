@@ -102,7 +102,7 @@ export async function handleApi(request,env={}){
       await cleanExpired(env);
       let user;
       if(signup){
-        const existing=await env.DB.prepare("SELECT id FROM users WHERE email = ? COLLATE NOCASE AND provider = 'password'").bind(email).first();
+        const existing=await env.DB.prepare("SELECT id FROM users WHERE email = ? AND provider = 'password'").bind(email).first();
         // Hash even on duplicates, to avoid an inexpensive account-existence probe.
         const password=await hashPassword(body.password);
         if(existing)throw new ApiError('Unable to create this account. Try signing in or use another email.',409);
@@ -111,7 +111,7 @@ export async function handleApi(request,env={}){
         if(!created.meta?.changes)throw new ApiError('Unable to create this account. Try signing in or use another email.',409);
         user=await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(id).first();
       }else{
-        user=await env.DB.prepare("SELECT * FROM users WHERE email = ? COLLATE NOCASE AND provider = 'password'").bind(email).first();
+        user=await env.DB.prepare("SELECT * FROM users WHERE email = ? AND provider = 'password'").bind(email).first();
         if(!await verifyPassword(body.password,user?.password_hash))throw new ApiError('Email or password is incorrect.',401);
       }
       if(session?.tokenHash)await env.DB.prepare('DELETE FROM sessions WHERE token_hash = ?').bind(session.tokenHash).run();

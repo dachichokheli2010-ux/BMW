@@ -36,7 +36,11 @@ export function mountPlatform({catalog,getCurrent,selectModel,showCollection,ope
   const accountUI=mountAccountButton(document.querySelector('.header-tools'),{accountController:account});
   const saved=document.querySelector('.header-saved');if(saved){saved.removeAttribute('data-collection');saved.setAttribute('aria-label','Open saved models in My garage');saved.onclick=()=>{location.href='/my-garage';};}
   document.querySelector('.header-tools').insertAdjacentHTML('afterbegin','<button class="icon-button global-search-trigger" data-global-search aria-label="Search everything (Control K)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg></button>');
-  document.querySelector('.footer-links').insertAdjacentHTML('beforeend','<a href="/electric">Electric</a><a href="/learn">Learn &amp; Play</a><a href="/compare">Compare</a><a href="/engine-lab">Engine lab</a><a href="/tuning-garage">Tuning garage</a><a href="/my-garage">My garage</a>');
+  document.querySelector('.footer-brand').innerHTML='<a href="/" class="footer-wordmark">APEX<span>.</span></a><p>Independent BMW stories, specifications and engineering guides.</p><small>Not affiliated with BMW AG.</small>';
+  const footerLinks=document.querySelector('.footer-links'),creditsButton=footerLinks.querySelector('#credits');
+  footerLinks.innerHTML='<div class="footer-group"><h2>Discover</h2><a href="/models">BMW models</a><a href="/electric">Electric BMWs</a><a href="/parts">Inside BMW</a><a href="/about">About APEX</a></div><div class="footer-group"><h2>Explore</h2><a href="/compare">Compare cars</a><a href="/learn">Learn &amp; Play</a><a href="/engine-lab">Engine lab</a><a href="/tuning-garage">Tuning garage</a><a href="/my-garage">My garage</a></div><div class="footer-group"><h2>Sources</h2><a href="/account">Account &amp; sync</a></div>';
+  creditsButton.textContent='Photo credits & sources';footerLinks.querySelector('.footer-group:last-child').append(creditsButton);
+  document.querySelector('.footer-end').innerHTML='<span>Guest data stays on this device. Sign in to sync your garage.</span><a href="#main-content">Back to top ↑</a>';
   document.querySelector('#modelsearch')?.setAttribute('placeholder','Find a BMW, chassis or engine code…');
   let destination,panel,pending;
   const isHome=path==='/'&&!getCurrent();

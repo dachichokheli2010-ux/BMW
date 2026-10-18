@@ -6,10 +6,11 @@ class MemoryStorage {map=new Map();getItem(key){return this.map.get(key)??null;}
 const alice={id:'alice',name:'Alice',email:'alice@example.com'},bob={id:'bob',name:'Bob',email:'bob@example.com'};
 function harness(){
   const storage=new MemoryStorage(),events=new EventTarget(),garages=new Map([[alice.id,{state:{...blank(),favorites:['alice-car']},revision:0,updatedAt:null}],[bob.id,{state:blank(),revision:0,updatedAt:null}]]);
-  let signedIn=null,offline=false,writes=0;
+  let signedIn=null,offline=false,writes=0,sessionFailure=null;
   const fetchImpl=async(path,options={})=>{
     if(offline)throw new Error('Offline');
     const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json'}});
+    if(path==='/api/auth/session'&&sessionFailure)return json({error:sessionFailure.message},sessionFailure.status);
     if(path==='/api/auth/session')return json({user:signedIn,provider:'password',csrfToken:signedIn?'csrf-'+signedIn.id:null});
     if(path==='/api/auth/login'||path==='/api/auth/signup'){signedIn=JSON.parse(options.body).email===bob.email?bob:alice;return json({user:signedIn,csrfToken:'csrf-'+signedIn.id});}
     if(!signedIn)return json({error:'Sign in required.'},401);
@@ -24,7 +25,7 @@ function harness(){
   };
   const controller=createAccountController({fetchImpl,storage,eventTarget:events});
   function change(field,value){storage.setItem(ACCOUNT_KEYS[field],JSON.stringify(value));events.dispatchEvent(new CustomEvent('apex:localchange',{detail:{key:ACCOUNT_KEYS[field]}}));}
-  return {storage,events,garages,controller,fetchImpl,change,setUser(value){signedIn=value;},setOffline(value){offline=value;},get writes(){return writes;}};
+  return {storage,events,garages,controller,fetchImpl,change,setUser(value){signedIn=value;},setOffline(value){offline=value;},setSessionFailure(value){sessionFailure=value;},get writes(){return writes;}};
 }
 function read(h,field){return JSON.parse(h.storage.getItem(ACCOUNT_KEYS[field])||'null');}
 let checks=0;const check=(actual,expected)=>{assert.deepEqual(actual,expected);checks++;};
@@ -63,6 +64,15 @@ try{
   check(expired.controller.getSnapshot().status,'expired');check(read(expired,'favorites'),['guest']);check(JSON.parse(expired.storage.getItem('apex-account-cache-v1')).state.favorites,['unsynced-private']);
   await expired.controller.login({email:alice.email,password:'long password'});await expired.controller.flush();check(expired.garages.get(alice.id).state.favorites,['unsynced-private']);
 }finally{expired.controller.destroy();}
+
+const unavailable=harness();
+try{
+  unavailable.storage.setItem(ACCOUNT_KEYS.favorites,JSON.stringify(['guest-favorite']));
+  unavailable.setSessionFailure({status:503,message:'Connect a Neon database to enable sign-in.'});
+  const state=await unavailable.controller.start();
+  check(state.status,'offline');check(state.user,null);check(state.message,'Connect a Neon database to enable sign-in.');
+  check(read(unavailable,'favorites'),['guest-favorite']);
+}finally{unavailable.controller.destroy();}
 
 // Account progress is combined conservatively; repeated imports cannot farm XP.
 const academy=(xp,id)=>({version:2,xp,credits:5,completed:{[id]:{day:'2026-10-18',accuracy:100}},attempts:{},review:{},days:['2026-10-18'],awards:['lesson:'+id],unlocked:[],activity:[]});
