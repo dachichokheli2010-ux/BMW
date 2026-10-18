@@ -66,11 +66,18 @@ try{
   const lesson=curriculum.lessons.find(lesson=>lesson.id==='first-engine'),session=beginSession(lesson,{day:'2026-10-18'});
   for(const question of lesson.questions)recordAnswer(state.academy,session,question,question.correct,'2026-10-18');
   finishSession(state.academy,session,lesson,curriculum.units,'2026-10-18');
+  for(const id of ['m-models','m-generations','puzzle-sequences','puzzle-connections','puzzle-parts']){
+    const activity=curriculum.lessons.find(item=>item.id===id),round=beginSession(activity,{day:'2026-10-18'});
+    for(const question of activity.questions){const answer=question.type==='match'?Object.fromEntries(question.pairs.map((_,i)=>[i,i])):question.correct;recordAnswer(state.academy,round,question,answer,'2026-10-18');}
+    finishSession(state.academy,round,activity,curriculum.units,'2026-10-18');
+  }
+  check(Boolean(validateGarage(state)),'M recognition and every puzzle type produce account-compatible snapshots.');
   state.legacyProgress={'combustion:beginner':true};
   check(Boolean(validateGarage(state)),'Real academy session snapshots validate.');
   const save=await call('/api/garage',{...account,method:'PUT',body:{state,revision:0}});
   check(save.status===200&&save.data.revision===1,'Save the complete garage.');
   check((await call('/api/garage',account)).data.state.builds[0].name===state.builds[0].name,'Parameterized queries preserve literal SQL-like text.');
+  check((await call('/api/garage',account)).data.state.academy.completed['m-generations'].accuracy===100,'New M recognition progress survives a server save and read.');
   const bobGarage=await call('/api/garage',{cookie:bob.cookie});
   check(bobGarage.data.revision===0&&bobGarage.data.state.builds.length===0,'Accounts never see another garage.');
   const conflict=await call('/api/garage',{...account,method:'PUT',body:{state:emptyGarage(),revision:0}});

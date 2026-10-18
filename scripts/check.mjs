@@ -80,7 +80,7 @@ check('Personal garage reads valid progress and saved models without changing st
 check('My garage shares the new academy completion and next lesson',()=>{
   const records={'bmw-academy-state-v2':JSON.stringify({version:2,xp:25,credits:5,completed:{'first-engine':{day:'2026-10-18',accuracy:100,topic:'basics'},unknown:{day:'2026-10-18'}},days:['2026-10-18']})};
   const state=readPersonalGarage(allModels,{getItem:key=>records[key]??null,setItem:()=>{throw new Error('Read must not write');}});
-  assert.equal(state.academy.completed,1);assert.equal(state.academy.total,34);assert.equal(state.academy.xp,25);
+  assert.equal(state.academy.completed,1);assert.equal(state.academy.total,40);assert.equal(state.academy.xp,25);
   assert.ok(state.academy.next);assert.notEqual(state.academy.next.id,'first-engine');
 });
 check('Search resolves chassis, engine, natural questions and comparisons',()=>{

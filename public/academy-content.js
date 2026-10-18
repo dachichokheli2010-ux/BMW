@@ -1,3 +1,4 @@
+import {createMChallenges} from './academy-recognition.js';
 const choice=(id,prompt,answers,correct,explanation)=>({id,type:'choice',prompt,answers,correct,explanation});
 const order=(id,prompt,items,explanation)=>({id,type:'order',prompt,items:items.map((text,i)=>({id:i,text})),correct:items.map((_,i)=>i),explanation});
 const match=(id,prompt,pairs,explanation)=>({id,type:'match',prompt,pairs,explanation});
@@ -82,10 +83,19 @@ export function createCurriculum(legacy,sources,parts,catalog,scenarios){
     choice('diagnosis-'+s.id+'-1','What should you do with a clue that contradicts the initial idea?',['Ignore it','Reconsider the idea using all the evidence','Replace every component'],1,'A useful explanation must account for all available evidence, including clues that challenge it.'),
     choice('diagnosis-'+s.id+'-2','Can this simplified exercise prove a specific fault on a real vehicle?',['Yes, symptoms are unique','No, vehicle-specific diagnosis needs more evidence','Yes, if the vehicle is a BMW'],1,'The simulator intentionally limits the possibilities. Real vehicle systems require appropriate checks and specific documentation.')
   ]}));
+  const mChallenges=createMChallenges(catalog);for(const challenge of mChallenges)add(challenge);
+  for(const [id,title,type,intro] of [
+    ['puzzle-sequences','Build the sequence','order','Tap the steps in order. Change your mind? Tap a filled slot to remove it, or undo your last step.'],
+    ['puzzle-connections','Make the connection','match','Match each part or quantity to its role. Tap a card on the left, then its partner on the right.'],
+    ['puzzle-parts','Name that part','photo','Look at a real component photograph and choose its name. The full photo identity appears after you check your answer.']
+  ]){
+    const selected=lessons.filter(l=>!l.recognition).flatMap(l=>l.questions.map(q=>({q,l}))).filter(({q})=>type==='photo'?q.photo:q.type===type).slice(0,4);
+    add({id,title,topic:'practice',puzzle:true,duration:'3 min',intro,visual:type==='photo'?'connections':'transmission',sources:[...new Map(selected.flatMap(({l})=>l.sources).map(source=>[source.url,source])).values()],questions:selected.map(({q,l},i)=>({...q,id:id+'-'+i,contextTitle:q.photo?undefined:l.title,sourceRefs:l.sources}))});
+  }
   const units=[
     {id:'basics',title:'Automotive basics',subtitle:'Your first mile under the hood.',tag:'START HERE',lessons:[...basicIds,'basics-checkpoint','turbocharging','cooling','charging','differential','combustion','basics-finale']},
     {id:'parts',title:'Parts academy',subtitle:'Real components. Connected ideas.',tag:'LOOK CLOSER',lessons:partIds},
-    {id:'models',title:'BMW model recognition',subtitle:'Read the design. Learn the application.',tag:'THREE VERIFIED CONFIGURATIONS',lessons:modelLessons},
+    {id:'models',title:'BMW M recognition',subtitle:'See the car. Name the M. Learn the generation.',tag:'REAL PHOTOS / M CARS',lessons:[...mChallenges.map(l=>l.id),...modelLessons]},
     {id:'engines',title:'BMW engine academy',subtitle:'Know the family. Check the variant.',tag:'FOUR DOCUMENTED FAMILIES',lessons:['engine-codes',...engineIds]},
     {id:'systems',title:'Mechanical systems',subtitle:'Understand the whole control loop.',tag:'GO DEEPER',lessons:['suspension','electronics','electrification']},
     {id:'mechanic',title:'Mechanic challenges',subtitle:'Follow evidence before conclusions.',tag:'EDUCATIONAL SIMULATIONS',lessons:diagnosticIds}

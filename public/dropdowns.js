@@ -4,6 +4,8 @@ let sequence=0;
 // Keep the native controls as the source of truth for the existing application.
 export function mountDropdowns(root=document){
   const instances=new Map(),events=new AbortController();let current=null,scanQueued=false,refreshQueued=false;
+  // Touch devices use the OS picker: no keyboard popup, clipped menus or scroll jumps.
+  const nativePicker=matchMedia('(max-width:760px), (pointer:coarse)');
   const popup=document.createElement('div');popup.className='apex-select-popup';popup.setAttribute('popover','manual');
   popup.innerHTML='<div class="asp-heading"><span></span><button type="button" aria-label="Close options">×</button></div><div class="asp-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><input type="search" placeholder="Find an option…" autocomplete="off" aria-label="Search options"></div><div class="asp-options" role="listbox"></div><p class="asp-empty" hidden>No matching options. Try a shorter search.</p><div class="asp-footer"><span></span><span>↑ ↓ navigate · Enter select</span></div>';
   document.body.append(popup);const input=popup.querySelector('input'),list=popup.querySelector('[role=listbox]'),menuId='apex-select-options-'+(++sequence);list.id=menuId;input.setAttribute('aria-controls',menuId);let visible=[],active=-1;
@@ -13,6 +15,12 @@ export function mountDropdowns(root=document){
     text.textContent=select.id==='language-select'?String(option?.value||'en').toUpperCase():option?.textContent.trim()||'Choose an option';
     button.disabled=select.disabled;button.title=option?.textContent.trim()||'';button.setAttribute('aria-label',labelFor(select)+': '+(option?.textContent.trim()||'Choose an option'));
     wrapper.classList.toggle('is-disabled',select.disabled);wrapper.dataset.kind=select.id==='language-select'?'language':'default';
+    wrapper.classList.toggle('uses-native-picker',nativePicker.matches);
+    button.hidden=nativePicker.matches;
+    if(nativePicker.matches){
+      if(instance.tabindex===null)select.removeAttribute('tabindex');else select.setAttribute('tabindex',instance.tabindex);
+      if(instance.ariaHidden===null)select.removeAttribute('aria-hidden');else select.setAttribute('aria-hidden',instance.ariaHidden);
+    }else{select.setAttribute('tabindex','-1');select.setAttribute('aria-hidden','true');}
     if(current===instance)render(false);
   }
   function scan(){
@@ -34,7 +42,7 @@ export function mountDropdowns(root=document){
         else if(e.key==='Escape'&&current===instance){e.preventDefault();e.stopPropagation();close();}
         else if(e.key.length===1&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&e.key!==' '){e.preventDefault();if(current!==instance)open(instance,true);input.value+=e.key;input.focus();render();}
       },{signal:events.signal});
-      select.addEventListener('focus',()=>button.focus({preventScroll:true}),{signal:events.signal});
+      select.addEventListener('focus',()=>{if(!nativePicker.matches)button.focus({preventScroll:true});},{signal:events.signal});
       const observer=new MutationObserver(()=>sync(instance));instance.observer=observer;observer.observe(select,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['disabled','label','selected','hidden','value','aria-label']});
       sync(instance);
     }
@@ -49,13 +57,13 @@ export function mountDropdowns(root=document){
     list.style.maxHeight=Math.max(80,height-145)+'px';
   }
   function open(instance,search=false){
-    if(instance.select.disabled)return;close(false);current=instance;instance.button.setAttribute('aria-expanded','true');instance.wrapper.classList.add('is-open');
+    if(instance.select.disabled||nativePicker.matches)return;close(false);current=instance;instance.button.setAttribute('aria-expanded','true');instance.wrapper.classList.add('is-open');
     const parent=instance.button.closest('dialog[open]')||document.body;if(popup.parentElement!==parent)parent.append(popup);
     input.value='';active=-1;popup.querySelector('.asp-heading>span').textContent=labelFor(instance.select);list.setAttribute('aria-label',labelFor(instance.select));
     popup.querySelector('.asp-search-wrap').hidden=instance.select.options.length<8;
     render();
     if(popup.showPopover)popup.showPopover();else popup.classList.add('is-visible');position();
-    if(search||instance.select.options.length>=12)input.focus({preventScroll:true});else instance.button.focus({preventScroll:true});
+    if(search)input.focus({preventScroll:true});else instance.button.focus({preventScroll:true});
     list.querySelector('[aria-selected=true]')?.scrollIntoView({block:'nearest'});
   }
   function close(focus=true){
@@ -88,6 +96,7 @@ export function mountDropdowns(root=document){
   document.addEventListener('close',e=>{if(current&&e.target.contains?.(current.button))close(false);},{signal:events.signal,capture:true});
   for(const event of ['apex:modelselected','apex:collection','apex:languagechange','apex:garagechange','apex:controlschange'])window.addEventListener(event,refresh,{signal:events.signal});
   window.addEventListener('resize',()=>close(false),{signal:events.signal});window.addEventListener('scroll',e=>{if(current&&!popup.contains(e.target))position();},{signal:events.signal,capture:true,passive:true});
+  nativePicker.addEventListener('change',()=>{close(false);refresh();},{signal:events.signal});
   const observer=new MutationObserver(records=>{if(records.some(record=>[...record.addedNodes,...record.removedNodes].some(node=>node.nodeType===1&&(node.matches('select,.apex-select')||node.querySelector('select')))))queueScan();});
   scan();observer.observe(root.body||root,{subtree:true,childList:true});
   return {refresh:()=>{scan();refresh();},close,destroy(){close(false);events.abort();observer.disconnect();for(const instance of instances.values()){instance.observer.disconnect();const {select,wrapper}=instance;if(instance.tabindex===null)select.removeAttribute('tabindex');else select.setAttribute('tabindex',instance.tabindex);if(instance.ariaHidden===null)select.removeAttribute('aria-hidden');else select.setAttribute('aria-hidden',instance.ariaHidden);if(wrapper.isConnected){wrapper.before(select);wrapper.remove();}}instances.clear();popup.remove();}};

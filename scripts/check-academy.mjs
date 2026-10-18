@@ -4,6 +4,7 @@ import {academyLessons,academyReferenceData} from '../public/academy.js';
 import {allModels} from '../public/catalog.js';
 import {partCatalog} from '../public/parts.js';
 import {createCurriculum} from '../public/academy-content.js';
+import {createMChallenges,mRecognitionModels,shuffled} from '../public/academy-recognition.js';
 import {emptyProgress,restoreProgress,localDay,beginSession,recordAnswer,finishSession,currentStreak,mastery,dueQuestions,daySeed,levelProgress,validateAnswer} from '../public/academy-state.js';
 
 const {lessons,units}=createCurriculum(academyLessons,academyReferenceData.sources,partCatalog,allModels,academyReferenceData.scenarios);
@@ -28,6 +29,20 @@ for(const lesson of lessons){
   }
 }
 for(const unit of units)for(const id of unit.lessons)assert.ok(lessons.some(l=>l.id===id),id);
+const rounds=createMChallenges(allModels);
+assert.equal(rounds.length,3);assert.equal(rounds.flatMap(l=>l.questions).length,20);
+assert.equal(mRecognitionModels.length,10);
+for(const round of rounds)for(const q of round.questions){
+  const model=allModels.find(m=>m.id===q.modelId);
+  assert.match(model.generation,/^M SERIES/,'Recognition excludes M Sport trims');
+  assert.equal(new Set(q.answers).size,4,'Photo answers must be unambiguous');
+  assert.equal(q.answers[q.correct],q.prompt.includes('generation')?model.generation.split('/').at(-1).trim():model.name.match(/\bM[234568]\b/)[0]);
+  assert.ok(fs.existsSync('public/'+q.photo.src));assert.ok(q.photo.author&&q.photo.license&&q.photo.page);
+  assert.ok(q.hint&&q.explanation&&q.sourceRefs.length);
+}
+assert.deepEqual(shuffled([0,1,2,3],'same'),shuffled([0,1,2,3],'same'),'Puzzle order stays stable between taps');
+assert.deepEqual([...shuffled([0,1,2,3],'other')].sort(),[0,1,2,3]);
+for(const id of ['puzzle-sequences','puzzle-connections','puzzle-parts'])assert.equal(lessons.find(l=>l.id===id).questions.length,4);
 
 const day='2026-10-18',lesson=lessons.find(l=>l.id==='first-engine'),state=emptyProgress(),session=beginSession(lesson,{day});
 assert.equal(finishSession(state,session,lesson,units,day),null,'An incomplete activity cannot award XP');

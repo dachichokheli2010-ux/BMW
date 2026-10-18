@@ -774,6 +774,74 @@ export const catalogMeta = {
         "diagnosis-signal-plausibility-1",
         "diagnosis-signal-plausibility-2"
       ]
+    },
+    {
+      "id": "m-models",
+      "topic": "models",
+      "questions": [
+        "m-models-f87-m2",
+        "m-models-f80",
+        "m-models-f82",
+        "m-models-f10-m5",
+        "m-models-f13-m6",
+        "m-models-f92-m8"
+      ]
+    },
+    {
+      "id": "m-generations",
+      "topic": "models",
+      "questions": [
+        "m-generations-f87-m2",
+        "m-generations-g87-m2",
+        "m-generations-f80",
+        "m-generations-g80",
+        "m-generations-f82",
+        "m-generations-g82-m4",
+        "m-generations-f10-m5",
+        "m-generations-f90"
+      ]
+    },
+    {
+      "id": "m-mixed",
+      "topic": "models",
+      "questions": [
+        "m-mixed-g87-m2",
+        "m-mixed-f90",
+        "m-mixed-g80",
+        "m-mixed-g82-m4",
+        "m-mixed-f92-m8",
+        "m-mixed-f13-m6"
+      ]
+    },
+    {
+      "id": "puzzle-sequences",
+      "topic": "practice",
+      "questions": [
+        "puzzle-sequences-0",
+        "puzzle-sequences-1",
+        "puzzle-sequences-2",
+        "puzzle-sequences-3"
+      ]
+    },
+    {
+      "id": "puzzle-connections",
+      "topic": "practice",
+      "questions": [
+        "puzzle-connections-0",
+        "puzzle-connections-1",
+        "puzzle-connections-2",
+        "puzzle-connections-3"
+      ]
+    },
+    {
+      "id": "puzzle-parts",
+      "topic": "practice",
+      "questions": [
+        "puzzle-parts-0",
+        "puzzle-parts-1",
+        "puzzle-parts-2",
+        "puzzle-parts-3"
+      ]
     }
   ],
   "units": [

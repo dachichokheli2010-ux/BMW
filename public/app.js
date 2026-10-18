@@ -102,7 +102,7 @@ window.addEventListener('scroll',()=>{
  const maxScroll=Math.max(0,document.documentElement.scrollHeight-window.innerHeight);
  const position=Math.max(0,Math.min(window.scrollY,maxScroll));
  const delta=position-previousScroll;previousScroll=position;
- if(siteHeader.contains(document.activeElement)){revealHeader();return;}
+ if(matchMedia('(max-width:1100px)').matches||siteHeader.contains(document.activeElement)){revealHeader();return;}
  if(position<=32){revealHeader();return;}
  if(delta>0){upwardTravel=0;headerOffset=Math.min(siteHeader.offsetHeight,headerOffset+delta);}
  else if(delta<0){upwardTravel-=delta;if(upwardTravel>=6)headerOffset=0;}
