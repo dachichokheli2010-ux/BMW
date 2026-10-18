@@ -1,16 +1,55 @@
 {
   "rewrites": [
-    { "source": "/models/:path*", "destination": "/index.html" },
-    { "source": "/learn/:path*", "destination": "/index.html" },
-    { "source": "/compare/:path*", "destination": "/index.html" },
-    { "source": "/engine-lab/:path*", "destination": "/index.html" },
-    { "source": "/tuning-garage/:path*", "destination": "/index.html" },
-    { "source": "/my-garage/:path*", "destination": "/index.html" },
-    { "source": "/account/:path*", "destination": "/index.html" },
-    { "source": "/login/:path*", "destination": "/index.html" },
-    { "source": "/signup/:path*", "destination": "/index.html" },
-    { "source": "/parts/:path*", "destination": "/parts.html" },
-    { "source": "/electric/:path*", "destination": "/electric.html" },
-    { "source": "/about/:path*", "destination": "/about.html" }
-  ]
+    {
+      "source": "/models/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/learn/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/compare/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/engine-lab/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/tuning-garage/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/my-garage/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/account/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/login/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/signup/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/parts/:path*",
+      "destination": "/parts.html"
+    },
+    {
+      "source": "/electric/:path*",
+      "destination": "/electric.html"
+    },
+    {
+      "source": "/about/:path*",
+      "destination": "/about.html"
+    }
+  ],
+  "framework": null,
+  "outputDirectory": "public",
+  "buildCommand": "npm run build:vercel"
 }

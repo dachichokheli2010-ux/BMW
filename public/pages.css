@@ -1,6 +1,9 @@
 /* Each destination has its own page; the home page is a discovery experience. */
 html[data-route]:not([data-route="home"]) .home-feature{display:none!important}
 html[data-route="home"] #collection{display:none!important}
+html[data-route]:not([data-route="models"]):not([data-route="electric"]) #collection{display:none!important}
+html[data-booting] main>:not(.app-loading){display:none!important}
+.app-loading{min-height:65svh;display:flex;align-items:center;justify-content:center;gap:14px;color:var(--muted);font-size:13px}
 html[data-route="home"] .popular-comparisons{display:none!important}
 html[data-route="home"] #recent-section{display:none!important}
 .hero .button-primary{background:#86beff;color:#071423}

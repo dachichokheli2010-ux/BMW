@@ -5,14 +5,16 @@ import {fileURLToPath} from 'node:url';
 import {resolvePage} from '../public/routes.js';
 import {handleApi} from '../server/api.js';
 import {createLocalDatabase} from '../server/local-db.mjs';
+import {createPostgresDatabase,databaseURL} from '../server/postgres-db.js';
 
 const project=fileURLToPath(new URL('../',import.meta.url));
 const root=path.join(project,'public');
 const port=Number(process.env.PORT)||3000,host=process.env.HOST||'127.0.0.1';
 const configuredOrigin=process.env.PUBLIC_ORIGIN?new URL(process.env.PUBLIC_ORIGIN).origin:null;
 if(configuredOrigin&&!/^https?:/.test(configuredOrigin))throw new Error('PUBLIC_ORIGIN must be an HTTP or HTTPS origin.');
-const database=await createLocalDatabase(path.resolve(project,process.env.DATABASE_PATH||'.data/bmw-garage.sqlite'));
-const env={DB:database,AUTH_PROVIDER:'password'};
+const neonConnection=databaseURL();
+let database=neonConnection?null:await createLocalDatabase(path.resolve(project,process.env.DATABASE_PATH||'.data/bmw-garage.sqlite'));
+const env={AUTH_PROVIDER:'password'};
 const maxBodyBytes=1024*1024;
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.png':'image/png','.svg':'image/svg+xml','.woff2':'font/woff2','.json':'application/json'};
 function securityHeaders(res){res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');res.setHeader('X-Frame-Options','SAMEORIGIN');}
@@ -31,7 +33,8 @@ async function apiRequest(req,res,url){
   body=Buffer.concat(chunks);
  }
  const request=new Request(url,{method:req.method,headers,body});
- const response=await handleApi(request,{...env,CLIENT_IP:req.socket.remoteAddress||'local'});
+ if(!database)database=await createPostgresDatabase(neonConnection);
+ const response=await handleApi(request,{...env,DB:database,CLIENT_IP:req.socket.remoteAddress||'local'});
  if(!response){fail(res,404,'API route not found.');return;}
  res.statusCode=response.status;
  for(const [name,value] of response.headers)if(name!=='set-cookie')res.setHeader(name,value);
@@ -62,5 +65,5 @@ const server=http.createServer(async(req,res)=>{
  }
 });
 server.requestTimeout=30000;server.headersTimeout=15000;
-server.listen(port,host,()=>console.log(`BMW Garage running at http://${host==='0.0.0.0'?'localhost':host}:${port} — accounts and garage storage connected.`));
-for(const signal of ['SIGINT','SIGTERM'])process.once(signal,()=>{server.close(()=>{database.close();process.exit(0);});server.closeIdleConnections();});
+server.listen(port,host,()=>console.log(`BMW Garage running at http://${host==='0.0.0.0'?'localhost':host}:${port} — ${neonConnection?'Neon PostgreSQL configured':'local SQLite storage'}.`));
+for(const signal of ['SIGINT','SIGTERM'])process.once(signal,()=>{server.close(async()=>{await database?.close();process.exit(0);});server.closeIdleConnections();});

@@ -13,7 +13,7 @@ const pages={
   '/engine-lab':{id:'engine-lab',title:'Inside the engine.',kicker:'VIRTUAL ENGINE LAB',description:'Meet the S63. Explore the systems of a twin-turbo V8, follow the flow, and see how the components connect.',label:'INTERACTIVE ENGINE EXPLORER'},
   '/tuning-garage':{id:'tuning-garage',title:'Build. Test. Understand.',kicker:'THE TUNING GARAGE',description:'Choose a BMW and explore how changes interact. Save your ideas and compare the tradeoffs behind a build.',label:'EDUCATIONAL SIMULATION'},
   '/compare':{id:'compare',title:'A closer comparison.',kicker:'THE DETAILS MAKE THE DIFFERENCE',description:'The same badge. A different character. Line up to three BMWs side by side and discover what sets them apart.',label:'YOUR SHORTLIST, SIDE BY SIDE'},
-  '/my-garage':{id:'my-garage',title:'A space for your obsession.',kicker:'YOUR PERSONAL GARAGE',description:'Your favorite BMWs, saved builds, and learning progress. Ready whenever curiosity calls.',label:'SAVED IN THIS BROWSER'},
+  '/my-garage':{id:'my-garage',title:'A space for your obsession.',kicker:'YOUR PERSONAL GARAGE',description:'Your favorite BMWs, saved builds, and learning progress. Ready whenever curiosity calls.',label:'YOUR SAVED COLLECTION'},
 };
 
 export function mountPlatform({catalog,getCurrent,selectModel,showCollection,openPart,compareModels,mountComparison,dialog,toast}) {
@@ -34,6 +34,7 @@ export function mountPlatform({catalog,getCurrent,selectModel,showCollection,ope
     for(const a of nav.querySelectorAll('a')){const selected=a.getAttribute('href')===href;a.classList.toggle('active',selected);if(selected)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');}
   }
   const accountUI=mountAccountButton(document.querySelector('.header-tools'),{accountController:account});
+  const unsubscribeAccount=account.subscribe(state=>{const label=document.querySelector('.footer-end>span');if(label)label.textContent=state.user?state.message:'Your guest garage, on this device.';});
   const saved=document.querySelector('.header-saved');if(saved){saved.removeAttribute('data-collection');saved.setAttribute('aria-label','Open saved models in My garage');saved.onclick=()=>{location.href='/my-garage';};}
   document.querySelector('.header-tools').insertAdjacentHTML('afterbegin','<button class="icon-button global-search-trigger" data-global-search aria-label="Search everything (Control K)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg></button>');
   document.querySelector('.footer-brand').innerHTML='<a href="/" class="footer-wordmark">APEX<span>.</span></a><p>Independent BMW stories, specifications and engineering guides.</p><small>Not affiliated with BMW AG.</small>';
@@ -135,5 +136,5 @@ export function mountPlatform({catalog,getCurrent,selectModel,showCollection,ope
   function updateCount(){let count=0;try{const ids=JSON.parse(localStorage.getItem('apex-comparison')||'[]');if(Array.isArray(ids))count=new Set(ids.filter(id=>catalog.some(m=>m.id===id))).size;}catch{}const node=nav.querySelector('.nav-comparison-count');if(node)node.textContent=count?String(Math.min(3,count)):'';}
   updateCount();window.addEventListener('apex:localchange',updateCount,{signal:abort.signal});window.addEventListener('storage',updateCount,{signal:abort.signal});
   updateDetail();
-  return {openWorkspace,search,destroy(){abort.abort();accountUI?.destroy?.();navigation.destroy();search.destroy();Object.values(instances).forEach(i=>i?.destroy?.());}};
+  return {openWorkspace,search,destroy(){abort.abort();unsubscribeAccount();accountUI?.destroy?.();navigation.destroy();search.destroy();Object.values(instances).forEach(i=>i?.destroy?.());}};
 }

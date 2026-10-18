@@ -4,10 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node scripts/check.mjs && node scripts/check-academy.mjs && node scripts/check-backend.mjs",
+    "check": "node scripts/check.mjs && node scripts/check-academy.mjs && node scripts/check-backend.mjs && node scripts/check-account-sync.mjs && node scripts/check-postgres.mjs",
     "build": "node scripts/build.mjs",
     "db:generate": "drizzle-kit generate",
-    "start": "node --env-file-if-exists=.env scripts/preview-local.mjs"
+    "start": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/preview-local.mjs",
+    "build:vercel": "npm run check",
+    "db:check": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/database.mjs check",
+    "db:migrate": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/database.mjs migrate"
   },
   "engines": {
     "node": ">=24.0.0"
@@ -15,9 +18,10 @@
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",
     "@vercel/analytics": "^2.0.1",
-    "drizzle-orm": "0.44.7"
+    "drizzle-orm": "0.45.4"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.10",
     "drizzle-kit": "0.31.5"
   }
 }

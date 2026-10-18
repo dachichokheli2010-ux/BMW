@@ -39,7 +39,7 @@ export function mergeGuestGarage(current,guest) {
   return cleanState({favorites:[...current.favorites,...guest.favorites],builds,academy,legacyProgress:{...guest.legacyProgress,...current.legacyProgress}});
 }
 
-export function createAccountController({fetchImpl=(...args)=>fetch(...args),storage,eventTarget=globalThis.window,timeout=5000}={}) {
+export function createAccountController({fetchImpl=(...args)=>fetch(...args),storage,eventTarget=globalThis.window,timeout=15000}={}) {
   if(storage===undefined){try{storage=globalThis.localStorage;}catch{storage=null;}}
   let user=null,provider='password',signInUrl='',signOutUrl='',csrfToken=null,status='loading',message='Checking your account…',revision=0,updatedAt=null,conflict=null;
   let started=false,ready=false,starting=null,writing=false,authenticating=false,applying=false,dirty=false,debounce,retryTimer,stopped=false,identity=0,storageOK=true;
@@ -63,7 +63,7 @@ export function createAccountController({fetchImpl=(...args)=>fetch(...args),sto
     applying=false;
     if(notify){eventTarget?.dispatchEvent(new CustomEvent('apex:favoriteschange',{detail:{source:'account'}}));eventTarget?.dispatchEvent(new CustomEvent('apex:accountprojection',{detail:{reason}}));}
   }
-  function restoreGuest(reason,notify=true){project(guestState(),reason,{notify});put(OWNER_KEY,null);}
+  function restoreGuest(reason,notify=true){put(OWNER_KEY,null);project(guestState(),reason,{notify});}
   function persistGuest(){if(!get(OWNER_KEY))put(GUEST_KEY,localState());}
   async function request(path,{method='GET',body}={}){
     const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeout);
