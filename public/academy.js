@@ -1,3 +1,4 @@
+import {mountLearningAcademy} from './academy-ui.js';
 import {partCatalog} from './parts.js';
 
 // Original schematics teach system relationships; they are not factory CAD.
@@ -197,92 +198,7 @@ function diagramFor(id,step) {
   return svgFrame('Generic electric propulsion and regeneration','A battery, inverter and motor connect to the wheels. Regeneration reverses the direction of electrical energy flow.',`<rect x="55" y="94" width="125" height="88" rx="6" fill="none" stroke="${step===0?accent:'currentColor'}" stroke-width="3"/>${[0,1,2,3].map(i=>`<rect x="${68+i*26}" y="108" width="18" height="50" fill="${accent}" opacity=".3"/>`).join('')}<rect x="260" y="99" width="115" height="78" rx="6" fill="none" stroke="${step===1?accent:'currentColor'}" stroke-width="3"/><path d="M277 138Q286 111 296 138T316 138T336 138T356 138" fill="none" stroke="${accent}" stroke-width="3"/><circle cx="500" cy="138" r="48" fill="none" stroke="${step===2?accent:'currentColor'}" stroke-width="3"/>${label(500,147,'M',accent,27)}${flowLine(reverse?'M260 138H180':'M180 138H260',step!==2)}${flowLine(reverse?'M452 138H375':'M375 138H452',step!==0)}${label(218,126,reverse?'←':'→',accent,24)}${label(415,126,reverse?'←':'→',accent,24)}${label(118,215,'Battery')}${label(317,215,'Inverter')}${label(500,215,'Motor / generator')}${label(320,268,reverse?'REGENERATION · energy toward battery':'PROPULSION · energy toward wheels',accent,13)}`);
 }
 
-function readProgress(key) {
-  try {
-    const parsed=JSON.parse(localStorage.getItem(key)||'{}');
-    return Object.fromEntries(Object.entries(parsed).filter(([id,value])=>academyLessons.some(lesson=>levels.some(level=>id===lesson.id+':'+level))&&value===true));
-  } catch { return {}; }
+export function mountAcademy(container, options={}) {
+  return mountLearningAcademy(container, options, {lessons:academyLessons, sources:SOURCES, levels, engineCodeEntries, timeline, scenarios, diagramFor});
 }
-
-export function mountAcademy(container,options={}) {
-  if(typeof container==='string') container=document.querySelector(container);
-  if(!container) throw new Error('mountAcademy requires a container.');
-  const styleURL=new URL('./academy.css',import.meta.url).href;
-  if(![...document.querySelectorAll('link[rel="stylesheet"]')].some(link=>link.href===styleURL)){
-    const link=document.createElement('link');link.rel='stylesheet';link.href=styleURL;link.dataset.academyStyle='';document.head.append(link);
-  }
-  const uid='ac-'+(++instanceCount),storageKey=options.storageKey||'bmw-academy-progress-v1';
-  let progress=readProgress(storageKey),tab='lessons',level=levels.includes(options.level)?options.level:'beginner',lessonId=academyLessons.some(lesson=>lesson.id===options.lesson)?options.lesson:'combustion',step=0;
-  let quizAnswer=null,mechanicMode='explore',partIndex=0,identifyIndex=0,identifyAnswer=null,scenarioIndex=0,scenarioAnswer=null,codeQuery='',storageUnavailable=false,resetPending=false,resetTimer;
-  container.classList.add('bmw-academy');
-  const lesson=()=>academyLessons.find(item=>item.id===lessonId),completed=()=>Object.keys(progress).length;
-  const lessonKey=()=>lessonId+':'+level;
-  function save(){
-    try {localStorage.setItem(storageKey,JSON.stringify(progress));storageUnavailable=false;}catch{storageUnavailable=true;}
-    options.onProgress?.({completed:completed(),total:24,progress:{...progress}});
-  }
-  function header(){return `<div class="ac-heading"><div><span class="ac-kicker">THE BMW LEARNING ACADEMY</span><h2>Know what moves you.</h2><p>Eight systems. Three levels. A deeper connection to every drive.</p></div><div class="ac-progress-summary"><span><strong>${completed()}</strong> / 24 lessons mastered</span><progress max="24" value="${completed()}" aria-label="Academy completion">${completed()} / 24</progress><button type="button" data-ac="reset" class="ac-text-button">${resetPending?'Confirm reset':'Reset progress'}</button><small>${storageUnavailable?'Storage unavailable · progress lasts for this visit':'Progress stays in this browser'}</small></div></div><div class="ac-tabs" aria-label="Academy sections">${[['lessons','01','Lessons'],['mechanic','02','Virtual mechanic'],['codes','03','Engine codes'],['history','04','BMW history']].map(([value,num,name])=>`<button type="button" data-ac="tab" data-value="${value}" aria-pressed="${tab===value}" class="${tab===value?'is-active':''}"><span>${num}</span>${name}</button>`).join('')}</div>`;}
-  function lessonsView(){
-    const item=lesson(),index=levels.indexOf(level),quiz=item.quizzes[index],key=lessonKey();
-    return `<div class="ac-learning"><aside class="ac-syllabus"><div class="ac-levels" aria-label="Lesson difficulty">${levels.map(value=>`<button type="button" data-ac="level" data-value="${value}" aria-pressed="${level===value}" class="${level===value?'is-active':''}">${titleCase(value)}</button>`).join('')}</div><div class="ac-lesson-list" aria-label="Select a lesson">${academyLessons.map((entry,i)=>`<button type="button" data-ac="lesson" data-value="${entry.id}" class="${entry.id===lessonId?'is-active':''}" aria-pressed="${entry.id===lessonId}"><span class="ac-lesson-number">${progress[entry.id+':'+level]?'✓':String(i+1).padStart(2,'0')}</span><span><strong>${entry.title}</strong><small>${entry.category} · ${entry.duration}</small></span></button>`).join('')}</div></aside><article class="ac-lesson" aria-label="${esc(item.title)}"><div class="ac-lesson-heading"><span class="ac-kicker">${titleCase(level)} / ${item.category}</span><span class="ac-state">${progress[key]?'✓ Mastered':'Interactive lesson'}</span></div><h3 tabindex="-1" data-ac-focus="lesson">${item.title}</h3><p class="ac-description">${item.content[index]}</p><div class="ac-visual">${diagramFor(item.id,step)}<div class="ac-diagram-note">Original educational schematic · layouts and motion simplified</div></div><div class="ac-steps" aria-label="Diagram steps">${item.steps.map(([name],i)=>`<button type="button" data-ac="step" data-value="${i}" aria-pressed="${step===i}" class="${step===i?'is-active':''}"><span>${i+1}</span>${esc(name)}</button>`).join('')}</div><p class="ac-step-detail" role="status"><strong>${item.steps[step][0]}.</strong> ${item.steps[step][1]}</p><div class="ac-quiz"><span class="ac-kicker">CHECK YOUR UNDERSTANDING</span><h4>${quiz.prompt}</h4><div class="ac-answers">${quiz.answers.map((answer,i)=>`<button type="button" data-ac="answer" data-value="${i}" class="${quizAnswer===i?(i===quiz.correct?'is-correct':'is-incorrect'):''}" aria-pressed="${quizAnswer===i}"><span>${String.fromCharCode(65+i)}</span>${esc(answer)}</button>`).join('')}</div>${quizAnswer!==null?`<p class="ac-feedback ${quizAnswer===quiz.correct?'is-correct':'is-incorrect'}" role="status"><strong>${quizAnswer===quiz.correct?'Correct.':'Try again.'}</strong> ${quiz.explanation}</p>`:''}</div><div class="ac-lesson-footer"><div class="ac-source">${sourceLink(SOURCES[item.source])}${item.extraSource?sourceLink(item.extraSource):''}</div><button type="button" data-ac="next-lesson" class="ac-next">Next lesson <span aria-hidden="true">→</span></button></div></article></div>`;
-  }
-  function mechanicSchematic(identify=false){
-    const positions=[[78,90],[267,90],[458,90],[458,220],[267,220],[78,220]];
-    return svgFrame(identify?'Component identification map':'Generic turbo petrol system map','A conceptual relationship map, not engine geometry. The filter, turbo and throttle feed the cylinder air path. The injector adds fuel. The coil powers the spark plug, which ignites the cylinder charge. Charge cooling is omitted for clarity.',`<path d="M163 90H220M352 90H411M477 119V143M477 191V177M220 220H163M97 191V160H411" fill="none" stroke="#68b3ff" stroke-opacity=".4" stroke-width="3"/><rect x="411" y="142" width="132" height="36" rx="4" fill="#172333" stroke="#738094"/>${label(477,165,'Cylinder', '#68b3ff',12)}${mechanicParts.map((part,i)=>{const [x,y]=positions[i],active=identify?i===identifyIndex:i===partIndex;return `<rect x="${x-47}" y="${y-29}" width="${i===4?143:132}" height="58" rx="6" fill="${active?'#234769':'#172333'}" stroke="${active?'#68b3ff':'#738094'}" stroke-width="${active?3:1}"/>${label(x+19,y+5,identify?(i===identifyIndex?'?':String(i+1)):part.name,'#edf4ff',12)}`;}).join('')}${label(320,281,identify?'IDENTIFY THE HIGHLIGHTED COMPONENT':'AIR ABOVE · IGNITION AND FUEL BELOW','#68b3ff',11)}`);
-  }
-  function mechanicView(){
-    const part=mechanicParts[partIndex],target=mechanicParts[identifyIndex],scenario=scenarios[scenarioIndex];
-    let body;
-    if(mechanicMode==='explore')body=`<div class="ac-mechanic-grid"><div><div class="ac-visual">${mechanicSchematic()}<div class="ac-diagram-note">Conceptual connections · not an installation or repair drawing</div></div><div class="ac-component-buttons" aria-label="Explore a component">${mechanicParts.map((entry,i)=>`<button type="button" data-ac="part" data-value="${i}" class="${partIndex===i?'is-active':''}" aria-pressed="${partIndex===i}">${entry.name}</button>`).join('')}</div><figure class="ac-part-photo"><img src="${esc(part.photo.src)}" alt="${esc(part.photo.caption)}" loading="lazy"><figcaption>${esc(part.photo.caption)}<br>${esc(part.photo.author)} · ${sourceLink([part.photo.license,part.photo.licenseUrl||part.photo.page])} · ${sourceLink(['Image source & credits',part.photo.page])}<small>${esc(part.photo.changes)}</small></figcaption></figure></div><article class="ac-part-detail"><span class="ac-kicker">${esc(part.system)}</span><h3 tabindex="-1" data-ac-focus="part">${part.name}</h3><p>${part.summary}</p><dl><dt>Where it lives</dt><dd>${esc(part.location)}</dd><dt>How it works</dt><dd>${esc(part.how)}</dd><dt>What it connects to</dt><dd><ul>${part.connections.map(connection=>`<li><strong>${esc(connection.name)}</strong> — ${esc(connection.detail)}</li>`).join('')}</ul></dd></dl><p class="ac-note">${esc(part.note)}</p><div class="ac-source">${part.sources.map(({label,url})=>sourceLink([label,url])).join('')}</div></article></div>`;
-    else if(mechanicMode==='identify')body=`<div class="ac-mechanic-grid"><div class="ac-visual">${mechanicSchematic(true)}<div class="ac-diagram-note">Generic system map · the numbers do not indicate factory locations</div></div><article class="ac-identify"><span class="ac-kicker">COMPONENT ${identifyIndex+1} OF ${mechanicParts.length}</span><h3>What is this component?</h3><p>${esc(target.summary)}</p><div class="ac-answers">${mechanicParts.map((entry,i)=>`<button type="button" data-ac="identify-answer" data-value="${i}" aria-pressed="${identifyAnswer===i}" class="${identifyAnswer===i?(i===identifyIndex?'is-correct':'is-incorrect'):''}">${entry.name}</button>`).join('')}</div>${identifyAnswer!==null?`<p class="ac-feedback ${identifyAnswer===identifyIndex?'is-correct':'is-incorrect'}" role="status"><strong>${identifyAnswer===identifyIndex?'Correct.':'Try again.'}</strong> ${identifyAnswer===identifyIndex?esc(target.purpose):'Match the described function to the component. Use Explore to study the connections.'}</p>`:''}<button type="button" data-ac="identify-next" class="ac-next">Next component →</button></article></div>`;
-    else body=`<div class="ac-scenario-tabs" aria-label="Diagnostic scenarios">${scenarios.map((entry,i)=>`<button type="button" data-ac="scenario" data-value="${i}" aria-pressed="${scenarioIndex===i}" class="${scenarioIndex===i?'is-active':''}">${String(i+1).padStart(2,'0')} · ${entry.title}</button>`).join('')}</div><article class="ac-scenario"><div><span class="ac-kicker">SIMULATED CASE / ${scenario.system}</span><h3>${scenario.title}</h3><ul class="ac-clues">${scenario.clues.map(clue=>`<li>${clue}</li>`).join('')}</ul></div><div><h4>${scenario.prompt}</h4><div class="ac-answers">${scenario.answers.map((answer,i)=>`<button type="button" data-ac="scenario-answer" data-value="${i}" aria-pressed="${scenarioAnswer===i}" class="${scenarioAnswer===i?(i===scenario.correct?'is-correct':'is-incorrect'):''}"><span>${String.fromCharCode(65+i)}</span>${answer}</button>`).join('')}</div>${scenarioAnswer!==null?`<p class="ac-feedback ${scenarioAnswer===scenario.correct?'is-correct':'is-incorrect'}" role="status"><strong>${scenarioAnswer===scenario.correct?'Supported by the clues.':'Revisit the evidence.'}</strong> ${scenario.explanation}</p>`:''}<div class="ac-source">${sourceLink(SOURCES[scenario.source])}</div></div></article>`;
-    return `<div class="ac-panel-heading"><div><span class="ac-kicker">THE VIRTUAL WORKSHOP</span><h3>Build understanding, component by component.</h3></div><p>Educational simulations. These cases do not diagnose a real vehicle or provide repair procedures.</p></div><div class="ac-subtabs" aria-label="Mechanic activity">${[['explore','Explore components'],['identify','Identification quiz'],['diagnose','Diagnostic scenarios']].map(([value,name])=>`<button type="button" data-ac="mechanic-mode" data-value="${value}" class="${mechanicMode===value?'is-active':''}" aria-pressed="${mechanicMode===value}">${name}</button>`).join('')}</div>${body}`;
-  }
-  function codeCards(){
-    const query=codeQuery.trim().toLowerCase(),entries=engineCodeEntries.filter(entry=>(entry.code+' '+entry.name+' '+entry.description+' '+entry.example).toLowerCase().includes(query));
-    return entries.length?entries.map(entry=>`<article class="ac-code-card"><span class="ac-code">${entry.code}</span><h4>${entry.name}</h4><p>${entry.description}</p><p class="ac-note">${entry.example}</p><div class="ac-source">${sourceLink(SOURCES[entry.source])}</div></article>`).join(''):`<div class="ac-empty"><h4>No documented example matches “${esc(codeQuery.trim())}”.</h4><p>Try N54, N55, B58 or S63. This explorer only returns the examples documented here.</p></div>`;
-  }
-  function codesView(){return `<div class="ac-panel-heading"><div><span class="ac-kicker">ENGINE CODE EXPLORER</span><h3>A family name is only the beginning.</h3></div><p>Four documented examples. Engine codes have exceptions and revisions; this is a lookup, not a universal decoder.</p></div><label class="ac-code-search" for="${uid}-code"><span>Search engine family or documented model</span><input id="${uid}-code" type="search" data-ac="code-search" placeholder="Try B58 or F10" value="${esc(codeQuery)}" autocomplete="off"></label><div class="ac-code-grid" data-ac-code-results aria-live="polite">${codeCards()}</div><p class="ac-note">Exact engine variant, output, fitment and parts compatibility depend on production date, market and vehicle identification. A model badge alone is not enough.</p>`;}
-  function historyView(){return `<div class="ac-panel-heading"><div><span class="ac-kicker">SELECTED MOMENTS</span><h3>More than a century of motion.</h3></div><p>A brief technical timeline. Explore BMW’s complete corporate history for the wider context.</p></div><ol class="ac-timeline">${timeline.map(entry=>`<li><span class="ac-year">${entry.year}</span><div><h4>${entry.title}</h4><p>${entry.text}</p></div></li>`).join('')}</ol><div class="ac-source">${sourceLink(SOURCES.history)}</div>`;}
-  function render(focus){
-    container.innerHTML=header()+`<div class="ac-content">${tab==='lessons'?lessonsView():tab==='mechanic'?mechanicView():tab==='codes'?codesView():historyView()}</div>`;
-    if(focus)container.querySelector(`[data-ac-focus="${focus}"]`)?.focus({preventScroll:true});
-  }
-  function chooseLesson(id,newLevel){
-    if(!academyLessons.some(item=>item.id===id))return false;
-    lessonId=id;if(levels.includes(newLevel))level=newLevel;step=0;quizAnswer=null;tab='lessons';render('lesson');return true;
-  }
-  function handleClick(event){
-    const control=event.target.closest('button[data-ac]');if(!control||!container.contains(control))return;
-    const action=control.dataset.ac,value=control.dataset.value,num=Number(value);
-    if(action==='tab'){tab=value;render();container.querySelector(`[data-ac="tab"][data-value="${value}"]`)?.focus({preventScroll:true});}
-    else if(action==='level'){level=value;quizAnswer=null;render('lesson');}
-    else if(action==='lesson')chooseLesson(value);
-    else if(action==='step'){step=num;render();container.querySelector(`[data-ac="step"][data-value="${num}"]`)?.focus({preventScroll:true});}
-    else if(action==='answer'){
-      quizAnswer=num;if(num===lesson().quizzes[levels.indexOf(level)].correct){progress[lessonKey()]=true;save();}render();container.querySelector(`[data-ac="answer"][data-value="${num}"]`)?.focus({preventScroll:true});
-    }
-    else if(action==='next-lesson')chooseLesson(academyLessons[(academyLessons.findIndex(item=>item.id===lessonId)+1)%academyLessons.length].id);
-    else if(action==='reset'){
-      if(resetPending){progress={};save();resetPending=false;quizAnswer=null;clearTimeout(resetTimer);render();}
-      else {resetPending=true;render();resetTimer=setTimeout(()=>{resetPending=false;const button=container.querySelector('[data-ac="reset"]');if(button)button.textContent='Reset progress';},6000);}
-      container.querySelector('[data-ac="reset"]')?.focus({preventScroll:true});
-    }
-    else if(action==='mechanic-mode'){mechanicMode=value;render();container.querySelector(`[data-ac="mechanic-mode"][data-value="${value}"]`)?.focus({preventScroll:true});}
-    else if(action==='part'){partIndex=num;render('part');}
-    else if(action==='identify-answer'){identifyAnswer=num;render();container.querySelector(`[data-ac="identify-answer"][data-value="${num}"]`)?.focus({preventScroll:true});}
-    else if(action==='identify-next'){identifyIndex=(identifyIndex+1)%mechanicParts.length;identifyAnswer=null;render();container.querySelector('[data-ac="identify-next"]')?.focus({preventScroll:true});}
-    else if(action==='scenario'){scenarioIndex=num;scenarioAnswer=null;render();container.querySelector(`[data-ac="scenario"][data-value="${num}"]`)?.focus({preventScroll:true});}
-    else if(action==='scenario-answer'){scenarioAnswer=num;render();container.querySelector(`[data-ac="scenario-answer"][data-value="${num}"]`)?.focus({preventScroll:true});}
-  }
-  function handleInput(event){if(event.target.matches('[data-ac="code-search"]')){codeQuery=event.target.value;container.querySelector('[data-ac-code-results]').innerHTML=codeCards();}}
-  function handleStorage(event){if(event.key===storageKey){progress=readProgress(storageKey);render();}}
-  container.addEventListener('click',handleClick);container.addEventListener('input',handleInput);window.addEventListener('storage',handleStorage);
-  if(['lessons','mechanic','codes','history'].includes(options.initialTab))tab=options.initialTab;
-  render();
-  return {
-    openLesson:chooseLesson,
-    setTab(value){if(!['lessons','mechanic','codes','history'].includes(value))return false;tab=value;render();return true;},
-    destroy(){clearTimeout(resetTimer);container.removeEventListener('click',handleClick);container.removeEventListener('input',handleInput);window.removeEventListener('storage',handleStorage);container.innerHTML='';container.classList.remove('bmw-academy');}
-  };
-}
+export const academyReferenceData = {sources:SOURCES,scenarios,timeline};

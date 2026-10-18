@@ -1,14 +1,16 @@
 import {t} from './preferences.js';
 
-const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
+const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const missing = '—';
 const positive = value => value !== null && value !== '' && Number.isFinite(Number(value)) && Number(value) > 0 ? Number(value) : null;
 const generation = model => model.generation?.split(' / ').at(-1)?.trim() || missing;
 const electric = model => model.code === 'eDrive' || model.electric === true || model.fuel === 'electric';
-const safeLink = url => { try { const parsed = new URL(url, location.origin); return /^https?:$/.test(parsed.protocol) ? esc(parsed.href) : ''; } catch { return ''; } };
+const normalized = value => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const safeLink = url => { try { if (!url) return ''; const parsed = new URL(url, location.origin); return /^https?:$/.test(parsed.protocol) ? esc(parsed.href) : ''; } catch { return ''; } };
+const paths = {plus:'<path d="M12 5v14M5 12h14"/>',search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>',arrow:'<path d="M5 12h14m-5-5 5 5-5 5"/>',share:'<path d="M9 8H5v13h14V8h-4M12 15V2m-4 4 4-4 4 4"/>',close:'<path d="m6 6 12 12M6 18 18 6"/>'};
+const svg = name => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">${paths[name]}</svg>`;
 
-// Convert original factory ratings, preserving the distinction between metric
-// horsepower (PS) and mechanical horsepower (hp). SI is the common baseline.
+// Factory PS and mechanical hp are different units. Convert through SI first.
 export function powerInKW(value, unit) {
   const amount = positive(value);
   if (amount === null) return null;
@@ -34,174 +36,211 @@ export function convertedTorque(model, units = 'metric') {
 }
 
 export function createComparisonController({catalog, getSelected, onSelectionChange, dialog, toast = () => {}}) {
-  const abort = new AbortController();
+  const abort = new AbortController(), byId = new Map(catalog.map(model => [model.id, model]));
   const candidates = [...catalog].sort((a, b) => a.name.localeCompare(b.name, undefined, {numeric:true}) || generation(a).localeCompare(generation(b), undefined, {numeric:true}));
-  const byId = new Map(catalog.map(model => [model.id, model]));
-  let units = 'metric', differencesOnly = false, shareVisible = false, copied = false;
-  const chosen = () => [...new Set(getSelected())].filter(id => byId.has(id)).slice(0, 4).map(id => byId.get(id));
-  const active = () => document.querySelector('.comparison-v2')?.closest('dialog')?.open === true;
-  const number = value => Math.round(value).toLocaleString(document.documentElement.lang || 'en');
+  const params = new URLSearchParams(location.search);
+  let units = params.get('units') === 'imperial' ? 'imperial' : 'metric', differencesOnly = params.get('differences') === '1';
+  let mountedHost = null, dialogRoot = null, pickerIndex = null, pickerQuery = '', pickerFilter = 'all', showAll = false, shareVisible = false, copied = false;
+  const chosen = () => [...new Set(getSelected())].filter(id => byId.has(id)).slice(0, 3).map(id => byId.get(id));
   const selectedId = () => chosen().map(model => model.id);
-  const optionName = model => `${model.name} · ${generation(model)}${year(model) !== missing ? ` · ${year(model)}` : ''}`;
-  function year(model) { return model.modelYear || model.year || model.market?.match(/\b(?:19|20)\d{2}\b/)?.[0] || missing; }
-  function sourcePower(model) { return positive(model.power) === null ? missing : `${model.power} ${model.powerUnit || ''}`.trim(); }
-  function sourceTorque(model) { return positive(model.torque) === null ? missing : `${model.torque} ${model.torqueUnit || ''}`.trim(); }
-  function scope(model) { return model.powerScope || (electric(model) ? 'System output' : 'Factory figures'); }
+  const root = () => mountedHost?.querySelector('.comparison-v2') || dialogRoot;
+  const number = (value, digits = 0) => Number(value).toLocaleString(document.documentElement.lang || 'en', {maximumFractionDigits:digits});
+  const year = model => model.modelYear || model.year || model.market?.match(/\b(?:19|20)\d{2}\b/)?.[0] || missing;
+  const sourcePower = model => positive(model.power) === null ? missing : `${model.power} ${model.powerUnit || ''}`.trim();
+  const sourceTorque = model => positive(model.torque) === null ? missing : `${model.torque} ${model.torqueUnit || ''}`.trim();
+  const isM = model => model.isM === true || model.generation?.startsWith('M SERIES') || /^BMW (?:M[1-8](?:\b|\s)|1 Series M|1M\b|X[3-6] M\b|XM\b|Z[34] M\b)/.test(model.name);
+  const scope = model => model.powerScope || (electric(model) ? 'System output' : 'Factory figures');
+  const display = value => value === null || value === undefined || value === '' ? missing : value;
   function battery(model) {
     const values = [];
-    if (positive(model.batteryNet) !== null) values.push(`${model.batteryNet} kWh ${t('Usable').toLowerCase()}`);
-    if (positive(model.batteryGross) !== null) values.push(`${model.batteryGross} kWh ${t('Gross').toLowerCase()}`);
+    if (positive(model.batteryNet) !== null) values.push(`${number(model.batteryNet, 1)} kWh ${t('Usable').toLowerCase()}`);
+    if (positive(model.batteryGross) !== null) values.push(`${number(model.batteryGross, 1)} kWh ${t('Gross').toLowerCase()}`);
     return values.join(' / ') || (/kWh/i.test(model.induction || '') ? model.induction : missing);
+  }
+  function speed(model) {
+    const kmh = positive(model.topSpeed), mph = positive(model.verified?.topSpeedMph);
+    if (units === 'imperial') return mph !== null ? `${number(mph)} mph` : kmh !== null ? `${number(kmh / 1.609344)} mph` : missing;
+    return kmh !== null ? `${number(kmh)} km/h` : mph !== null ? `${number(mph * 1.609344)} km/h` : missing;
+  }
+  function dimensions(model) {
+    const values = ['length','width','height'].map(key => positive(model[`${key}Mm`]) ?? (positive(model.verified?.dimensionsIn?.[key]) === null ? null : model.verified.dimensionsIn[key] * 25.4));
+    return values.every(value => value !== null) ? `${values.map(value => number(value / (units === 'imperial' ? 25.4 : 1), units === 'imperial' ? 1 : 0)).join(' / ')} ${units === 'imperial' ? 'in' : 'mm'}` : missing;
+  }
+  function wheelbase(model) {
+    const mm = positive(model.wheelbaseMm) ?? (positive(model.verified?.dimensionsIn?.wheelbase) === null ? null : model.verified.dimensionsIn.wheelbase * 25.4);
+    return mm === null ? missing : `${number(mm / (units === 'imperial' ? 25.4 : 1), units === 'imperial' ? 1 : 0)} ${units === 'imperial' ? 'in' : 'mm'}`;
+  }
+  function mass(model) {
+    const kg = positive(model.weightKg);
+    return kg === null ? missing : `${number(units === 'imperial' ? positive(model.verified?.weightUSLb) ?? kg * 2.2046226218 : kg)} ${units === 'imperial' ? 'lb' : 'kg'}`;
   }
   function rows(models) {
     const groups = [
-      {name:'Power & torque', rows:[
+      {id:'powertrain', name:'Power & powertrain', rows:[
         {name:'Power', metric:'power', value:model => convertedPower(model, units)?.value ?? null},
         {name:'Torque', metric:'torque', value:model => convertedTorque(model, units)?.value ?? null},
-        {name:'Factory rating', value:model => `${sourcePower(model)} / ${sourceTorque(model)}`},
-        {name:'Output definition', value:model => t(scope(model))},
-        {name:'Combustion engine power (factory)', optional:true, value:model => positive(model.enginePower) !== null ? `${model.enginePower} ${model.enginePowerUnit || model.powerUnit}` : missing},
-        {name:'Combustion engine torque (factory)', optional:true, value:model => positive(model.engineTorque) !== null ? `${model.engineTorque} ${model.engineTorqueUnit || model.torqueUnit}` : missing}
+        {name:'Powertrain', value:model => t(model.powertrain || model.fuel || (electric(model) ? 'Electric' : missing))},
+        {name:'Engine / motor', value:model => [model.code, model.layout].filter(Boolean).join(' / ') || missing},
+        {name:'Drive layout', value:model => t(model.drivetrain || (electric(model) ? model.layout : '') || missing)},
+        {name:'Transmission', value:model => model.transmission || missing},
+        {name:'Induction', value:model => electric(model) ? missing : t(model.induction || missing)},
+        {name:'Battery energy', optional:true, value:battery}
       ]},
-      {name:'Model details', rows:[
+      {id:'performance', name:'Performance', rows:[
+        // These different acceleration targets cannot be converted into each other.
+        {name:'0–100 km/h', value:model => positive(model.acceleration100) === null ? missing : `${number(model.acceleration100, 1)} s`},
+        {name:'0–60 mph', optional:true, value:model => positive(model.verified?.acceleration60Mph) === null ? missing : `${number(model.verified.acceleration60Mph, 1)} s`},
+        {name:'Top speed', value:speed},
+        {name:'Speed limitation / options', optional:true, detail:true, value:model => model.verified?.topSpeedNote || missing}
+      ]},
+      {id:'dimensions', name:'Size & body', rows:[
+        {name:'Body style', value:model => model.body ? t(model.body === 'Coupés' ? 'Coupes' : model.body) : missing},
+        {name:'Mass', value:mass},
+        {name:'Mass convention', detail:true, value:model => model.weightConvention || missing},
+        {name:'Length / width / height', value:dimensions},
+        {name:'Wheelbase', value:wheelbase}
+      ]},
+      {id:'source', name:'Specification & sources', rows:[
         {name:'Generation', value:generation},
         {name:'Specification year', value:year},
-        {name:'Body style', value:model => model.body ? t(model.body === 'Coupés' ? 'Coupes' : model.body) : missing},
-        {name:'Powertrain', value:model => model.powertrain ? t(model.powertrain) : model.fuel ? t(model.fuel) : electric(model) ? t('Electric') : missing},
-        {name:'Drive layout', value:model => t(model.drivetrain || (electric(model) ? model.layout : '') || missing)},
-        {name:'Engine / motor', value:model => [model.code, model.layout].filter(Boolean).join(' / ') || missing},
-        {name:'Induction', value:model => electric(model) ? missing : t(model.induction || missing)},
-        {name:'Battery energy', value:battery, optional:true}
-      ]},
-      {name:'Performance & dimensions', rows:[
-        {name:'0–100 km/h (factory)', value:model => positive(model.acceleration100) === null ? missing : `${model.acceleration100} s`},
-        {name:'Top speed (factory)', value:model => positive(model.topSpeed) === null ? missing : `${model.topSpeed} km/h`},
-        {name:'Transmission', value:model => model.transmission || missing},
-        {name:'Mass & convention', value:model => positive(model.weightKg) === null ? missing : `${model.weightKg} kg · ${model.weightConvention || 'See source'}`},
-        {name:'Length / width / height', value:model => [model.lengthMm,model.widthMm,model.heightMm].every(v=>positive(v)!==null) ? `${model.lengthMm} / ${model.widthMm} / ${model.heightMm} mm` : missing},
-        {name:'Wheelbase', value:model => positive(model.wheelbaseMm) === null ? missing : `${model.wheelbaseMm} mm`},
-        {name:'Expanded specification context', value:model => model.verified?.specification || missing}
-      ]},
-      {name:'Source & context', rows:[
-        {name:'Factory specification', value:model => model.market || missing}
+        {name:'Factory power / torque', value:model => `${sourcePower(model)} / ${sourceTorque(model)}`},
+        {name:'Output definition', value:model => t(scope(model))},
+        {name:'Combustion engine power', optional:true, value:model => positive(model.enginePower) === null ? missing : `${model.enginePower} ${model.enginePowerUnit || model.powerUnit}`},
+        {name:'Combustion engine torque', optional:true, value:model => positive(model.engineTorque) === null ? missing : `${model.engineTorque} ${model.engineTorqueUnit || model.torqueUnit}`},
+        {name:'Factory specification', detail:true, value:model => model.verified?.specification || model.market || missing}
       ]}
     ];
-    return groups.map(group => ({...group, rows:group.rows.filter(row => {
-      const values = models.map(row.value);
-      if (row.optional && values.every(value => value === missing || value === null)) return false;
-      if (!differencesOnly || models.length < 2) return true;
-      return new Set(values.map(value => typeof value === 'number' ? Math.round(value * 10) / 10 : String(value))).size > 1;
-    })}));
-  }
-  function selector(model, index) {
-    const ids = selectedId();
-    return `<label class="cmp-selector"><span class="sr-only">${esc(t(model ? 'Replace model' : 'Add a BMW'))}${model ? ': ' + esc(model.name) : ''}</span><select data-cmp-select="${index}"><option value="">${esc(t(model ? 'Replace model' : 'Choose a BMW'))}</option>${candidates.map(candidate => `<option value="${esc(candidate.id)}"${candidate.id === model?.id ? ' selected' : ids.includes(candidate.id) ? ' disabled' : ''}>${esc(optionName(candidate))}</option>`).join('')}</select></label>`;
+    return groups.map(group => ({...group, rows:group.rows.map(row => {
+      const values = models.map(row.value).map(display);
+      const differs = models.length > 1 && new Set(values.map(value => typeof value === 'number' ? Math.round(value) : String(value))).size > 1;
+      return {...row, differs, values};
+    }).filter(row => !(!row.metric && row.values.every(value => value === missing)) && (!differencesOnly || models.length < 2 || row.differs))}));
   }
   function metricCell(model, row, models) {
     const result = row.metric === 'power' ? convertedPower(model, units) : convertedTorque(model, units);
     if (!result) return `<span class="cmp-missing" aria-label="${esc(t('Not documented'))}">${missing}</span>`;
     const values = models.map(row.value).filter(value => value !== null), highest = Math.max(...values);
-    // The badge describes this one numeric rating, never an overall winner.
-    const best = models.length > 1 && values.length > 1 && new Set(values.map(Math.round)).size > 1 && Math.abs(result.value - highest) < 0.01;
-    return `<div class="cmp-metric ${best ? 'is-highest' : ''}"><strong>${esc(number(result.value))}<small>${esc(result.unit)}</small></strong>${best ? `<span class="cmp-best" aria-label="${esc(t('Highest in this comparison'))}" title="${esc(t('Highest in this comparison'))}">↑</span>` : ''}${row.metric === 'power' ? `<span class="cmp-secondary">${esc(number(result.kw))} kW</span>` : ''}<span class="cmp-bar" aria-hidden="true"><i style="width:${Math.max(1, Math.min(100, result.value / highest * 100)).toFixed(2)}%"></i></span></div>`;
+    const best = values.length > 1 && new Set(values.map(Math.round)).size > 1 && Math.round(result.value) === Math.round(highest);
+    return `<div class="cmp-metric${best ? ' is-highest' : ''}"><strong>${esc(number(Math.round(result.value)))}<small>${esc(result.unit)}</small></strong>${best ? `<span class="cmp-best" title="${esc(t('Highest listed figure'))}">↑<span class="sr-only"> ${esc(t('Highest listed figure'))}</span></span>` : ''}${row.metric === 'power' ? `<span class="cmp-secondary">${esc(number(Math.round(result.kw)))} kW</span>` : ''}<span class="cmp-bar" aria-hidden="true"><i style="width:${Math.max(1, Math.min(100, result.value / highest * 100)).toFixed(2)}%"></i></span></div>`;
   }
-  function insights(models) {
-    if (models.length < 2) return '';
-    const items = [];
-    for (const [label, convert] of [['Highest listed power', model => convertedPower(model, units)], ['Highest listed torque', model => convertedTorque(model, units)]]) {
-      const values = models.map(model => ({model, result:convert(model)})).filter(entry => entry.result);
-      if (values.length < 2) continue;
-      const rounded = values.map(entry => Math.round(entry.result.value));
-      if (new Set(rounded).size < 2) continue;
-      const highest = Math.max(...rounded);
-      const leaders = values.filter(entry => Math.round(entry.result.value) === highest);
-      const names = leaders.map(({model}) => `${model.name} (${generation(model)})`).join(', ');
-      items.push(`<li><strong>${esc(t(label))}:</strong> ${esc(names)} · ${esc(number(highest))} ${esc(values[0].result.unit)}</li>`);
-    }
-    for (const [label, value] of [['Body style', model => model.body ? t(model.body === 'Coupés' ? 'Coupes' : model.body) : missing], ['Powertrain', model => model.powertrain ? t(model.powertrain) : model.fuel ? t(model.fuel) : electric(model) ? t('Electric') : missing]]) {
-      const values = models.map(value);
-      if (new Set(values).size < 2 || values.every(item => item === missing)) continue;
-      const details = models.map((model, index) => `${model.name} (${generation(model)}): ${values[index]}`).join('; ');
-      items.push(`<li><strong>${esc(t(label))}:</strong> ${esc(details)}</li>`);
-    }
-    if (!items.length) return '';
-    return `<section class="cmp-insights" aria-label="${esc(t('Quick comparison insights'))}"><h3>${esc(t('Quick takeaways'))}</h3><ul>${items.join('')}</ul></section>`;
+  function slot(model, index) {
+    if (!model) return `<button type="button" class="cmp-slot cmp-slot-empty" data-cmp-pick="${index}" aria-label="${esc(t('Add a BMW'))}, ${index + 1}"><span class="cmp-slot-index">0${index + 1}</span><span class="cmp-slot-plus">${svg('plus')}</span><strong>${esc(t('Add a BMW'))}</strong><span>${esc(t('Model, chassis or engine'))}</span></button>`;
+    return `<article class="cmp-slot cmp-slot-filled"><div class="cmp-slot-photo"><img src="${esc(model.car)}" alt="${esc(model.name)} · ${esc(generation(model))}" decoding="async"><span class="cmp-slot-index">0${index + 1}</span><span class="cmp-slot-generation">${esc(generation(model))}</span><button type="button" class="cmp-remove" data-cmp-remove="${esc(model.id)}" aria-label="${esc(t('Remove from comparison'))}: ${esc(model.name)} ${esc(generation(model))}">${svg('close')}</button></div><div class="cmp-slot-copy"><span class="cmp-slot-meta">${esc(t(model.powertrain || (electric(model) ? 'Electric' : 'Petrol')))}${year(model) !== missing ? ` <span>·</span> ${esc(year(model))}` : ''}</span><h3>${esc(model.name.replace(/^BMW /, ''))}</h3><button type="button" class="cmp-replace" data-cmp-pick="${index}">${esc(t('Replace model'))} ${svg('arrow')}</button></div></article>`;
+  }
+  function filteredCandidates() {
+    const terms = normalized(pickerQuery).trim().split(/\s+/).filter(Boolean), preferred = ['g80','g82-m4','f10-m5','e92','g87-m2','g26-i4-m50'];
+    return candidates.filter(model => (pickerFilter === 'all' || pickerFilter === 'm' && isM(model) || pickerFilter === 'electric' && electric(model)) && terms.every(term => normalized([model.name,model.generation,model.code,model.powertrain,model.body,year(model)].join(' ')).includes(term))).sort((a,b) => terms.length ? 0 : (preferred.indexOf(a.id) < 0 ? 99 : preferred.indexOf(a.id)) - (preferred.indexOf(b.id) < 0 ? 99 : preferred.indexOf(b.id)));
+  }
+  function pickerResults() {
+    const matches = filteredCandidates(), limit = showAll || pickerQuery.trim() ? matches.length : 6, ids = selectedId();
+    return `<p class="cmp-results-count" role="status">${esc(t('{count} models found', {count:matches.length}))}${!pickerQuery.trim() && !showAll && matches.length > 6 ? ` <span>· ${esc(t('Popular picks first'))}</span>` : ''}</p><div class="cmp-picker-grid">${matches.slice(0,limit).map(model => `<button type="button" class="cmp-candidate" data-cmp-choose="${esc(model.id)}"${ids.includes(model.id) ? ' disabled' : ''}><img src="${esc(model.car)}" alt="" loading="lazy"><span><strong>${esc(model.name.replace(/^BMW /, ''))}</strong><small>${esc(generation(model))} · ${esc(model.code)}${year(model) !== missing ? ` · ${esc(year(model))}` : ''}</small></span><span class="cmp-candidate-action">${ids.includes(model.id) ? '✓' : '+'}<span class="sr-only">${esc(t(ids.includes(model.id) ? 'Already selected' : 'Add a BMW'))}</span></span></button>`).join('')}</div>${!matches.length ? `<p class="cmp-no-results">${esc(t('No BMWs match your search. Try a model such as M3, a chassis such as F10, or an engine such as N55.'))}</p>` : !showAll && !pickerQuery.trim() && matches.length > 6 ? `<button type="button" class="cmp-show-all" data-cmp-show-all>${esc(t('Browse all {count} models', {count:matches.length}))} ${svg('arrow')}</button>` : ''}`;
+  }
+  function picker() {
+    if (pickerIndex === null) return '';
+    const replacing = !!chosen()[pickerIndex];
+    return `<section class="cmp-picker" aria-labelledby="cmp-picker-title"><div class="cmp-picker-heading"><div><span class="eyebrow">${esc(t(replacing ? 'REFINE YOUR SHORTLIST' : 'BUILD YOUR SHORTLIST'))}</span><h3 id="cmp-picker-title">${esc(t(replacing ? 'Find a replacement.' : 'Which BMW is next?'))}</h3></div><button type="button" class="cmp-picker-close" data-cmp-close-picker aria-label="${esc(t('Close model picker'))}">${svg('close')}</button></div><label class="cmp-search">${svg('search')}<span class="sr-only">${esc(t('Search models to compare'))}</span><input type="search" data-cmp-search placeholder="${esc(t('Search M3, F10, N55…'))}" value="${esc(pickerQuery)}" autocomplete="off" aria-controls="cmp-picker-results"></label><div class="cmp-picker-filters" role="group" aria-label="${esc(t('Filter models'))}">${[['all','All models'],['m','BMW M'],['electric','Electric']].map(([id,label]) => `<button type="button" data-cmp-filter="${id}" aria-pressed="${pickerFilter === id}">${esc(t(label))}</button>`).join('')}</div><div id="cmp-picker-results">${pickerResults()}</div></section>`;
+  }
+  function suggestions() {
+    const presets = [
+      {title:'M3 vs M4', subtitle:'Same engine. Different character.', ids:['g80','g82-m4']},
+      {title:'Three eras of M5', subtitle:'V10, V8 and a new generation.', ids:['e60','f90','g90-m5']},
+      {title:'Electric vs petrol', subtitle:'Two approaches to the everyday.', ids:['g60-i5','g30-530i']}
+    ].filter(preset => preset.ids.every(id => byId.has(id)));
+    return `<section class="cmp-suggestions"><div class="cmp-section-heading"><h3>${esc(t('Start with a good rivalry.'))}</h3><span>${esc(t('CURATED COMPARISONS'))}</span></div><div class="cmp-suggestion-grid">${presets.map(preset => `<button type="button" class="cmp-suggestion" data-cmp-preset="${preset.ids.join(',')}"><div class="cmp-suggestion-photos">${preset.ids.slice(0,2).map(id => `<img src="${esc(byId.get(id).car)}" alt="${esc(byId.get(id).name)} ${esc(generation(byId.get(id)))}" loading="lazy">`).join('')}<span>VS</span></div><span class="cmp-suggestion-copy"><strong>${esc(t(preset.title))}</strong><small>${esc(t(preset.subtitle))}</small>${svg('arrow')}</span></button>`).join('')}</div></section>`;
   }
   function shareUrl() {
-    const url = new URL('/', location.origin);
-    url.searchParams.set('compare', selectedId().join(','));
+    const url = new URL('/compare', location.origin);
+    if (selectedId().length) url.searchParams.set('compare', selectedId().join(','));
     url.searchParams.set('units', units);
+    if (differencesOnly) url.searchParams.set('differences', '1');
     return url.href;
   }
+  function syncAddress() { if (mountedHost && /^\/compare\/?$/.test(location.pathname)) history.replaceState(history.state, '', shareUrl()); }
+  function table(models, groups) {
+    return `<div class="cmp-spec-heading"><h3>${esc(t('The details that make the difference.'))}</h3><span class="cmp-swipe">↔ ${esc(t('Swipe to compare'))}</span></div><div class="cmp-scroll" role="region" tabindex="0" aria-label="${esc(t('Model specification comparison'))}"><table class="cmp-table"><caption class="sr-only">${esc(t('Factory specifications for your selected BMWs'))}</caption><colgroup><col class="cmp-label-col">${models.map(() => '<col>').join('')}</colgroup><thead><tr><th class="cmp-corner" scope="col">${esc(t('Specification'))}<small>${esc(t('Factory figures'))}</small></th>${models.map(model => `<th scope="col"><span class="cmp-table-generation">${esc(generation(model))}</span><strong>${esc(model.name.replace(/^BMW /, ''))}</strong></th>`).join('')}</tr></thead>${groups.filter(group => group.rows.length).map(group => `<tbody id="cmp-group-${group.id}"><tr class="cmp-group"><th scope="rowgroup" colspan="${models.length + 1}">${esc(t(group.name))}</th></tr>${group.rows.map(row => `<tr class="${row.metric ? 'cmp-metric-row ' : ''}${row.detail ? 'cmp-detail-row ' : ''}${row.differs ? 'cmp-is-different' : ''}"><th scope="row">${esc(t(row.name))}</th>${models.map((model, index) => `<td>${row.metric ? metricCell(model, row, models) : `<span${row.values[index] === missing ? ` class="cmp-missing" aria-label="${esc(t('Not documented'))}"` : ''}>${esc(row.values[index])}</span>`}</td>`).join('')}</tr>`).join('')}</tbody>`).join('')}<tfoot><tr><th scope="row">${esc(t('Explore further'))}</th>${models.map(model => `<td><div class="cmp-car-links"><a href="/models?model=${encodeURIComponent(model.id)}">${esc(t('Explore model'))} ${svg('arrow')}</a>${safeLink(model.source) ? `<a href="${safeLink(model.source)}" target="_blank" rel="noopener">${esc(t('Read BMW source'))}<span aria-hidden="true">↗</span></a>` : ''}</div></td>`).join('')}</tr></tfoot></table></div>`;
+  }
   function content() {
-    const models = chosen(), groups = rows(models), columnCount = Math.max(2, models.length);
-    return `<article class="comparison-v2" style="--cmp-count:${columnCount}">
-      <div class="cmp-heading"><span class="eyebrow">APEX / ${esc(t('Compare models'))}</span><h2>${esc(t('Your shortlist. Side by side.'))}</h2><p>${esc(t('Compare up to 4 BMWs. Change any car below and compare factory figures in consistent units.'))}</p></div>
-      <div class="cmp-toolbar"><div class="cmp-unit-control" role="group" aria-label="${esc(t('Units'))}"><button type="button" data-cmp-units="metric" aria-pressed="${units === 'metric'}">${esc(t('Metric'))}<small>PS · Nm</small></button><button type="button" data-cmp-units="imperial" aria-pressed="${units === 'imperial'}">${esc(t('Imperial'))}<small>hp · lb-ft</small></button></div><label class="cmp-difference"><input type="checkbox" data-cmp-differences${differencesOnly ? ' checked' : ''}><span>${esc(t('Show differences only'))}</span></label><div class="cmp-utilities"><button type="button" data-cmp-share><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M9 8h-4v13h14V8h-4M12 15V2m-4 4 4-4 4 4"/></svg><span>${esc(t('Share comparison'))}</span></button><button type="button" data-cmp-print><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 8V3h10v5M7 17H3V8h18v9h-4M7 14h10v7H7zM17 11h1"/></svg><span>${esc(t('Print comparison'))}</span></button></div></div>
-      <p class="cmp-copy-status" role="status"${copied ? '' : ' hidden'}>${esc(t('Comparison link copied.'))}</p><div class="cmp-share-panel"${shareVisible ? '' : ' hidden'}><label>${esc(t('Copy this comparison link'))}<input type="url" data-cmp-share-url value="${esc(shareUrl())}" readonly></label><button type="button" data-cmp-copy>${esc(t('Copy link'))}</button></div>
-      <div class="cmp-selection-line"><span>${esc(t('{count} models selected', {count:models.length}))}</span>${models.length < 4 ? `<div class="cmp-add"><span>+</span>${selector(null, models.length)}</div>` : `<span class="cmp-capacity">4 / 4</span>`}<span class="cmp-swipe">↔ ${esc(t('Swipe to compare every model'))}</span></div>
-      ${insights(models)}
-      ${models.length ? `<div class="cmp-scroll" role="region" tabindex="0" aria-label="${esc(t('Compare models'))}"><table class="cmp-table"><caption class="sr-only">${esc(t('Compare models'))}</caption><colgroup><col class="cmp-label-col">${models.map(() => '<col>').join('')}</colgroup><thead><tr><th class="cmp-corner" scope="col"><span>${esc(t('Specification'))}</span><small>${esc(t('Factory figures'))}</small></th>${models.map((model, index) => `<th scope="col" class="cmp-car"><button type="button" class="cmp-remove" data-cmp-remove="${esc(model.id)}" aria-label="${esc(t('Remove from comparison'))}: ${esc(model.name)}">×</button><img src="${esc(model.car)}" alt="${esc(model.name)} · ${esc(generation(model))}" decoding="async"><div class="cmp-car-copy"><span class="cmp-chassis">${esc(generation(model))}<span>${esc(year(model))}</span></span><h3>${esc(model.name.replace(/^BMW /, ''))}</h3>${selector(model, index)}</div></th>`).join('')}</tr></thead>${groups.filter(group => group.rows.length).map(group => `<tbody><tr class="cmp-group"><th scope="rowgroup" colspan="${models.length + 1}">${esc(t(group.name))}</th></tr>${group.rows.map(row => `<tr${row.metric ? ' class="cmp-metric-row"' : ''}><th scope="row">${esc(t(row.name))}</th>${models.map(model => `<td>${row.metric ? metricCell(model, row, models) : `<span${row.value(model) === missing ? ` class="cmp-missing" aria-label="${esc(t('Not documented'))}"` : ''}>${esc(row.value(model))}</span>`}</td>`).join('')}</tr>`).join('')}</tbody>`).join('')}<tfoot><tr><th scope="row">${esc(t('Read BMW source'))}</th>${models.map(model => `<td><div class="cmp-car-links">${safeLink(model.source) ? `<a href="${safeLink(model.source)}" target="_blank" rel="noopener">${esc(t('Read BMW source'))}<span aria-hidden="true">↗</span></a>` : `<span class="cmp-missing">${missing}</span>`}<a class="cmp-open-model" href="${electric(model) ? '/electric' : '/'}?model=${encodeURIComponent(model.id)}">${esc(t('Open model'))}<span aria-hidden="true">→</span></a></div></td>`).join('')}</tr></tfoot></table></div>` : `<div class="cmp-onboarding">${[0,1].map(index => `<div class="cmp-empty-slot"><span class="cmp-slot-number">0${index + 1}</span><svg viewBox="0 0 160 64" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M13 44v-9l11-6 19-15h59l23 16 22 5 3 9v7h-13M41 51h65M17 51h-5v-7h138M44 17l-9 14h79L99 17M73 17v14"/><circle cx="28" cy="49" r="12"/><circle cx="124" cy="49" r="12"/></svg><h3>${esc(t('Add a BMW'))}</h3>${selector(null, 0)}</div>`).join('')}</div>`}
-      ${models.length === 1 ? `<p class="cmp-hint">${esc(t('Add another BMW to start comparing.'))}</p>` : differencesOnly && groups.every(group => !group.rows.length) ? `<p class="cmp-hint">${esc(t('No shared rows differ. Turn off the differences filter to see all specifications.'))}</p>` : ''}
-      <div class="cmp-footnotes"><p>${esc(t('Figures are rounded after conversion. PS is metric horsepower; hp is mechanical horsepower.'))}</p><p>${esc(t('Hybrid and electric figures may describe combined system output or temporary boost. Read each model’s output definition and factory source.'))}</p><p>${esc(t('Photos may show a different year, trim or market.'))} <span>${missing} = ${esc(t('Not documented'))}</span></p></div>
-    </article>`;
+    const models = chosen(), groups = rows(models), heading = mountedHost ? 'h1' : 'h2';
+    return `<article class="comparison-v2${mountedHost ? ' cmp-workspace' : ''}" style="--cmp-count:${Math.max(1, models.length)}"><div class="cmp-heading"><div><span class="eyebrow">${esc(t('THE COMPARISON GARAGE'))}</span><${heading}>${esc(t('Your shortlist.'))}<br><span>${esc(t('Side by side.'))}</span></${heading}><p>${esc(t('Find what sets them apart. Compare up to three BMWs, from their engines to the finer details.'))}</p></div><div class="cmp-heading-aside"><span class="cmp-progress" aria-label="${esc(t('{count} of 3 models selected', {count:models.length}))}">${[0,1,2].map(index => `<i${index < models.length ? ' class="is-filled"' : ''}></i>`).join('')}</span><span>${esc(t('{count} / 3 selected', {count:models.length}))}</span></div></div><div class="cmp-cars">${[0,1,2].map(index => slot(models[index],index)).join('')}</div>${picker()}${!models.length ? suggestions() : `<div class="cmp-toolbar"><div class="cmp-unit-control" role="group" aria-label="${esc(t('Units'))}"><button type="button" data-cmp-units="metric" aria-pressed="${units === 'metric'}">${esc(t('Metric'))}<small>PS · Nm</small></button><button type="button" data-cmp-units="imperial" aria-pressed="${units === 'imperial'}">${esc(t('Imperial'))}<small>hp · lb-ft</small></button></div><label class="cmp-difference${models.length < 2 ? ' is-disabled' : ''}"><input type="checkbox" data-cmp-differences${differencesOnly ? ' checked' : ''}${models.length < 2 ? ' disabled' : ''}><span>${esc(t('Differences only'))}</span></label><div class="cmp-utilities"><button type="button" data-cmp-share>${svg('share')} ${esc(t('Share'))}</button><button type="button" data-cmp-clear>${esc(t('Clear all'))}</button></div></div><p class="cmp-copy-status" role="status"${copied ? '' : ' hidden'}>${esc(t('Comparison link copied.'))}</p><div class="cmp-share-panel"${shareVisible ? '' : ' hidden'}><label>${esc(t('Copy this comparison link'))}<input type="url" data-cmp-share-url value="${esc(shareUrl())}" readonly></label><button type="button" data-cmp-copy>${esc(t('Copy link'))}</button></div>${models.length === 1 ? `<p class="cmp-hint">${svg('plus')} ${esc(t('Add a second BMW to see what sets them apart.'))}</p>` : ''}${differencesOnly && groups.every(group => !group.rows.length) ? `<p class="cmp-hint">${esc(t('These listed specifications match. Turn off Differences only to see every figure.'))}</p>` : ''}${table(models,groups)}<details class="cmp-footnotes"><summary>${esc(t('A note on these figures'))}</summary><p>${esc(t('Figures are rounded after conversion. PS is metric horsepower; hp is mechanical horsepower. Top speed, mass and dimensions follow your selected units. Acceleration targets are kept separate.'))}</p><p>${esc(t('Hybrid and electric output can include combined system power or temporary boost. Mass conventions, equipment and markets may differ; check the specification and BMW source.'))}</p><p>${esc(t('Photos are generation references and may show a different year, trim or market.'))} ${missing} = ${esc(t('Not documented'))}.</p></details>`}</article>`;
   }
   function refresh(focusSelector) {
-    if (!active()) return;
-    const body = document.querySelector('.comparison-v2').parentElement, scroll = body.querySelector('.cmp-scroll');
-    const left = scroll?.scrollLeft || 0, top = scroll?.scrollTop || 0;
-    const dialogElement = body.closest('dialog'), outerTop = dialogElement.scrollTop;
-    body.innerHTML = content();
-    const next = body.querySelector('.cmp-scroll');
+    const current = root();
+    if (!current?.isConnected || current.closest('dialog')?.open === false) return;
+    const scroll = current.querySelector('.cmp-scroll'), left = scroll?.scrollLeft || 0, top = scroll?.scrollTop || 0;
+    const dialogElement = current.closest('dialog'), outerTop = dialogElement?.scrollTop || 0;
+    current.outerHTML = content();
+    if (!mountedHost) dialogRoot = document.querySelector('dialog .comparison-v2');
+    const next = root()?.querySelector('.cmp-scroll');
     if (next) { next.scrollLeft = left; next.scrollTop = top; }
-    dialogElement.scrollTop = outerTop;
-    if (focusSelector) body.querySelector(focusSelector)?.focus({preventScroll:true});
+    if (dialogElement) dialogElement.scrollTop = outerTop;
+    if (focusSelector) root()?.querySelector(focusSelector)?.focus({preventScroll:true});
   }
   function select(ids, focusSelector) {
     copied = false;
-    onSelectionChange([...new Set(ids)].filter(id => byId.has(id)).slice(0, 4));
-    refresh(focusSelector);
+    onSelectionChange([...new Set(ids)].filter(id => byId.has(id)).slice(0, 3));
+    syncAddress(); refresh(focusSelector);
   }
+  function openPicker(index) {
+    pickerIndex = Math.min(Number(index), chosen().length, 2); pickerQuery = ''; pickerFilter = 'all'; showAll = false;
+    refresh('[data-cmp-search]');
+    root()?.querySelector('.cmp-picker')?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block:'nearest'});
+  }
+  function updatePicker() { const results = root()?.querySelector('#cmp-picker-results'); if (results) results.innerHTML = pickerResults(); }
   async function copyLink() {
     try {
       if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
       await navigator.clipboard.writeText(shareUrl());
-      copied = true;
-      refresh('[data-cmp-share]');
-      toast(t('Comparison link copied.'));
+      copied = true; refresh('[data-cmp-share]'); toast(t('Comparison link copied.'));
     } catch {
-      copied = false;
-      shareVisible = true; refresh('[data-cmp-share-url]');
-      document.querySelector('[data-cmp-share-url]')?.select();
+      copied = false; shareVisible = true; refresh('[data-cmp-share-url]');
+      root()?.querySelector('[data-cmp-share-url]')?.select();
     }
   }
   function open() {
-    const supplied = new URLSearchParams(location.search).get('units');
-    if (supplied === 'imperial') units = 'imperial';
-    if (active()) { refresh(); return; }
-    dialog(content());
-    const element = document.querySelector('.comparison-v2')?.closest('dialog');
+    if (mountedHost) { refresh(); return; }
+    if (dialogRoot?.isConnected && dialogRoot.closest('dialog')?.open) { refresh(); return; }
+    pickerIndex = null; dialog(content()); dialogRoot = document.querySelector('dialog .comparison-v2');
+    const element = dialogRoot?.closest('dialog');
     if (element) { element.scrollTop = 0; element.setAttribute('aria-label', t('Compare models')); }
   }
+  function mount(container) {
+    mountedHost = typeof container === 'string' ? document.querySelector(container) : container;
+    if (!mountedHost) return false;
+    mountedHost.innerHTML = content(); return true;
+  }
+  const belongs = event => event.target.closest('.comparison-v2') === root();
   document.addEventListener('click', event => {
-    if (!event.target.closest('.comparison-v2')) return;
-    const remove = event.target.closest('[data-cmp-remove]');
-    if (remove) { select(selectedId().filter(id => id !== remove.dataset.cmpRemove), '[data-cmp-select]'); return; }
-    const unit = event.target.closest('[data-cmp-units]');
-    if (unit) { units = unit.dataset.cmpUnits; copied = false; refresh(`[data-cmp-units="${units}"]`); return; }
-    if (event.target.closest('[data-cmp-share],[data-cmp-copy]')) { void copyLink(); return; }
-    if (event.target.closest('[data-cmp-print]')) { window.print(); return; }
+    if (!belongs(event)) return;
+    const button = event.target.closest('button'); if (!button) return;
+    if (button.matches('[data-cmp-pick]')) { openPicker(button.dataset.cmpPick); return; }
+    if (button.matches('[data-cmp-close-picker]')) { const index = pickerIndex; pickerIndex = null; refresh(`[data-cmp-pick="${index}"]`); return; }
+    if (button.matches('[data-cmp-choose]')) {
+      const id = button.dataset.cmpChoose, ids = selectedId();
+      if (ids.includes(id) || !byId.has(id) || pickerIndex === null) return;
+      const index = Math.min(pickerIndex, ids.length, 2); ids[index] = id; pickerIndex = null;
+      select(ids, `[data-cmp-pick="${index}"]`); return;
+    }
+    if (button.matches('[data-cmp-remove]')) { pickerIndex = null; select(selectedId().filter(id => id !== button.dataset.cmpRemove), '[data-cmp-pick]'); return; }
+    if (button.matches('[data-cmp-clear]')) { pickerIndex = null; select([], '[data-cmp-pick]'); return; }
+    if (button.matches('[data-cmp-preset]')) { pickerIndex = null; select(button.dataset.cmpPreset.split(','), '[data-cmp-pick]'); return; }
+    if (button.matches('[data-cmp-units]')) { units = button.dataset.cmpUnits; copied = false; syncAddress(); refresh(`[data-cmp-units="${units}"]`); return; }
+    if (button.matches('[data-cmp-share],[data-cmp-copy]')) { void copyLink(); return; }
+    if (button.matches('[data-cmp-filter]')) { pickerFilter = button.dataset.cmpFilter; showAll = false; refresh(`[data-cmp-filter="${pickerFilter}"]`); return; }
+    if (button.matches('[data-cmp-show-all]')) { showAll = true; updatePicker(); return; }
+  }, {signal:abort.signal});
+  document.addEventListener('input', event => {
+    if (!belongs(event) || !event.target.matches('[data-cmp-search]')) return;
+    pickerQuery = event.target.value; updatePicker();
   }, {signal:abort.signal});
   document.addEventListener('change', event => {
-    if (!event.target.closest('.comparison-v2')) return;
-    if (event.target.matches('[data-cmp-differences]')) { differencesOnly = event.target.checked; refresh('[data-cmp-differences]'); return; }
-    if (event.target.matches('[data-cmp-select]')) {
-      if (!event.target.value) { refresh(); return; }
-      const ids = selectedId(), index = Number(event.target.dataset.cmpSelect);
-      ids[index] = event.target.value;
-      select(ids, `[data-cmp-select="${index}"]`);
-    }
+    if (!belongs(event) || !event.target.matches('[data-cmp-differences]')) return;
+    differencesOnly = event.target.checked; copied = false; syncAddress(); refresh('[data-cmp-differences]');
+  }, {signal:abort.signal});
+  document.addEventListener('keydown', event => {
+    if (!belongs(event)) return;
+    if (event.key === 'Escape' && pickerIndex !== null) { event.preventDefault(); event.stopPropagation(); const index = pickerIndex; pickerIndex = null; refresh(`[data-cmp-pick="${index}"]`); }
+    if (event.key === 'ArrowDown' && event.target.matches('[data-cmp-search]')) { event.preventDefault(); root()?.querySelector('[data-cmp-choose]:not(:disabled)')?.focus(); }
   }, {signal:abort.signal});
   window.addEventListener('apex:languagechange', () => refresh(), {signal:abort.signal});
-  return {open, refresh, shareUrl, dispose:() => abort.abort()};
+  return {open, mount, render:content, refresh, shareUrl, dispose:() => abort.abort()};
 }

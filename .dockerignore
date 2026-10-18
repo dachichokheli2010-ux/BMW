@@ -1,0 +1,9 @@
+.git
+.data
+.env
+.env.*
+node_modules
+dist
+.sites-runtime
+.openai
+public/images/official-heritage/_candidates

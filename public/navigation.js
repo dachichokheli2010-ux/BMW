@@ -1,0 +1,16 @@
+export function mountNavigation({openSearch,openGarage}){
+  const header=document.querySelector('.site-header'),tools=header.querySelector('.header-tools'),nav=header.querySelector('nav');
+  const button=document.createElement('button');button.type='button';button.className='mobile-menu-toggle icon-button';button.setAttribute('aria-label','Open navigation');button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-expanded','false');button.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';tools.append(button);
+  const dialog=document.createElement('dialog');dialog.className='mobile-navigation';dialog.id='apex-mobile-navigation';dialog.setAttribute('aria-label','Explore APEX');button.setAttribute('aria-controls',dialog.id);
+  dialog.innerHTML='<div class="mn-top"><a class="mn-wordmark" href="/">APEX<span>BMW EXPLORER</span></a><button type="button" data-menu-close aria-label="Close navigation">×</button></div><button class="mn-search" type="button"><span>Search cars, parts & lessons</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg></button><p class="mn-label">EXPLORE YOUR CURIOSITY</p><nav aria-label="Mobile navigation"></nav><button class="mn-garage" type="button"><span><small>YOUR SPACE</small>My garage</span><span aria-hidden="true">↗</span></button><div class="mn-bottom"><a href="/about">About APEX</a><span>Independent. Driven by curiosity.</span></div>';
+  const mobileNav=dialog.querySelector('nav');
+  for(const [index,a] of [...nav.querySelectorAll('a')].filter(a=>!a.hasAttribute('data-personal-garage')).entries()){const copy=document.createElement('a');copy.href=a.href;if(a.hasAttribute('aria-current')){copy.setAttribute('aria-current','page');copy.classList.add('active');}const n=document.createElement('small');n.textContent=String(index+1).padStart(2,'0');const text=document.createElement('span');text.textContent=a.textContent;const arrow=document.createElement('span');arrow.textContent='↗';arrow.setAttribute('aria-hidden','true');copy.append(n,text,arrow);mobileNav.append(copy);}
+  document.body.append(dialog);
+  function close(){if(dialog.open)dialog.close();}
+  button.onclick=()=>{dialog.showModal();button.setAttribute('aria-expanded','true');document.body.classList.add('navigation-open');};
+  dialog.addEventListener('close',()=>{button.setAttribute('aria-expanded','false');document.body.classList.remove('navigation-open');});
+  dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)close();}if(e.target.closest('[data-menu-close]')||e.target.closest('a'))close();});
+  dialog.querySelector('.mn-search').onclick=()=>{close();openSearch();};dialog.querySelector('.mn-garage').onclick=()=>{close();openGarage();};
+  const media=matchMedia('(min-width: 1101px)'),changed=()=>{if(media.matches)close();};media.addEventListener('change',changed);
+  return {close,destroy(){media.removeEventListener('change',changed);close();dialog.remove();button.remove();}};
+}

@@ -17,18 +17,36 @@ npm run build
 
 `check` validates application syntax, catalog/photo integrity, source scope, search behavior, tuning math, learning content, and distinct synthesized engine profiles. `build` produces the existing Worker deployment format in `dist/server`; it is not a static HTML export. Unused research photographs in `_candidates` remain in source and are excluded from runtime packaging. Existing hosting configuration and audience are preserved; no deployment is performed by these commands.
 
+## Page structure
+
+The homepage is a short discovery page with the retained **More to discover** editorial section. Features have dedicated, reloadable URLs:
+
+- `/models` — the model finder, filters and vehicle details (`?model=f10-m5`).
+- `/learn` — Learn & Play, learning road, lessons and progress.
+- `/compare` — a comparison workspace for up to three BMWs, with search, grouped specifications, differences, unit selection and share links.
+- `/engine-lab` — interactive S63 engine explorer.
+- `/tuning-garage` — tuning scenarios and saved builds.
+- `/my-garage` — saved models, builds and learning.
+- `/parts`, `/electric` and `/about` — retained specialist pages.
+
+Legacy home query and hash bookmarks resolve to their corresponding pages, preserving selected models, parts, lessons, builds and comparison units. Local preview and the hosted Worker share the route map in `public/routes.js`. These are changes to the existing checkout; no live deployment is performed.
+
+The layout references the dedicated selector and specification hierarchy in [Porsche Compare](https://compare.porsche.com/en-AU), the model categories in [BMW's overview](https://www.bmwusa.com/all-bmws.html), and the course-to-concept progression in [Brilliant learning paths](https://brilliant.org/help/features/what-are-learning-paths/).
+
 ## Explore
 
 - **Models:** 89 retained catalog records across M, standard series, SUVs, Z, electric and historic models. Search and filter by engine family, chassis, specification year, body, powertrain, era, and power. Favorites, recent models, photo galleries and comparisons remain available.
-- **Global search:** use the header search button or Ctrl/Cmd K. Search vehicles, photographed components, system diagrams, lessons and workspaces. Questions such as “What does an intercooler do?” and comparisons such as “N54 vs N55” resolve to actionable results.
-- **Engine lab:** `/#engine-lab` opens an original S63 hot-V V8 schematic with 16 selectable components, connected-system information, rotation/zoom, exploded and X-ray views, slowed internals, and five conceptual flow overlays. Keyboard and touch controls are included. Without WebGL, the component guide remains usable.
-- **Tuning garage:** `/#tuning-garage` starts without a selected car. Nine system controls update a hypothetical build, accessible synthetic dyno, and stock-versus-scenario results. Builds can be saved, loaded, deleted and exported. A simulated dashboard reuses the existing family-specific Web Audio synthesis and stops when hidden.
-- **Academy:** `/#academy` provides eight subjects at three levels, 24 quizzes, interactive diagrams, local progress, component identification, three diagnostic scenarios, an engine family explorer and BMW history.
+- **Global search:** use the header search button or Ctrl/Cmd K. Search vehicles, photographed components, system diagrams, lessons and workspaces. Questions such as “What does an intercooler do?” and comparisons such as “N54 vs N55” resolve to actionable results. Ranking recognizes technical aliases and compact chassis/model queries; typo suggestions are labeled and never silently replace numeric engine codes. Recent queries can be replayed, removed or cleared.
+- **Dropdowns:** all single-choice menus share a styled, accessible control with selection checkmarks, option search for long lists, automatic positioning, keyboard navigation and touch targets. The original native controls remain the source of application state. Language selection uses the same system.
+- **Navigation & My garage:** mobile navigation has a full menu with direct search and garage access. My garage brings saved models, recent views, saved configurations and learning progress together in one browser-local workspace.
+- **Engine lab:** `/engine-lab` opens an original S63 hot-V V8 schematic with 16 selectable components, connected-system information, rotation/zoom, exploded and X-ray views, slowed internals, and five conceptual flow overlays. Keyboard and touch controls are included. Without WebGL, the component guide remains usable.
+- **Tuning garage:** `/tuning-garage` starts without a selected car. Nine system controls update a hypothetical build, accessible synthetic dyno, and stock-versus-scenario results. Road/track concept presets and same-model saved-build comparison make the assumptions easier to explore. Builds can be saved, loaded, deleted, exported and imported with strict validation; imported performance claims are recalculated. A simulated dashboard reuses the existing family-specific Web Audio synthesis and stops when hidden.
+- **Learn & Play:** `/learn` has 34 sourced lessons and 103 questions across six units, including a complete beginner road with two checkpoints, eight photographed-part lessons, BMW recognition, engine families and three diagnostic simulations. Choice, tap-to-order and tap-to-match questions use validated answers and explanatory retries. Browser-local XP, levels, calendar streaks, achievements, daily challenges, spaced review and collectible cards persist after reload. `/learn?car=f10-m5` opens a model-specific lesson. The original engine-code explorer, history and legacy progress are retained.
 - **Inside BMW:** `/parts` retains eight credited component photographs and adds 16 original system guides. Turbo-type comparisons remain available at `/parts#turbo-types`.
 
 ## Accuracy and asset scope
 
-Factory facts, source references, reference photographs and educational representations are labeled separately. Existing catalog facts retain their original market and power units. The new expanded records cover only the **F10 M5 October 2011 European M DCT** and **E92 M3 April 2007 European manual launch** configurations. Their acceleration, transmission, dimensions and mass conventions come from matching BMW documents. Other expanded measurements are shown as unavailable.
+Factory facts, source references, reference photographs and educational representations are labeled separately. Existing catalog facts retain their original market and power units. Expanded records cover eight matching configurations: F10 M5, E92 M3, G80 M3 Competition, G82 M4 Competition, G87 M2, G81 M3 Touring, F80 M3 and E46 M3 CSL. Each record identifies its launch year, market, transmission baseline, original BMW sources and mass convention. US 0–60 mph results are kept separate from 0–100 km/h; missing measurements remain unavailable. Manual/automatic alternatives and provisional launch figures are explicitly identified.
 
 Production-year ranges and every factory engine option have not been reconstructed for all 89 records. The year filter uses the stated specification/model year, rather than an inferred production range. Dimensions in the expanded records use the source's body-width convention.
 
@@ -38,6 +56,8 @@ The 3D engine, system diagrams and chassis preview are original simplified educa
 
 Interactive sound is synthesized, with different engine family/cylinder/aspiration profiles. The existing creator-hosted recording embeds remain separate. A licensed, multi-RPM recording bank and a verified factory S63 3D asset are not installed.
 
+Academy accounts, online rankings and an authenticated content administration service are not connected. The leaderboard displays the real local guest profile; it does not fabricate other users. Guest rewards are validated in the local session, with duplicate completion rewards prevented, but are not trusted multiplayer scores. The academy content is modular JavaScript in `academy-content.js`; the existing cloud garage API is preserved separately.
+
 Primary expanded specification sources:
 
 - [BMW M5 specifications, October 2011](https://www.press.bmwgroup.com/global/article/attachment/T0122682EN/178942)
@@ -46,6 +66,6 @@ Primary expanded specification sources:
 
 ## Code map
 
-`app.js` retains model routing, galleries, engine playback and the original parts dialogs. `catalog.js` assembles the retained data and applies additive `verified-specs.js` enrichment. `platform.js` adds the engineering workspace and lazily loads `engine-lab.js`, `garage.js` and `academy.js`. `smart-search.js` has a pure search index and accessible search dialog. `system-guide.js` contains sourced component explanations and original diagrams. Each workspace has scoped CSS; `platform.css` applies the shared blue/black visual upgrade.
+`app.js` retains model routing, galleries, engine playback and the original parts dialogs. `catalog.js` assembles the retained data and applies additive `verified-specs.js` enrichment. `platform.js` mounts dedicated pages and lazily loads `engine-lab.js`, `garage.js`, `academy.js` and `personal-garage.js`. `smart-search.js` has a pure search index and accessible search dialog. `dropdowns.js` enhances native selects, and `navigation.js` owns the mobile menu. `system-guide.js` contains sourced component explanations and original diagrams. Each workspace has scoped CSS; `platform.css` and `refinements.css` apply the shared blue/black visual upgrade.
 
 No runtime dependencies were added. Three.js and OrbitControls use the project's existing local vendor files and license. New lessons and workspace copy are English; existing translated catalog behavior is preserved.

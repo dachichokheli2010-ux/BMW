@@ -4,11 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node scripts/check.mjs",
+    "check": "node scripts/check.mjs && node scripts/check-academy.mjs && node scripts/check-backend.mjs",
     "build": "node scripts/build.mjs",
     "db:generate": "drizzle-kit generate",
-    "start": "node scripts/preview-local.mjs"
+    "start": "node --env-file-if-exists=.env scripts/preview-local.mjs"
   },
+  "engines": {"node": ">=24.0.0"},
   "dependencies": {
     "drizzle-orm": "0.44.7"
   },

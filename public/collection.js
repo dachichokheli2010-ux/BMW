@@ -8,7 +8,7 @@ const icons = {
 };
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function stored(key) { try { const value=JSON.parse(localStorage.getItem(key)||'[]'); return Array.isArray(value)?value.filter(x=>typeof x==='string'):[]; } catch { return []; } }
-function save(key,value) { try { localStorage.setItem(key,JSON.stringify([...value])); } catch {} }
+function save(key,value) { try { localStorage.setItem(key,JSON.stringify([...value]));window.dispatchEvent(new CustomEvent('apex:localchange',{detail:{key}})); } catch {} }
 export const isM = m => m.isM === true || m.generation.startsWith('M SERIES') || /^BMW (?:M[1-8](?:\b|\s)|1 Series M|1M\b|X[3-6] M\b|XM\b|Z[34] M\b)/.test(m.name);
 export const isElectric = m => m.code === 'eDrive' || m.fuel === 'electric' || m.electric === true;
 const powerHP = m => Number(m.power)*(m.powerUnit==='kW'?1.34102:m.powerUnit==='PS'?0.98632:1);
@@ -26,7 +26,7 @@ function series(m) {
 }
 
 export function mountCollection({models, catalog=models, getCurrent=()=>null, selectModel, showCollection, dialog, toast, threeModels, electricPage}) {
-  const $=s=>document.querySelector(s), favorites=new Set(stored('apex-favorites').filter(id=>catalog.some(m=>m.id===id))), comparison=new Set(stored('apex-comparison').filter(id=>catalog.some(m=>m.id===id)).slice(0,4));
+  const $=s=>document.querySelector(s), favorites=new Set(stored('apex-favorites').filter(id=>catalog.some(m=>m.id===id))), comparison=new Set(stored('apex-comparison').filter(id=>catalog.some(m=>m.id===id)).slice(0,3));
   let active='all',limit=12,quick='',viewStyle='grid',compareController;
   try{viewStyle=localStorage.getItem('apex-view')==='list'?'list':'grid';}catch{}
   const filters=[['all','All models'],['m','BMW M'],['electric','Electric'],['sedan','Sedans'],['coupe','Coupes'],['suv','SUVs'],['roadster','Roadsters'],['touring','Touring'],['heritage','Heritage'],['saved','Saved'],['3d','3D cars']];
@@ -51,7 +51,7 @@ export function mountCollection({models, catalog=models, getCurrent=()=>null, se
     return category&&quickMatches&&eraMatches&&(fuel==='all'||fuelOf(m)===fuel)&&(body==='all'||bodyOf(m)===body)&&powerHP(m)>=Number($('#power-filter').value)&&($('#series-filter').value==='all'||series(m)===$('#series-filter').value)&&($('#engine-filter').value==='all'||m.code===$('#engine-filter').value)&&($('#generation-filter').value==='all'||chassis(m)===$('#generation-filter').value)&&($('#year-filter').value==='all'||String(year)===$('#year-filter').value)&&query.every(term=>haystack.includes(term));
   }
   function card(m,i) {
-    return `<article class="model-card"><a class="model" data-model="${esc(m.id)}" href="${electricPage?'/electric':'/'}?model=${encodeURIComponent(m.id)}" aria-label="${esc(t('Explore model'))}: ${esc(m.name)} ${esc(m.generation.split(' / ')[1]?.trim())}"><div class="model-image"><img src="${esc(m.car)}" alt="${esc(m.name)} ${esc(m.generation.split(' / ')[1]?.trim())}" loading="lazy" decoding="async"><span class="model-chassis">${esc(m.generation.split(' / ')[1]?.trim())}</span>${isM(m)?'<span class="model-tag"><i class="m-stripes" aria-hidden="true"></i> M</span>':isElectric(m)?'<span class="model-tag electric-tag">'+esc(t('Electric'))+'</span>':''}</div><div class="model-info"><div><span class="model-category">${esc(t(m.body==='Coupés'?'Coupes':m.body))}</span><h3>${esc(m.name.replace('BMW ',''))}</h3><small>${esc(m.code)} <span>·</span> ${esc(m.power)} ${esc(m.powerUnit)} <span>·</span> ${esc(m.torque)} ${esc(m.torqueUnit)}</small></div><span class="model-arrow">${icons.arrow}</span></div></a><div class="card-actions"><button data-save="${esc(m.id)}" class="icon-button save-model ${favorites.has(m.id)?'is-saved':''}" aria-label="${esc(t(favorites.has(m.id)?'Remove from garage':'Save to garage'))}: ${esc(m.name)}" aria-pressed="${favorites.has(m.id)}" title="${esc(t(favorites.has(m.id)?'Remove from garage':'Save to garage'))}">${icons.heart}</button><button data-compare="${esc(m.id)}" class="compare-model ${comparison.has(m.id)?'is-selected':''}" aria-pressed="${comparison.has(m.id)}">${icons.compare}<span>${esc(t(comparison.has(m.id)?'Remove':'Compare'))}</span></button></div></article>`;
+    return `<article class="model-card"><a class="model" data-model="${esc(m.id)}" href="${electricPage?'/electric':'/models'}?model=${encodeURIComponent(m.id)}" aria-label="${esc(t('Explore model'))}: ${esc(m.name)} ${esc(m.generation.split(' / ')[1]?.trim())}"><div class="model-image"><img src="${esc(m.car)}" alt="${esc(m.name)} ${esc(m.generation.split(' / ')[1]?.trim())}" loading="lazy" decoding="async"><span class="model-chassis">${esc(m.generation.split(' / ')[1]?.trim())}</span>${isM(m)?'<span class="model-tag"><i class="m-stripes" aria-hidden="true"></i> M</span>':isElectric(m)?'<span class="model-tag electric-tag">'+esc(t('Electric'))+'</span>':''}</div><div class="model-info"><div><span class="model-category">${esc(t(m.body==='Coupés'?'Coupes':m.body))}</span><h3>${esc(m.name.replace('BMW ',''))}</h3><small>${esc(m.code)} <span>·</span> ${esc(m.power)} ${esc(m.powerUnit)} <span>·</span> ${esc(m.torque)} ${esc(m.torqueUnit)}</small></div><span class="model-arrow">${icons.arrow}</span></div></a><div class="card-actions"><button data-save="${esc(m.id)}" class="icon-button save-model ${favorites.has(m.id)?'is-saved':''}" aria-label="${esc(t(favorites.has(m.id)?'Remove from garage':'Save to garage'))}: ${esc(m.name)}" aria-pressed="${favorites.has(m.id)}" title="${esc(t(favorites.has(m.id)?'Remove from garage':'Save to garage'))}">${icons.heart}</button><button data-compare="${esc(m.id)}" class="compare-model ${comparison.has(m.id)?'is-selected':''}" aria-pressed="${comparison.has(m.id)}">${icons.compare}<span>${esc(t(comparison.has(m.id)?'Remove':'Compare'))}</span></button></div></article>`;
   }
   function render() {
     const list=models.filter(matches), order=$('#modelsort').value;
@@ -78,15 +78,15 @@ export function mountCollection({models, catalog=models, getCurrent=()=>null, se
   }
   function updateCompare() {
     const chosen=[...comparison].map(id=>catalog.find(m=>m.id===id)).filter(Boolean);
-    $('#compare-tray').hidden=!chosen.length;
+    $('#compare-tray').hidden=!chosen.length||!['/models','/electric'].includes(location.pathname);
     $('#compare-items').innerHTML=chosen.map(m=>`<button data-uncompare="${esc(m.id)}" aria-label="${esc(t('Remove'))} ${esc(m.name)}"><img src="${esc(m.car)}" alt=""><span>${esc(m.name.replace('BMW ',''))}<small>${esc(m.generation.split(' / ')[1].trim())}</small></span><span aria-hidden="true">×</span></button>`).join('');
-    $('#open-comparison').textContent=t('Compare')+' ('+chosen.length+'/4)';
+    $('#open-comparison').textContent=t('Compare')+' ('+chosen.length+'/3)';
     $('#open-comparison').disabled=chosen.length<1;
     compareController?.refresh();
   }
-  function openComparison(){compareController.open();}
+  function openComparison(){if(location.pathname==='/compare')return;location.href='/compare'+(comparison.size?'?compare='+encodeURIComponent([...comparison].join(',')):'');}
   function clearAdvanced(){for(const id of ['#powertrain-filter','#era-filter','#body-filter','#engine-filter','#generation-filter','#year-filter'])$(id).value='all';$('#power-filter').value='0';}
-  function syncFilterUrl(write=true){const params=new URLSearchParams();if(active!=='all')params.set('collection',active);if(quick==='daily')params.set('pick','daily');for(const [key,id] of [['series','#series-filter'],['fuel','#powertrain-filter'],['era','#era-filter'],['body','#body-filter'],['power','#power-filter'],['engine','#engine-filter'],['chassis','#generation-filter'],['year','#year-filter']]){const value=$(id).value;if(value!=='all'&&value!=='0')params.set(key,value);}if($('#modelsearch').value.trim())params.set('q',$('#modelsearch').value.trim());const address=(electricPage?'/electric':'/')+(params.size?'?'+params:'')+'#collection';if(write)history.replaceState(null,'',address);return address;}
+  function syncFilterUrl(write=true){const params=new URLSearchParams();if(active!=='all')params.set('collection',active);if(quick==='daily')params.set('pick','daily');for(const [key,id] of [['series','#series-filter'],['fuel','#powertrain-filter'],['era','#era-filter'],['body','#body-filter'],['power','#power-filter'],['engine','#engine-filter'],['chassis','#generation-filter'],['year','#year-filter']]){const value=$(id).value;if(value!=='all'&&value!=='0')params.set(key,value);}if($('#modelsearch').value.trim())params.set('q',$('#modelsearch').value.trim());const address=(electricPage?'/electric':'/models')+(params.size?'?'+params:'');if(write)history.replaceState(null,'',address);return address;}
   function renderActiveFilters(){
     const chips=[];
     if(active!=='all')chips.push(['category',t(filters.find(([id])=>id===active)?.[1]||'All models')]);
@@ -98,12 +98,13 @@ export function mountCollection({models, catalog=models, getCurrent=()=>null, se
     $('#filter-count').hidden=!chips.length;$('#filter-count').textContent=String(chips.length);
   }
   function miniCard(m){return `<a class="mini-model" data-model="${esc(m.id)}" href="/?model=${encodeURIComponent(m.id)}"><img src="${esc(m.car)}" alt="${esc(m.name)}" loading="lazy"><span><strong>${esc(m.name.replace('BMW ',''))}</strong><small>${esc(m.generation.split(' / ')[1])} · ${esc(m.power)} ${esc(m.powerUnit)} · ${esc(m.torque)} ${esc(m.torqueUnit)}</small></span><span aria-hidden="true">↗</span></a>`;}
-  function renderRecent(){const section=$('#recent-section');if(!section)return;const recent=stored('apex-recent').map(id=>catalog.find(m=>m.id===id)).filter(Boolean).slice(0,4);section.hidden=!recent.length||!!getCurrent();$('#recent-models').innerHTML=recent.map(miniCard).join('');}
+  function renderRecent(){const section=$('#recent-section');if(!section)return;const recent=stored('apex-recent').map(id=>catalog.find(m=>m.id===id)).filter(Boolean).slice(0,3);section.hidden=!recent.length||!!getCurrent();$('#recent-models').innerHTML=recent.map(miniCard).join('');}
   function recordViewed(id){save('apex-recent',new Set([id,...stored('apex-recent').filter(value=>value!==id)].slice(0,8)));renderRecent();renderDetailActions();}
   function renderDetailActions(){const m=getCurrent();if(!m)return;$('#detail-save').setAttribute('aria-pressed',String(favorites.has(m.id)));$('#detail-save span').textContent=t(favorites.has(m.id)?'Saved':'Save to garage');$('#detail-compare').setAttribute('aria-pressed',String(comparison.has(m.id)));const score=other=>(isM(m)===isM(other)?3:0)+(fuelOf(m)===fuelOf(other)?3:0)+(bodyOf(m)===bodyOf(other)?2:0)+(series(m)===series(other)?4:0)-Math.min(2,Math.abs(powerHP(m)-powerHP(other))/200);const related=models.filter(other=>other.id!==m.id).sort((a,b)=>score(b)-score(a)).slice(0,3);$('#related-models').innerHTML=related.map(miniCard).join('');}
   function renderPresets(){const grid=$('#matchup-grid');if(!grid)return;const pairs=[['M3 vs M4',['g80','g82-m4']],['M2 vs 1M',['g87-m2','e82-1m']],['Electric vs petrol',['g60-i5','g30-530i']]];grid.innerHTML=pairs.map(([title,ids])=>{const cars=ids.map(id=>catalog.find(m=>m.id===id)).filter(Boolean);if(cars.length!==2)return '';return `<button class="matchup-card" data-compare-preset="${ids.join(',')}"><div class="matchup-photos">${cars.map(m=>`<img src="${esc(m.car)}" alt="${esc(m.name)}" loading="lazy">`).join('')}<span>VS</span></div><div class="matchup-copy"><span>${esc(t(title))}</span><small>${esc(t('Compare this pair'))} →</small></div></button>`;}).join('');}
-  function setComparison(ids){comparison.clear();ids.filter(id=>catalog.some(m=>m.id===id)).slice(0,4).forEach(id=>comparison.add(id));save('apex-comparison',comparison);render();}
+  function setComparison(ids){comparison.clear();ids.filter(id=>catalog.some(m=>m.id===id)).slice(0,3).forEach(id=>comparison.add(id));save('apex-comparison',comparison);render();}
   function setFilter(filter) {
+    if(!['/models','/electric'].includes(location.pathname)){location.href='/models?collection='+encodeURIComponent(filter);return;}
     active=filters.some(([id])=>id===filter)?filter:'all';limit=12;
     quick='';$('#modelsearch').value='';$('#series-filter').value='all';clearAdvanced();
     if($('#collection').hidden)showCollection();
@@ -115,14 +116,14 @@ export function mountCollection({models, catalog=models, getCurrent=()=>null, se
     const saveButton=event.target.closest('[data-save]');
     if(saveButton){const id=saveButton.dataset.save;favorites.has(id)?favorites.delete(id):favorites.add(id);save('apex-favorites',favorites);const y=window.scrollY;render();$(`[data-save="${id}"]`)?.focus({preventScroll:true});window.scrollTo({top:y,behavior:'instant'});return;}
     const compareButton=event.target.closest('[data-compare],[data-uncompare]');
-    if(compareButton){const id=compareButton.dataset.compare||compareButton.dataset.uncompare;if(comparison.has(id))comparison.delete(id);else if(comparison.size<4)comparison.add(id);else{toast(t('Select up to 4 models to compare.'));return;}save('apex-comparison',comparison);render();$(`[data-compare="${id}"]`)?.focus({preventScroll:true});return;}
+    if(compareButton){const id=compareButton.dataset.compare||compareButton.dataset.uncompare;if(comparison.has(id))comparison.delete(id);else if(comparison.size<3)comparison.add(id);else{toast(t('Select up to 3 models to compare.'));return;}save('apex-comparison',comparison);render();$(`[data-compare="${id}"]`)?.focus({preventScroll:true});return;}
     const modelLink=event.target.closest('a[data-model]');
     if(modelLink&&models.some(m=>m.id===modelLink.dataset.model)&&!event.ctrlKey&&!event.metaKey&&!event.shiftKey&&event.button===0){event.preventDefault();selectModel(modelLink.dataset.model);}
     const quickButton=event.target.closest('[data-quick]');if(quickButton){const id=quickButton.dataset.quick,filtersByQuick={m:'m',electric:'electric',open:'roadster',suv:'suv',classic:'heritage'};setFilter(filtersByQuick[id]||'all');quick=id;limit=12;syncFilterUrl();render();}
     const removeFilter=event.target.closest('[data-remove-filter]');if(removeFilter){const id=removeFilter.dataset.removeFilter;if(id==='category'){active='all';quick='';}else if(id==='query')$('#modelsearch').value='';else if(id==='daily')quick='';else $(id).value=id==='#power-filter'?'0':'all';limit=12;syncFilterUrl();render();}
     const preset=event.target.closest('[data-compare-preset]');if(preset){setComparison(preset.dataset.comparePreset.split(','));openComparison();}
     if(event.target.closest('[data-start-compare]'))openComparison();
-    const shortcut=event.target.closest('[data-collection]');if(shortcut){if(document.body.dataset.page==='parts'||document.body.dataset.page==='about'||document.body.dataset.page&&shortcut.dataset.collection==='saved'){window.location.href='/?collection='+shortcut.dataset.collection;return;}setFilter(shortcut.dataset.collection);}
+    const shortcut=event.target.closest('[data-collection]');if(shortcut){if(document.body.dataset.page==='parts'||document.body.dataset.page==='about'||document.body.dataset.page&&shortcut.dataset.collection==='saved'){window.location.href='/models?collection='+shortcut.dataset.collection;return;}setFilter(shortcut.dataset.collection);}
   });
   $('#modelsearch').addEventListener('input',()=>{limit=12;syncFilterUrl();render();});
   $('#modelsearch').addEventListener('keydown',event=>{if(event.key==='Escape'){$('#clearsearch').click();}if(event.key==='Enter'){const found=models.filter(matches);if(found.length===1)selectModel(found[0].id);}});
@@ -137,7 +138,8 @@ export function mountCollection({models, catalog=models, getCurrent=()=>null, se
   $('#open-comparison').onclick=openComparison;
   $('#clear-comparison').onclick=()=>{comparison.clear();save('apex-comparison',comparison);render();};
   window.addEventListener('apex:languagechange',render);
-  window.addEventListener('storage',event=>{if(event.key==='apex-favorites'){favorites.clear();stored('apex-favorites').filter(id=>catalog.some(m=>m.id===id)).forEach(x=>favorites.add(x));render();}if(event.key==='apex-comparison'){comparison.clear();stored('apex-comparison').filter(id=>catalog.some(m=>m.id===id)).slice(0,4).forEach(id=>comparison.add(id));render();}if(event.key==='apex-recent')renderRecent();});
+  window.addEventListener('apex:favoriteschange',()=>{favorites.clear();stored('apex-favorites').filter(id=>catalog.some(m=>m.id===id)).forEach(id=>favorites.add(id));render();});
+  window.addEventListener('storage',event=>{if(event.key==='apex-favorites'){favorites.clear();stored('apex-favorites').filter(id=>catalog.some(m=>m.id===id)).forEach(x=>favorites.add(x));render();}if(event.key==='apex-comparison'){comparison.clear();stored('apex-comparison').filter(id=>catalog.some(m=>m.id===id)).slice(0,3).forEach(id=>comparison.add(id));render();}if(event.key==='apex-recent')renderRecent();});
   $('#browse3d span').textContent=Object.keys(threeModels).length;
   $('#browse3d').hidden=electricPage;
   $('#browse3d').onclick=()=>setFilter('3d');
@@ -149,23 +151,23 @@ export function mountCollection({models, catalog=models, getCurrent=()=>null, se
   if(params.get('pick')==='daily')quick='daily';
   compareController=createComparisonController({catalog,getSelected:()=>[...comparison],onSelectionChange:setComparison,dialog,toast});
   render();renderPresets();
-  const shared=(params.get('compare')||'').split(',').filter(id=>catalog.some(m=>m.id===id)).slice(0,4);
-  if(shared.length){setComparison(shared);requestAnimationFrame(openComparison);}
-  if(initial&&!document.body.dataset.page)requestAnimationFrame(()=>$('#collection').scrollIntoView({block:'start'}));
+  const shared=(params.get('compare')||'').split(',').filter(id=>catalog.some(m=>m.id===id)).slice(0,3);
+  if(shared.length){setComparison(shared);if(location.pathname!=='/compare')requestAnimationFrame(openComparison);}
+  if(initial&&location.pathname==='/models')requestAnimationFrame(()=>$('#collection').scrollIntoView({block:'start'}));
   document.querySelectorAll('[data-model-total]').forEach(el=>el.textContent=models.length);
   document.querySelectorAll('[data-m-total]').forEach(el=>el.textContent=models.filter(isM).length);
   $('#clear-recent')?.addEventListener('click',()=>{try{localStorage.removeItem('apex-recent');}catch{}renderRecent();});
   $('#detail-save').onclick=()=>{const m=getCurrent();if(!m)return;favorites.has(m.id)?favorites.delete(m.id):favorites.add(m.id);save('apex-favorites',favorites);render();};
-  $('#detail-compare').onclick=()=>{const m=getCurrent();if(!m)return;if(!comparison.has(m.id)){if(comparison.size>=4){toast(t('Select up to 4 models to compare.'));return;}setComparison([...comparison,m.id]);}openComparison();};
+  $('#detail-compare').onclick=()=>{const m=getCurrent();if(!m)return;if(!comparison.has(m.id)){if(comparison.size>=3){toast(t('Select up to 3 models to compare.'));return;}setComparison([...comparison,m.id]);}openComparison();};
   $('#detail-share').onclick=async()=>{const m=getCurrent();if(!m)return;const url=location.origin+'/?model='+encodeURIComponent(m.id);try{await navigator.clipboard.writeText(url);toast(t('Link copied'));}catch{dialog(`<h2>${esc(t('Copy this link'))}</h2><input class="share-link-input" aria-label="${esc(t('Share model'))}" readonly value="${esc(url)}">`);$('#dialogbody input')?.select();}};
   $('#related-back').onclick=showCollection;
-  document.addEventListener('keydown',event=>{if(event.key==='/'&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&!event.target.closest('input,select,textarea,[contenteditable=true]')&&!$('#dialog').open){if(document.body.dataset.page==='about')return;event.preventDefault();if(document.body.dataset.page==='parts'){$('#partsearch').focus();return;}if(getCurrent())showCollection();$('#modelsearch').focus();$('#modelsearch').scrollIntoView({block:'center'});}});
+  document.addEventListener('keydown',event=>{if(event.key==='/'&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&!event.target.closest('input,select,textarea,[contenteditable=true]')&&!$('#dialog').open){if(document.body.dataset.page==='about'||!['/models','/electric','/parts'].includes(location.pathname))return;event.preventDefault();if(document.body.dataset.page==='parts'){$('#partsearch').focus();return;}if(getCurrent())showCollection();$('#modelsearch').focus();$('#modelsearch').scrollIntoView({block:'center'});}});
   function compareModels(ids){
-    const selected=[...new Set(Array.isArray(ids)?ids:[])].filter(id=>catalog.some(model=>model.id===id)).slice(0,4);
+    const selected=[...new Set(Array.isArray(ids)?ids:[])].filter(id=>catalog.some(model=>model.id===id)).slice(0,3);
     if(selected.length<2)return false;
     setComparison(selected);
     openComparison();
     return true;
   }
-  return {render,setFilter,recordViewed,compareModels,getCollectionUrl:()=>syncFilterUrl(false)};
+  return {render,setFilter,recordViewed,compareModels,mountComparison:container=>compareController.mount(container),getCollectionUrl:()=>syncFilterUrl(false)};
 }

@@ -42,5 +42,7 @@ for(const [name,asset] of Object.entries(assets).sort(([a],[b])=>a<b?-1:a>b?1:0)
 }
 flush();
 fs.writeFileSync(path.join(server,'assets.js'),chunks.map((filename,index)=>`import {assets as block${index}} from './${filename}';`).join('\n')+'\nexport const assets={'+chunks.map((_,index)=>'...block'+index).join(',')+'};\n');
-fs.copyFileSync('worker/index.js',path.join(server,'index.js'));
+fs.writeFileSync(path.join(server,'index.js'),fs.readFileSync('worker/index.js','utf8').replace("'../server/api.js'","'./backend/api.js'"));
+fs.copyFileSync('public/routes.js',path.join(server,'routes.js'));
+fs.cpSync('server',path.join(server,'backend'),{recursive:true,filter:filename=>!filename.endsWith('.mjs')});
 console.log(`Built ${Object.keys(assets).length} locally served assets in ${chunks.length} modules with the authenticated garage API.`);

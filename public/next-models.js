@@ -691,7 +691,7 @@ const photographs = {
       "original": "https://upload.wikimedia.org/wikipedia/commons/a/a7/BMW_M3_Competition_%28G80%29_Washington_DC_Metro_Area%2C_USA_%281%29.jpg",
       "changes": "Resized and converted to WebP. Original composition retained."
     },
-    "photoNote": "G80 M3 Competition exterior reference. The photographed Competition variant differs from the rear-drive base M3 factory specification shown.",
+    "photoNote": "G80 M3 Competition exterior reference. The selected specification is the 2021 US rear-wheel-drive Competition; individual equipment and market details in the photograph may differ.",
     "width": 1500,
     "height": 1200
   },

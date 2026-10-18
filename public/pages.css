@@ -1,0 +1,70 @@
+/* Each destination has its own page; the home page is a discovery experience. */
+html[data-route]:not([data-route="home"]) .home-feature{display:none!important}
+html[data-route="home"] #collection{display:none!important}
+html[data-route="home"] .popular-comparisons{display:none!important}
+html[data-route="home"] #recent-section{display:none!important}
+.hero .button-primary{background:#86beff;color:#071423}
+.hero .button-primary:hover{background:#aed3ff;color:#071423}
+html[data-route="models"] #recent-section:not([hidden]){display:block!important}
+html[data-route="electric"] .hero.home-feature{display:block!important}
+html[data-route="electric"] .collection-ticker.home-feature{display:flex!important}
+html[data-route="models"] .collection,html[data-route="electric"] .collection{padding-top:58px}
+html[data-route="models"] .collection .section-heading h2{font-size:clamp(34px,4vw,58px);line-height:1.12;max-width:700px;letter-spacing:-2px}
+html[data-route="models"] .collection-intro{max-width:550px;line-height:1.8}
+html[data-route="models"] .collection .section-heading{margin-bottom:32px}
+html[data-route="models"] .quick-picks{margin-bottom:28px}
+html[data-route="model"] .home-feature,html[data-route="model"] #collection{display:none!important}
+html[data-route="learn"] #compare-tray,html[data-route="compare"] #compare-tray,html[data-route="engine-lab"] #compare-tray,html[data-route="tuning-garage"] #compare-tray,html[data-route="my-garage"] #compare-tray{display:none!important}
+.destination-page{width:90%;max-width:1440px;margin:0 auto;padding:32px 0 80px;min-height:70svh;scroll-margin-top:var(--header-height,88px)}
+.destination-breadcrumb{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:10px;margin:2px 0 24px}
+.destination-breadcrumb a:hover{color:var(--accent)}
+.destination-breadcrumb a{padding:0;font-size:inherit}
+.destination-breadcrumb>span:last-child{color:var(--white)}
+.destination-heading{position:static;height:auto;min-height:0;display:flex;justify-content:space-between;align-items:flex-end;gap:30px;padding:12px 0 30px;margin-bottom:24px;border-bottom:1px solid var(--line)}
+.destination-heading h1{font-weight:450;font-size:clamp(38px,4.5vw,64px);letter-spacing:-2.4px;line-height:1.05;margin:15px 0 16px}
+.destination-heading p{font-size:13px;line-height:1.8;color:var(--muted);max-width:590px;margin:0}
+.destination-label{font-size:9px;color:var(--accent);border:1px solid var(--line);padding:11px 14px;letter-spacing:1.1px;white-space:nowrap;margin-bottom:3px}
+.destination-panel{min-width:0;outline:none}
+.destination-panel .bmw-academy{margin-block:0}
+.destination-panel>.engine-lab,.destination-panel>.tuning-garage{margin-block:0}
+.destination-panel .pg-header h2{font-size:40px}
+.destination-error{padding:70px 24px;text-align:center;border:1px solid var(--line);background:var(--surface)}
+.destination-error p{color:var(--muted);font-size:13px;line-height:1.8}
+.destination-error button{margin-top:15px;padding:12px 24px}
+.home-directions{width:90%;max-width:1440px;margin:58px auto 16px}
+.directions-heading{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px;gap:30px}
+.directions-heading h2{font-size:clamp(30px,3vw,42px);letter-spacing:-1.5px;font-weight:450;line-height:1.15;margin:12px 0 0}
+.directions-heading>p{font-size:12px;color:var(--muted);max-width:240px;line-height:1.8;margin:0 0 4px}
+.directions-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.direction-card{display:flex;flex-direction:column;position:relative;isolation:isolate;min-height:300px;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:28px;color:var(--white)}
+.direction-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;transition:transform .5s}
+.direction-card:after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,#02080d42,#02080dd9 65%,#02080df5)}
+.direction-card:has(img){color:#fff}
+.direction-card:hover img{transform:scale(1.04)}
+.direction-card>small{font-size:9px;letter-spacing:1.7px;color:#b4d5ff}
+.direction-card h3{font-size:29px;font-weight:450;letter-spacing:-.8px;margin:70px 0 10px;line-height:1.12;color:#fff}
+.direction-card p{font-size:12px;line-height:1.8;color:#cad0da;max-width:280px;margin:0 0 24px}
+.direction-card>span{display:flex;justify-content:space-between;align-items:center;gap:20px;font-size:11px;border-top:1px solid #ffffff35;padding-top:16px;margin-top:auto;color:#b4d5ff}
+.direction-card>span b{font-size:20px;font-weight:400}
+.direction-card.learn-direction{background:radial-gradient(ellipse at 90% 5%,#1765ad55,transparent 75%),#101a27}
+.learn-direction .direction-road{position:absolute;width:175px;height:210px;border:2px dashed #7bbdff70;border-radius:55%;transform:rotate(25deg);right:-55px;top:-70px;z-index:-1}
+.learn-direction .direction-road:before,.learn-direction .direction-road:after{content:"";position:absolute;border-radius:50%;width:22px;height:22px;background:#142c46;border:2px solid #8dc8ff;box-shadow:0 0 25px #3789dd55}
+.learn-direction .direction-road:before{top:77px;left:-10px}.learn-direction .direction-road:after{bottom:12px;left:19px}
+.home-directions+.editorial{margin-top:54px}
+.site-header nav .nav-garage{font-size:12px;color:var(--muted)}
+.engineering-detail-actions .learn-car-link{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:13px 20px;min-height:46px;font-size:12px;border:1px solid var(--accent);background:var(--accent);color:var(--bg);border-radius:3px}
+.site-header nav .nav-compare{display:flex;gap:5px;align-items:center}
+.nav-comparison-count{font-size:8px;background:var(--surface-raised);color:var(--accent);border-radius:50%;width:17px;height:17px;display:grid;place-items:center}
+.nav-comparison-count:empty{display:none}
+.site-header nav{gap:20px!important}
+.mobile-navigation nav>a[aria-current="page"]{color:var(--accent)}
+.site-header nav a{font-size:12px}
+html[data-route="learn"] .destination-page{max-width:1600px;padding-top:25px}
+html[data-route="learn"] .destination-heading,html[data-route="compare"] .destination-heading,html[data-route="account"] .destination-heading{display:none}
+html[data-route="learn"] .destination-breadcrumb{margin-bottom:18px}
+.personal-garage.pg-inline{position:static;display:block;width:100%;max-width:none;max-height:none;margin:0;border:1px solid var(--line);box-shadow:none;overflow:visible}
+.personal-garage.pg-inline .pg-close{display:none}
+.personal-garage.pg-inline .pg-header{padding-top:26px}
+@media(min-width:1101px) and (max-width:1280px){.site-header nav{gap:13px!important}.site-header{padding-inline:3%!important;gap:20px!important}.site-header nav a{font-size:11px}.header-tools{gap:1px!important}}
+@media(max-width:760px){.destination-page{padding-top:24px;padding-bottom:50px}.destination-heading{display:block;padding-top:6px}.destination-heading h1{letter-spacing:-1.5px}.destination-heading p{font-size:12px}.destination-label{display:inline-block;margin-top:20px;font-size:8px}.directions-grid{grid-template-columns:1fr}.direction-card{min-height:230px;padding:24px}.direction-card h3{margin-top:45px;font-size:29px}.direction-card p{max-width:360px;margin-bottom:18px}.directions-heading>p{display:none}.home-directions{margin-top:36px}.destination-breadcrumb{font-size:9px}.destination-panel .pg-header h2{font-size:34px}html[data-route="models"] .collection{padding-top:40px}html[data-route="models"] .collection .section-heading h2{letter-spacing:-1.3px}}
+@media(prefers-reduced-motion:reduce){.direction-card img{transition:none}.direction-card:hover img{transform:none}}
