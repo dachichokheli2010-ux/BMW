@@ -9,8 +9,11 @@
     "db:generate": "drizzle-kit generate",
     "start": "node --env-file-if-exists=.env scripts/preview-local.mjs"
   },
-  "engines": {"node": ">=24.0.0"},
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "drizzle-orm": "0.44.7"
   },
   "devDependencies": {
