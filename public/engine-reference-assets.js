@@ -1,0 +1,199 @@
+// Commons file descriptions and reusable licenses checked 20 October 2026.
+export const engineReferenceAssets={
+  "s14": {
+    "src": "images/engine-references/s14.webp",
+    "width": 1024,
+    "height": 575,
+    "credit": {
+      "label": "BMW S14 Engine.jpg",
+      "author": "Sbscottw",
+      "license": "CC BY-SA 4.0",
+      "page": "https://commons.wikimedia.org/wiki/File:BMW_S14_Engine.jpg",
+      "url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "original": "https://upload.wikimedia.org/wikipedia/commons/9/93/BMW_S14_Engine.jpg",
+      "changes": "Resized and converted to WebP; no subject changes."
+    }
+  },
+  "m88": {
+    "src": "images/engine-references/m88.webp",
+    "width": 1600,
+    "height": 1067,
+    "credit": {
+      "label": "BMW M88 engine in BMW-Museum in Munich, Bayern.JPG",
+      "author": "Jiří Sedláček",
+      "license": "CC BY-SA 4.0",
+      "page": "https://commons.wikimedia.org/wiki/File:BMW_M88_engine_in_BMW-Museum_in_Munich%2C_Bayern.JPG",
+      "url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "original": "https://upload.wikimedia.org/wikipedia/commons/1/1f/BMW_M88_engine_in_BMW-Museum_in_Munich%2C_Bayern.JPG",
+      "changes": "Resized and converted to WebP; no subject changes."
+    }
+  },
+  "m88-3": {
+    "src": "images/engine-references/m88-3.webp",
+    "width": 1600,
+    "height": 1200,
+    "credit": {
+      "label": "BMW M88 3 Auspuffseite.JPG",
+      "author": "Micham6",
+      "license": "CC BY-SA 3.0",
+      "page": "https://commons.wikimedia.org/wiki/File:BMW_M88_3_Auspuffseite.JPG",
+      "url": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "original": "https://upload.wikimedia.org/wikipedia/commons/6/63/BMW_M88_3_Auspuffseite.JPG",
+      "changes": "Resized and converted to WebP; no subject changes."
+    }
+  },
+  "s50-b32": {
+    "src": "images/engine-references/s50-b32.webp",
+    "width": 1600,
+    "height": 1067,
+    "credit": {
+      "label": "BMW S50 B32 engine in BMW-Museum in Munich, Bayern.JPG",
+      "author": "Jiří Sedláček",
+      "license": "CC BY-SA 4.0",
+      "page": "https://commons.wikimedia.org/wiki/File:BMW_S50_B32_engine_in_BMW-Museum_in_Munich%2C_Bayern.JPG",
+      "url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "original": "https://upload.wikimedia.org/wikipedia/commons/c/cf/BMW_S50_B32_engine_in_BMW-Museum_in_Munich%2C_Bayern.JPG",
+      "changes": "Resized and converted to WebP; no subject changes."
+    }
+  },
+  "s38-b36": {
+    "src": "images/engine-references/s38-b36.webp",
+    "width": 1600,
+    "height": 1133,
+    "credit": {
+      "label": "E34M5S38B36.JPG",
+      "author": "M536",
+      "license": "CC BY-SA 3.0",
+      "page": "https://commons.wikimedia.org/wiki/File:E34M5S38B36.JPG",
+      "url": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "original": "https://upload.wikimedia.org/wikipedia/commons/4/45/E34M5S38B36.JPG",
+      "changes": "Resized and converted to WebP; no subject changes."
+    }
+  },
+  "m10-turbo": {
+    "src": "images/engine-references/m10-turbo.webp",
+    "width": 1600,
+    "height": 1198,
+    "credit": {
+      "label": "BMW 2002 turbo engine TCE.jpg",
+      "author": "Stahlkocher",
+      "license": "CC BY-SA 3.0",
+      "page": "https://commons.wikimedia.org/wiki/File:BMW_2002_turbo_engine_TCE.jpg",
+      "url": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "original": "https://upload.wikimedia.org/wikipedia/commons/8/8b/BMW_2002_turbo_engine_TCE.jpg",
+      "changes": "Resized and converted to WebP; no subject changes."
+    }
+  },
+  "s70": {
+    "src": "images/engine-references/s70.webp",
+    "width": 1600,
+    "height": 1064,
+    "credit": {
+      "label": "Moteur barba.jpg",
+      "author": "Barbatoss",
+      "license": "CC BY 3.0",
+      "page": "https://commons.wikimedia.org/wiki/File:Moteur_barba.jpg",
+      "url": "https://creativecommons.org/licenses/by/3.0/",
+      "original": "https://upload.wikimedia.org/wikipedia/commons/d/dc/Moteur_barba.jpg",
+      "changes": "Resized and converted to WebP; no subject changes."
+    }
+  },
+  "m73": {
+    "src": "images/engine-references/m73.webp",
+    "width": 1600,
+    "height": 1200,
+    "credit": {
+      "label": "BMW 750iL Individual - Flickr - The Car Spy (21).jpg",
+      "author": "The Car Spy",
+      "license": "CC BY 2.0",
+      "page": "https://commons.wikimedia.org/wiki/File:BMW_750iL_Individual_-_Flickr_-_The_Car_Spy_(21).jpg",
+      "url": "https://creativecommons.org/licenses/by/2.0/",
+      "original": "https://upload.wikimedia.org/wikipedia/commons/a/af/BMW_750iL_Individual_-_Flickr_-_The_Car_Spy_(21).jpg",
+      "changes": "Resized and converted to WebP; no subject changes."
+    }
+  },
+  "m30": {
+    "src": "images/engine-references/m30.webp",
+    "width": 1600,
+    "height": 1200,
+    "credit": {
+      "label": "BMW M30 2018.jpg",
+      "author": "Wikisympathisant",
+      "license": "CC BY-SA 4.0",
+      "page": "https://commons.wikimedia.org/wiki/File:BMW_M30_2018.jpg",
+      "url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "original": "https://upload.wikimedia.org/wikipedia/commons/d/d2/BMW_M30_2018.jpg",
+      "changes": "Resized and converted to WebP; no subject changes."
+    }
+  },
+  "m20": {
+    "src": "images/engine-references/m20.webp",
+    "width": 1600,
+    "height": 1200,
+    "credit": {
+      "label": "BMW M20 Engine.JPG",
+      "author": "Tor635",
+      "license": "CC BY-SA 3.0",
+      "page": "https://commons.wikimedia.org/wiki/File:BMW_M20_Engine.JPG",
+      "url": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "original": "https://upload.wikimedia.org/wikipedia/commons/d/dc/BMW_M20_Engine.JPG",
+      "changes": "Resized and converted to WebP; no subject changes."
+    }
+  },
+  "s68": {
+    "src": "images/engine-references/s68.webp",
+    "width": 1600,
+    "height": 1066,
+    "credit": {
+      "label": "S68 XM.jpg",
+      "author": "Pixelatedfacealex",
+      "license": "CC BY-SA 4.0",
+      "page": "https://commons.wikimedia.org/wiki/File:S68_XM.jpg",
+      "url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "original": "https://upload.wikimedia.org/wikipedia/commons/a/a6/S68_XM.jpg",
+      "changes": "Resized and converted to WebP; no subject changes."
+    }
+  },
+  "b38": {
+    "src": "images/engine-references/b38.webp",
+    "width": 1600,
+    "height": 1200,
+    "credit": {
+      "label": "Mini Cooper engine - Tokyo Motor Show 2013.jpg",
+      "author": "Loadbeta",
+      "license": "CC0 1.0",
+      "page": "https://commons.wikimedia.org/wiki/File:Mini_Cooper_engine_-_Tokyo_Motor_Show_2013.jpg",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "original": "https://upload.wikimedia.org/wikipedia/commons/b/ba/Mini_Cooper_engine_-_Tokyo_Motor_Show_2013.jpg",
+      "changes": "Resized and converted to WebP; no subject changes."
+    }
+  },
+  "n63": {
+    "src": "images/engine-references/n63.webp",
+    "width": 1600,
+    "height": 1200,
+    "credit": {
+      "label": "BMW N63 (TÜ).jpg",
+      "author": "Dr.DOHC",
+      "license": "CC BY-SA 4.0",
+      "page": "https://commons.wikimedia.org/wiki/File:BMW_N63_(T%C3%9C).jpg",
+      "url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "original": "https://upload.wikimedia.org/wikipedia/commons/a/af/BMW_N63_(T%C3%9C).jpg",
+      "changes": "Resized and converted to WebP; no subject changes."
+    }
+  },
+  "i3-drive": {
+    "src": "images/engine-references/i3-drive.webp",
+    "width": 1600,
+    "height": 1200,
+    "credit": {
+      "label": "BMW-i3-Electric Drive unit2.JPG",
+      "author": "RudolfSimon",
+      "license": "CC BY-SA 3.0",
+      "page": "https://commons.wikimedia.org/wiki/File:BMW-i3-Electric_Drive_unit2.JPG",
+      "url": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "original": "https://upload.wikimedia.org/wikipedia/commons/6/65/BMW-i3-Electric_Drive_unit2.JPG",
+      "changes": "Resized and converted to WebP; no subject changes."
+    }
+  }
+};

@@ -1,7 +1,7 @@
 import {engineRecords,engineURL} from './explorer-data.js';
 const normalize = value => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const categories = ['All', 'Vehicles', 'Components', 'Lessons', 'Engineering'];
+const categories = ['All', 'Vehicles', 'Components', 'Lessons', 'Engineering', 'Community'];
 const recentStorageKey = 'apex-search-recent-v1';
 const maxQueryLength = 160, maxRecent = 6;
 const stopWords = new Set('what which does do did is are was were an a the how why of and or bmw me my tell about explain find show please can you i want learn understand works work used use need function purpose specs spec specifications details information info photo for in on to with it its vs versus compare comparison between car cars vehicle vehicles system systems'.split(' '));
@@ -33,7 +33,10 @@ const topics = [
   ['engine-lab', 'F10 M5 · S63 engine explorer', '3D S63TU S63B44T0 V8 engine exploded X-ray intake exhaust oil fuel coolant parts under hood', 'engineering'],
   ['tuning-garage', 'Tuning garage & simulated dashboard', 'Dyno ECU tuning turbo intercooler intake exhaust suspension brakes power torque RPM build upgrades modify modification horsepower stage', 'engineering'],
   ['mechanic', 'Virtual mechanic', 'Diagnostic component identification quiz mechanic fault boost troubleshooting parts workshop identify', 'engineering'],
-  ['history', 'BMW history timeline', 'History heritage 1916 1923 1928 1972 2013 BMW Motorsport origins founded', 'engineering']
+  ['history', 'BMW history timeline', 'History heritage 1916 1923 1928 1972 2013 BMW Motorsport origins founded', 'engineering'],
+  ['owner-community', 'Owner community', 'Personal cars real owners approved submissions public garages community', 'community'],
+  ['community-friends', 'Friends & shared garages', 'Friends friendship requests sharing share garage saved BMWs public profile', 'community'],
+  ['submit-owner-car', 'Submit your BMW', 'Upload personal car photos owner vehicle information review approval credits submission', 'community']
 ];
 
 // Search aliases change vocabulary, never catalog names, codes or specifications.
@@ -79,8 +82,8 @@ export function createSearchIndex(catalog = [], parts = []) {
   }));
   const engines=engineRecords.map(engine=>makeRecord({id:'directory-engine-'+engine.id,category:'Engineering',title:engine.code+' engine family',identity:engine.code,keywords:[engine.name,engine.tagline,...engine.searchTerms].join(' '),subtitle:engine.applications.length+' catalog applications · engine directory',href:engineURL(engine)}));
   return [...vehicles,...components,...engines,...topics.map(([id,title,keywords,kind]) => makeRecord({
-    id, category:kind === 'academy' ? 'Lessons' : 'Engineering', title, identity:id, keywords,
-    subtitle:kind === 'academy' ? 'Academy · interactive lesson' : 'Interactive educational workspace',
+    id, category:kind === 'academy' ? 'Lessons' : kind === 'community' ? 'Community' : 'Engineering', title, identity:id, keywords,
+    subtitle:kind === 'academy' ? 'Academy · interactive lesson' : kind === 'community' ? 'Your place in the APEX community' : 'Interactive educational workspace',
   }))];
 }
 
@@ -214,27 +217,12 @@ export function mountSmartSearch({catalog=[],parts=[],onModel,onPart,onTopic,onC
   const index=createSearchIndex(catalog,parts),abort=new AbortController(),uid=`global-search-${++searchInstance}`;
   const modal=document.createElement('dialog');modal.className='global-search';
   modal.setAttribute('aria-labelledby',`${uid}-title`);modal.setAttribute('aria-describedby',`${uid}-help`);
-  modal.innerHTML=`<style>
-    .global-search #global-results,.global-search .gs-scroll{max-height:min(48svh,calc(85svh - 270px));overflow-y:auto;overscroll-behavior:contain;padding:0 12px 12px}
-    .global-search .gs-recents{margin:0 12px 14px;padding-bottom:15px;border-bottom:1px solid var(--line)}
-    .global-search .gs-recents-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 9px;font-size:10px;color:var(--muted)}
-    .global-search .gs-recents-heading button{font-size:10px;min-height:32px;padding:5px 8px;background:transparent;border:0;color:var(--accent)}
-    .global-search .gs-recent-list{display:flex;flex-wrap:wrap;gap:7px}
-    .global-search .gs-recent-item{display:flex;min-width:0;max-width:100%;border:1px solid var(--line);border-radius:4px;background:var(--surface)}
-    .global-search .gs-recent-item button{border:0;background:transparent;color:var(--white);min-height:36px;font-size:11px;padding:8px 10px;min-width:0}
-    .global-search .gs-recent-item [data-gs-recent]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px;text-align:left}
-    .global-search .gs-recent-item [data-gs-remove]{border-left:1px solid var(--line);color:var(--muted);min-width:36px}
-    .global-search .gs-result{min-width:0}.global-search .gs-result>span:nth-child(2){overflow:hidden}
-    .global-search .gs-result strong{overflow-wrap:anywhere}.global-search .gs-result img{flex:none}
-    .global-search .gs-result[aria-selected=true],.global-search .gs-compare[aria-selected=true]{border-color:var(--accent);background:var(--surface-raised)}
-    .global-search .gs-result small.gs-related-label{color:var(--blue,var(--accent))}
-    .global-search button:focus-visible,.global-search input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-    .global-search .gs-empty p{max-width:550px}.global-search .gs-empty button{margin-top:12px;font-size:12px;padding:10px 14px;color:var(--accent)}
-    @media(max-width:600px){.global-search #global-results,.global-search .gs-scroll{max-height:min(53svh,calc(90svh - 270px))}.global-search .gs-recents{margin-inline:5px}.global-search .gs-recent-item [data-gs-recent]{max-width:210px}.global-search .gs-footer{line-height:1.6}}
-  </style><div class="gs-top"><span class="eyebrow" id="${uid}-title">SEARCH THE ENTIRE GARAGE</span><button type="button" data-gs-close aria-label="Close search">Esc <span aria-hidden="true">×</span></button></div><div class="gs-input-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><label class="sr-only" for="${uid}-query">Search vehicles, components and lessons</label><input id="${uid}-query" type="search" maxlength="${maxQueryLength}" placeholder="Try F10 M5, S63, or how turbos work…" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="${uid}-options" aria-describedby="${uid}-help"></div><div class="gs-filters" role="group" aria-label="Search category">${categories.map(category=>`<button type="button" data-gs-category="${category}" aria-pressed="${category==='All'}">${category}</button>`).join('')}</div><p class="gs-status" role="status" aria-live="polite" aria-atomic="true"></p><div id="${searchInstance===1?'global-results':uid+'-results'}" class="gs-scroll"></div><div class="gs-footer" id="${uid}-help"><span>↑ ↓ to navigate · Enter to open · Esc clears, then closes</span><span>Recent searches stay in this browser.</span></div>`;
+  modal.innerHTML=`<div class="gs-top"><span class="eyebrow" id="${uid}-title">SEARCH THE ENTIRE GARAGE</span><div class="gs-top-actions"><kbd class="gs-escape-hint" aria-hidden="true">Esc</kbd><button type="button" data-gs-close aria-label="Close search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div></div><div class="gs-input-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><label class="sr-only" for="${uid}-query">Search vehicles, components and lessons</label><input id="${uid}-query" type="search" maxlength="${maxQueryLength}" placeholder="Try F10 M5, S63, or how turbos work…" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="${uid}-options" aria-describedby="${uid}-help"></div><div class="gs-filters" role="group" aria-label="Search category">${categories.map(category=>`<button type="button" data-gs-category="${category}" aria-pressed="${category==='All'}">${category}</button>`).join('')}</div><p class="gs-status" role="status" aria-live="polite" aria-atomic="true"></p><div id="${searchInstance===1?'global-results':uid+'-results'}" class="gs-scroll"></div><div class="gs-footer" id="${uid}-help"><span>↑ ↓ to navigate · Enter to open · Esc clears, then closes</span><span>Recent searches stay in this browser.</span></div>`;
   document.body.append(modal);
   const input=modal.querySelector('input'),list=modal.querySelector('.gs-scroll'),status=modal.querySelector('.gs-status');
   let category='All',selected=-1,results=[],actions=[],recent=readRecent()||[],returnFocus=null;
+  const arrowIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>';
+  const topicIcon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5.5A2.5 2.5 0 0 1 7.5 3H20v16H7.5A2.5 2.5 0 0 0 5 21zm0 0V21M9 7h7M9 11h5"/></svg>';
 
   function select(position) {
     selected=position>=0 && position<actions.length?position:-1;input.removeAttribute('aria-activedescendant');
@@ -260,7 +248,7 @@ export function mountSmartSearch({catalog=[],parts=[],onModel,onPart,onTopic,onC
     }
     for(const record of results){
       const i=actions.length;actions.push({type:'result',record});
-      optionMarkup.push(`<button class="gs-result" type="button" id="${uid}-option-${i}" role="option" aria-selected="false" data-gs-action="${i}" data-gs-result="${i}" tabindex="-1">${record.image?`<img src="${escapeHTML(record.image)}" alt="" loading="lazy">`:'<span class="gs-topic-icon" aria-hidden="true">↗</span>'}<span><small${record.suggested?' class="gs-related-label"':''}>${record.suggested?'Related suggestion · ':''}${record.category}</small><strong>${escapeHTML(record.title)}</strong><span>${escapeHTML(record.subtitle)}</span></span><span aria-hidden="true">↗</span></button>`);
+      optionMarkup.push(`<button class="gs-result" type="button" id="${uid}-option-${i}" role="option" aria-selected="false" data-gs-action="${i}" data-gs-result="${i}" tabindex="-1">${record.image?`<img src="${escapeHTML(record.image)}" alt="" loading="lazy">`:`<span class="gs-topic-icon" aria-hidden="true">${topicIcon}</span>`}<span><small${record.suggested?' class="gs-related-label"':''}>${record.suggested?'Related suggestion · ':''}${record.category}</small><strong>${escapeHTML(record.title)}</strong><span>${escapeHTML(record.subtitle)}</span></span><span class="gs-result-arrow" aria-hidden="true">${arrowIcon}</span></button>`);
     }
     if(related)status.textContent=`No exact matches. Related suggestions for “${results[0].suggestedQuery}”${category==='All'?'':' in '+category.toLowerCase()}.`;
     else if(query)status.textContent=`${results.length} ${results.length===1?'result':'results'}${category==='All'?'':' in '+category.toLowerCase()}${pair.length===2 && (category==='All'||category==='Vehicles')?' · vehicle comparison available':''}.`;
@@ -268,7 +256,11 @@ export function mountSmartSearch({catalog=[],parts=[],onModel,onPart,onTopic,onC
     list.innerHTML=recentMarkup()+`<div role="listbox" id="${uid}-options" aria-label="${related?'Related search suggestions':'Search results'}">${optionMarkup.join('')}</div>`+(actions.length?'':`<div class="gs-empty"><strong>No ${category==='All'?'matching results':category.toLowerCase()+' found'}.</strong><p>${category==='All'?'Try a chassis such as F10, an engine code such as B58, or a component such as intercooler.':`Your ${escapeHTML(category.toLowerCase())} filter is active. Search all categories for more results.`}</p>${category==='All'?'':'<button type="button" data-gs-show-all>Search all categories</button>'}</div>`);
     select(-1);list.scrollTop=0;
   }
-  function close(){if(modal.open)modal.close();}
+  function releaseSearch(){
+    if(!document.querySelector('dialog.global-search[open]'))document.documentElement.classList.remove('apex-search-open');
+    input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant');
+  }
+  function close(){if(modal.open)modal.close();releaseSearch();}
   function activate(position) {
     const action=actions[position];if(!action)return;remember(input.value);close();
     if(action.type==='compare'){onCompare?.(action.ids);return;}
@@ -283,7 +275,7 @@ export function mountSmartSearch({catalog=[],parts=[],onModel,onPart,onTopic,onC
   function open(query='') {
     if(!modal.open)returnFocus=document.activeElement;
     recent=readRecent()||recent;setCategory('All');input.value=cleanQuery(query);render();
-    if(!modal.open)modal.showModal();input.setAttribute('aria-expanded','true');input.focus();
+    if(!modal.open)modal.showModal();document.documentElement.classList.add('apex-search-open');input.setAttribute('aria-expanded','true');input.focus({preventScroll:true});
   }
   input.addEventListener('input',render,{signal:abort.signal});
   input.addEventListener('keydown',event=>{
@@ -296,7 +288,8 @@ export function mountSmartSearch({catalog=[],parts=[],onModel,onPart,onTopic,onC
     else if(event.key==='Escape' && input.value){event.preventDefault();event.stopPropagation();input.value='';render();}
   },{signal:abort.signal});
   modal.addEventListener('click',event=>{
-    if(event.target===modal || event.target.closest('[data-gs-close]')){close();return;}
+    if(event.target.closest('[data-gs-close]')){close();return;}
+    if(event.target===modal){const bounds=modal.getBoundingClientRect();if(event.clientX<bounds.left||event.clientX>bounds.right||event.clientY<bounds.top||event.clientY>bounds.bottom)close();return;}
     const action=event.target.closest('[data-gs-action]');if(action){activate(Number(action.dataset.gsAction));return;}
     const filter=event.target.closest('[data-gs-category]');if(filter){setCategory(filter.dataset.gsCategory);render();input.focus();return;}
     const recentButton=event.target.closest('[data-gs-recent]');if(recentButton){input.value=recent[Number(recentButton.dataset.gsRecent)]||'';render();input.focus();return;}
@@ -307,8 +300,11 @@ export function mountSmartSearch({catalog=[],parts=[],onModel,onPart,onTopic,onC
     if(event.target.closest('[data-gs-clear-recent]')){recent=[];writeRecent(recent);render();input.focus();return;}
     if(event.target.closest('[data-gs-show-all]')){setCategory('All');render();input.focus();}
   },{signal:abort.signal});
+  modal.addEventListener('cancel',event=>{
+    if(input.value){event.preventDefault();input.value='';render();input.focus({preventScroll:true});}
+  },{signal:abort.signal});
   modal.addEventListener('close',()=>{
-    input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant');
+    releaseSearch();
     if(returnFocus?.isConnected && returnFocus.getClientRects().length)returnFocus.focus({preventScroll:true});
   },{signal:abort.signal});
   document.addEventListener('keydown',event=>{

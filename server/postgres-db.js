@@ -1,4 +1,5 @@
 import {neon} from '@neondatabase/serverless';
+import {communitySchemaStatements,communityTableNames} from './community-schema.js';
 
 // App-owned tables live separately from any tables created in Neon SQL Editor.
 export const POSTGRES_SCHEMA='apex';
@@ -17,8 +18,20 @@ export const postgresSchemaStatements=[
  `CREATE TABLE IF NOT EXISTS apex.user_verifications (user_id TEXT PRIMARY KEY REFERENCES apex.users(id) ON DELETE CASCADE, verified_at DOUBLE PRECISION NOT NULL)`,
  `CREATE TABLE IF NOT EXISTS apex.user_preferences (user_id TEXT PRIMARY KEY REFERENCES apex.users(id) ON DELETE CASCADE, language TEXT NOT NULL CHECK (language IN ('en','ka','ru')))`
 ];
-const tableNames=new Set(['users','sessions','auth_limits','user_garages','account_tokens','user_verifications','user_preferences']);
+postgresSchemaStatements.push(...communitySchemaStatements.map(sql=>sql.replace(/(CREATE TABLE IF NOT EXISTS |REFERENCES | ON )(community_[a-z_]+|users)(?=\s|\()/g,'$1apex.$2')));
+const tableNames=new Set(['users','sessions','auth_limits','user_garages','account_tokens','user_verifications','user_preferences',...communityTableNames]);
 const required={users:['id','provider','email','name','password_hash','created_at','updated_at'],sessions:['token_hash','user_id','csrf_token','created_at','expires_at'],auth_limits:['key','attempts','window_start','expires_at'],user_garages:['user_id','state','revision','updated_at'],account_tokens:['token_hash','user_id','purpose','created_at','expires_at'],user_verifications:['user_id','verified_at'],user_preferences:['user_id','language']};
+Object.assign(required,{
+ community_profiles:['user_id','handle','display_name','bio','created_at','updated_at'],
+ community_friends:['id','requester_id','recipient_id','pair_key','status','created_at','updated_at'],
+ community_shares:['user_id','token','created_at'],
+ community_wallets:['user_id','balance','last_operation','updated_at'],
+ community_credit_ledger:['id','user_id','amount','reason','source_key','created_at'],
+ community_challenges:['id','user_id','question_id','created_at','expires_at'],
+ community_cars:['id','user_id','title','model','year','engine','transmission','horsepower','description','modifications','evidence','status','moderation_note','moderated_by','submitted_at','reviewed_at','credit_spent','created_at','updated_at'],
+ community_photos:['id','car_id','mime','data','width','height','caption','position'],
+ community_audit:['id','actor_id','action','car_id','note','created_at']
+});
 const numericTypes=new Set(['integer','bigint','double precision','real','numeric']);
 const clients=new Map();
 
@@ -73,7 +86,7 @@ export function createPostgresAdapter(query,transaction){
   return transaction(batch.map(prepared=>{const entry=statements.get(prepared);if(!entry)throw new Error('Batch statements must belong to this database.');return entry;}));
  },close:async()=>{}};
 }
-const columnsQuery="SELECT table_name,column_name,data_type FROM information_schema.columns WHERE table_schema = $1 AND table_name IN ('users','sessions','auth_limits','user_garages','account_tokens','user_verifications','user_preferences')";
+const columnsQuery="SELECT table_name,column_name,data_type FROM information_schema.columns WHERE table_schema = $1 AND table_name IN ("+Object.keys(required).map(table=>"'"+table+"'").join(',')+")";
 export async function inspectPostgres(query){
  const result=await query(columnsQuery,['apex']);
  return Object.fromEntries(Object.keys(required).map(table=>[table,{columns:result.rows.filter(row=>row.table_name===table).map(row=>row.column_name),missing:required[table].filter(column=>!result.rows.some(row=>row.table_name===table&&row.column_name===column))}]));

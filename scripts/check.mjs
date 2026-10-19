@@ -92,7 +92,8 @@ check('Expanded data retains exact launch configurations and units',()=>{
   assert.equal(allModels.find(m=>m.id==='e92').transmission,'6-speed manual');
   const unknown=enrichModel({id:'unverified',source:'https://example.com',power:100,powerUnit:'hp'});assert.equal(unknown.weightKg,undefined);assert.equal(unknown.source,'https://example.com');
   for(const facts of Object.values(verifiedSpecs)){assert.ok(facts.specification);assert.ok(facts.sources.every(s=>s.url.startsWith('https://www.press.bmwgroup.com/')));}
-  assert.equal(Object.keys(verifiedSpecs).length,8);
+  assert.equal(Object.keys(verifiedSpecs).length,10);
+  assert.equal(verifiedSpecs['f92-m8'].weightDIN,1885);assert.equal(verifiedSpecs['f91-m8-convertible'].weightDIN,2010);
   assert.equal(verifiedSpecs.g80.acceleration100,undefined);assert.equal(verifiedSpecs.g80.acceleration60Mph,3.8);
   for(const [id,facts] of Object.entries(verifiedSpecs)){const vehicle=allModels.find(m=>m.id===id);assert.ok(vehicle,id);if(vehicle.powerUnit==='PS')assert.equal(facts.powerPS,vehicle.power,id);if(vehicle.powerUnit==='hp')assert.equal(facts.powerHp,vehicle.power,id);}
 });

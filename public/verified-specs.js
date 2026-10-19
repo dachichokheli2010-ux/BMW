@@ -12,6 +12,36 @@ const cslSource = 'https://www.press.bmwgroup.com/italy/article/attachment/T0082
 const cslLaunch = 'https://www.press.bmwgroup.com/asia/article/detail/T0048019EN/the-new-bmw-m3-csl-intelligent-lightweight-technology-and-supreme-driving-dynamics';
 
 export const verifiedSpecs = Object.freeze({
+  'f92-m8':Object.freeze({
+    specification:'BMW M8 Competition Coupé F92 · ACEA launch specification · June 2019',modelYear:2019,
+    displacementCc:4395,transmission:'8-speed M Steptronic with Drivelogic',drivetrain:'M xDrive all-wheel drive',
+    acceleration100:3.2,topSpeed:250,topSpeedOptional:305,
+    topSpeedNote:'250 km/h electronically limited; 305 km/h with the optional M Driver’s Package.',
+    weightKg:1885,weightDIN:1885,weightEU:1960,weightConvention:'DIN unladen, June 2019 ACEA launch specification; EU mass 1,960 kg. Later specification updates may differ.',
+    lengthMm:4867,widthMm:1907,heightMm:1362,wheelbaseMm:2827,
+    dimensionNote:'Unladen body dimensions, excluding mirrors; Competition Coupé column, page 3.',
+    powerKw:460,powerPS:625,torqueNm:750,powerRPM:[6000,6000],torqueRPM:[1800,5800],maxRPM:7200,
+    sources:Object.freeze([
+      {title:'BMW M8 Competition Coupé technical specifications · June 2019 · pages 3–4',url:'https://www.press.bmwgroup.com/global/article/attachment/T0296150EN/430870'},
+      {title:'BMW M8 launch release · June 2019 · engine, transmission and acceleration',url:'https://www.press.bmwgroup.com/global/article/detail/T0296150EN/the-new-bmw-m8-coupe-and-bmw-m8-competition-coupe-the-new-bmw-m8-convertible-and-bmw-m8-competition-convertible'}
+    ]),
+    verificationNote:'The 2019 Competition Coupé is kept separate from the Convertible and later updates. The European 460 kW / 625 rating uses metric horsepower (PS), although the English table labels it hp.'
+  }),
+  'f91-m8-convertible':Object.freeze({
+    specification:'BMW M8 Competition Convertible F91 · ACEA launch specification · June 2019',modelYear:2019,
+    displacementCc:4395,transmission:'8-speed M Steptronic with Drivelogic',drivetrain:'M xDrive all-wheel drive',
+    acceleration100:3.3,topSpeed:250,topSpeedOptional:305,
+    topSpeedNote:'250 km/h electronically limited; 305 km/h with the optional M Driver’s Package.',
+    weightKg:2010,weightDIN:2010,weightEU:2085,weightConvention:'DIN unladen, June 2019 ACEA launch specification; EU mass 2,085 kg.',
+    lengthMm:4867,widthMm:1907,heightMm:1353,wheelbaseMm:2827,
+    dimensionNote:'Unladen body dimensions, excluding mirrors; Competition Convertible column, page 3.',
+    powerKw:460,powerPS:625,torqueNm:750,powerRPM:[6000,6000],torqueRPM:[1800,5800],maxRPM:7200,
+    sources:Object.freeze([
+      {title:'BMW M8 Competition Convertible technical specifications · June 2019 · pages 3–4',url:'https://www.press.bmwgroup.com/global/article/attachment/T0296150EN/430871'},
+      {title:'BMW M8 launch release · June 2019 · Competition Convertible',url:'https://www.press.bmwgroup.com/global/article/detail/T0296150EN/the-new-bmw-m8-coupe-and-bmw-m8-competition-coupe-the-new-bmw-m8-convertible-and-bmw-m8-competition-convertible'}
+    ]),
+    verificationNote:'The Convertible’s height, mass and acceleration remain separate from the Coupé. The European 460 kW / 625 rating is metric horsepower (PS).'
+  }),
   'f10-m5': Object.freeze({
     specification: 'BMW M5 F10 · ACEA specification valid 10/2011 · seven-speed M DCT',
     modelYear: 2011,

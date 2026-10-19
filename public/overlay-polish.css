@@ -1,0 +1,289 @@
+/* Bounded, touch-friendly overlays. Only the results/body scroll, never the sheet. */
+html.apex-search-open,
+html.apex-search-open body { overflow: hidden; }
+dialog.global-search,
+dialog.comparison-dialog {
+  --overlay-edge: color-mix(in srgb, var(--white) 17%, transparent);
+  color: var(--white);
+  border: 1px solid var(--overlay-edge);
+  border-radius: 28px;
+  background: color-mix(in srgb, var(--surface) 93%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--white) 12%, transparent), 0 32px 120px #0007;
+  backdrop-filter: blur(30px) saturate(145%);
+  -webkit-backdrop-filter: blur(30px) saturate(145%);
+  padding: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+dialog.global-search::backdrop,
+dialog.comparison-dialog::backdrop { background: #030a16a8; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+dialog.global-search[open] { display: flex; flex-direction: column; }
+dialog.global-search {
+  width: min(740px, calc(100% - 48px));
+  max-width: 740px;
+  height: min(710px, calc(100dvh - 64px));
+  max-height: calc(100dvh - 64px);
+  margin: auto;
+}
+.global-search .gs-top {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  flex: none; padding: 18px 22px 12px;
+}
+.global-search .gs-top > .eyebrow { color: var(--muted); font-size: 10px; letter-spacing: .15em; line-height: 1.6; }
+.global-search .gs-top-actions { display: flex; align-items: center; gap: 10px; flex: none; }
+.global-search .gs-escape-hint {
+  display: block; border: 1px solid var(--line); border-radius: 5px; padding: 3px 5px;
+  font: 10px var(--font); color: var(--muted); box-shadow: 0 2px 0 var(--line);
+}
+.global-search [data-gs-close],
+#dialog.comparison-dialog #close {
+  display: grid; place-items: center; flex: none;
+  width: 42px; height: 42px; min-width: 42px; min-height: 42px;
+  padding: 10px; border: 1px solid var(--line); border-radius: 14px;
+  color: var(--muted); background: color-mix(in srgb, var(--white) 4%, transparent);
+  cursor: pointer; transition: background .18s, color .18s, border-color .18s;
+}
+.global-search [data-gs-close]:hover,
+#dialog.comparison-dialog #close:hover { color: var(--white); background: var(--surface-raised); border-color: var(--overlay-edge); }
+.global-search [data-gs-close] svg,
+#dialog.comparison-dialog #close svg { display: block; width: 20px; height: 20px; }
+.global-search .gs-input-wrap {
+  display: flex; flex: none; align-items: center; gap: 12px; min-width: 0;
+  margin: 0 22px 16px; padding: 0 15px;
+  min-height: 58px; border: 1px solid var(--line); border-radius: 16px;
+  background: color-mix(in srgb, var(--bg) 56%, transparent);
+  transition: border-color .18s, box-shadow .18s;
+}
+.global-search .gs-input-wrap:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 12%, transparent); }
+.global-search .gs-input-wrap > svg { width: 21px; height: 21px; flex: none; color: var(--blue); }
+.global-search .gs-input-wrap > input {
+  flex: 1; min-width: 0; width: 100%; min-height: 56px;
+  padding: 12px 0; border: 0; border-radius: 0; outline: none; box-shadow: none;
+  background: transparent; color: var(--white); font-size: 17px; line-height: 1.4;
+}
+.global-search .gs-input-wrap > input:focus-visible { outline: none; }
+.global-search .gs-input-wrap > input::placeholder { color: var(--muted); font-size: 15px; opacity: .9; }
+.global-search .gs-filters {
+  display: flex; flex-wrap: wrap; flex: none; gap: 6px;
+  padding: 0 22px; overflow: visible; min-width: 0;
+}
+.global-search .gs-filters > button {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 0; min-height: 38px; padding: 7px 13px; border-radius: 12px;
+  border: 1px solid transparent; background: transparent; color: var(--muted);
+  font-size: 12px; line-height: 1.4; white-space: normal;
+}
+.global-search .gs-filters > button:hover { background: var(--surface-raised); color: var(--white); }
+.global-search .gs-filters > button[aria-pressed=true] {
+  background: color-mix(in srgb, var(--blue) 15%, transparent);
+  border-color: color-mix(in srgb, var(--blue) 35%, transparent); color: var(--blue);
+}
+.global-search .gs-status { flex: none; margin: 16px 22px 10px; color: var(--muted); font-size: 12px; line-height: 1.55; letter-spacing: 0; }
+.global-search #global-results,
+.global-search .gs-scroll {
+  flex: 1 1 auto; min-height: 0; max-height: none; width: 100%;
+  padding: 0 12px 12px; overflow-y: auto; overflow-x: hidden;
+  overscroll-behavior: contain; scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--muted) 35%, transparent) transparent;
+}
+.global-search .gs-scroll::-webkit-scrollbar,
+.comparison-dialog #dialogbody::-webkit-scrollbar,
+.comparison-dialog .cmp-picker-grid::-webkit-scrollbar { width: 5px; height: 5px; }
+.global-search .gs-scroll::-webkit-scrollbar-thumb,
+.comparison-dialog #dialogbody::-webkit-scrollbar-thumb,
+.comparison-dialog .cmp-picker-grid::-webkit-scrollbar-thumb { border-radius: 8px; background: color-mix(in srgb, var(--muted) 35%, transparent); }
+.global-search [role=listbox] { display: grid; gap: 3px; min-width: 0; }
+.global-search .gs-result {
+  display: grid; grid-template-columns: 50px minmax(0,1fr) 18px;
+  align-items: center; gap: 13px; width: 100%; min-width: 0; min-height: 86px;
+  padding: 12px; border: 1px solid transparent; border-radius: 16px;
+  color: var(--white); background: transparent; text-align: left;
+}
+.global-search .gs-result:hover,
+.global-search .gs-result[aria-selected=true],
+.global-search .gs-compare[aria-selected=true] { border-color: var(--line); background: color-mix(in srgb, var(--white) 5%, transparent); }
+.global-search .gs-result > img,
+.global-search .gs-result .gs-topic-icon { display: grid; place-items: center; width: 50px; height: 48px; min-width: 0; border-radius: 11px; object-fit: cover; background: var(--surface-raised); color: var(--blue); }
+.global-search .gs-topic-icon > svg { width: 22px; height: 22px; }
+.global-search .gs-result > span:nth-child(2) { display: flex; flex-direction: column; gap: 4px; min-width: 0; overflow: hidden; }
+.global-search .gs-result small { display: block; color: var(--blue); font-size: 9px; line-height: 1.3; letter-spacing: .12em; text-transform: uppercase; }
+.global-search .gs-result small.gs-related-label { color: var(--blue); }
+.global-search .gs-result strong { display: block; font-size: 14px; font-weight: 550; line-height: 1.35; overflow-wrap: anywhere; }
+.global-search .gs-result > span > span { display: block; max-width: none; font-size: 11px; line-height: 1.4; color: var(--muted); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+.global-search .gs-result .gs-result-arrow { color: var(--muted); }
+.global-search .gs-result-arrow svg { display: block; width: 18px; height: 18px; }
+.global-search .gs-compare { width: 100%; margin: 0 0 6px; padding: 14px; border-radius: 14px; font-size: 13px; line-height: 1.5; }
+.global-search .gs-footer {
+  display: flex; justify-content: space-between; flex: none; gap: 12px;
+  padding: 12px 22px max(12px, env(safe-area-inset-bottom,0px));
+  border-top: 1px solid var(--line); background: transparent;
+  color: var(--muted); font-size: 10px; line-height: 1.5;
+}
+.global-search .gs-recents { margin: 4px 12px 12px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+.global-search .gs-recents-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 2px 0 9px; color: var(--muted); font-size: 10px; }
+.global-search .gs-recents-heading button { min-height: 36px; padding: 5px 8px; border: 0; color: var(--blue); background: transparent; font-size: 11px; }
+.global-search .gs-recent-list { display: flex; flex-wrap: wrap; gap: 7px; }
+.global-search .gs-recent-item { display: flex; min-width: 0; max-width: 100%; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); overflow: hidden; }
+.global-search .gs-recent-item button { min-height: 38px; min-width: 0; padding: 8px 10px; border: 0; border-radius: 0; background: transparent; color: var(--white); font-size: 11px; }
+.global-search .gs-recent-item [data-gs-recent] { max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+.global-search .gs-recent-item [data-gs-remove] { min-width: 38px; border-left: 1px solid var(--line); color: var(--muted); }
+.global-search .gs-empty { padding: 28px 16px; }
+.global-search .gs-empty p { max-width: 550px; }
+.global-search .gs-empty button { margin-top: 12px; padding: 10px 14px; color: var(--blue); font-size: 12px; }
+.global-search button:focus-visible,
+.comparison-dialog button:focus-visible { outline: 2px solid var(--blue); outline-offset: -3px; }
+
+dialog.comparison-dialog[open] { display: flex; flex-direction: column; }
+dialog.comparison-dialog {
+  width: min(1080px, calc(100% - 48px)); max-width: 1080px;
+  height: min(870px, calc(100dvh - 48px)); max-height: calc(100dvh - 48px);
+  margin: auto; overflow: hidden;
+}
+#dialog.comparison-dialog #close { position: absolute; inset: 16px 16px auto auto; z-index: 10; }
+#dialog.comparison-dialog #dialogbody {
+  flex: 1; min-height: 0; width: 100%; overflow-x: hidden; overflow-y: auto;
+  overscroll-behavior: contain; padding: 30px; scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--muted) 35%, transparent) transparent;
+}
+.comparison-dialog .cmp-heading { gap: 20px; padding: 4px 46px 0 0; margin-bottom: 26px; }
+.comparison-dialog .cmp-heading h2 { margin: 13px 0; font-size: clamp(34px,4vw,46px); line-height: 1.08; letter-spacing: -.045em; }
+.comparison-dialog .cmp-heading p { max-width: 460px; font-size: 13px; line-height: 1.65; }
+.comparison-dialog .cmp-heading .eyebrow { font-size: 9px; letter-spacing: .14em; }
+.comparison-dialog .cmp-heading-aside { position: static; font-size: 11px; }
+.comparison-dialog .cmp-cars { gap: 12px; margin-bottom: 22px; }
+.comparison-dialog .cmp-slot-photo { aspect-ratio: 1.9; }
+.comparison-dialog .cmp-slot-copy { padding: 16px 16px 0; }
+.comparison-dialog .cmp-slot h3 { font-size: 22px; margin: 8px 0 15px; }
+.comparison-dialog .cmp-slot-meta { font-size: 9px; }
+.comparison-dialog .cmp-remove { width: 38px; height: 38px; min-height: 38px; padding: 10px; }
+.comparison-dialog .cmp-slot-empty { min-height: 240px; }
+.comparison-dialog .cmp-picker { padding: 22px; border-radius: 18px; scroll-margin-top: 20px; }
+.comparison-dialog .cmp-picker-close { width: 42px; height: 42px; min-height: 42px; padding: 12px; border-radius: 12px; }
+.comparison-dialog .cmp-search { border-radius: 12px; }
+.comparison-dialog .cmp-search input { font-size: 16px; }
+.comparison-dialog .cmp-picker-grid { grid-template-columns: repeat(2,minmax(0,1fr)); max-height: 330px; overscroll-behavior: contain; border-radius: 10px; }
+.comparison-dialog .cmp-candidate { border-radius: 12px; min-height: 80px; }
+.comparison-dialog .cmp-picker-filters { flex-wrap: wrap; }
+.comparison-dialog .cmp-picker-filters button { min-height: 42px; font-size: 12px; border-radius: 10px; }
+.comparison-dialog .cmp-toolbar { gap: 14px; }
+.comparison-dialog .cmp-scroll { max-height: 58dvh; scrollbar-gutter: auto; }
+.comparison-dialog .cmp-spec-heading > h3 { font-size: 22px; line-height: 1.3; }
+.comparison-dialog .cmp-suggestion-grid { gap: 12px; }
+.comparison-dialog .cmp-suggestion-photos { height: 110px; }
+
+/* The collection's small comparison tray has its own geometry, not a dialog's. */
+.compare-tray {
+  border-color: var(--glass-edge, var(--line)); border-radius: 22px;
+  box-shadow: inset 0 1px 0 var(--glass-highlight, #ffffff18), 0 16px 54px #0004;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(24px) saturate(140%); -webkit-backdrop-filter: blur(24px) saturate(140%);
+}
+.compare-tray .compare-items > button { min-height: 48px; border-radius: 12px; }
+.compare-tray .compare-remove-icon { display: grid; place-items: center; width: 22px; min-width: 22px; height: 22px; }
+.compare-tray .compare-remove-icon svg { display: block; width: 16px; height: 16px; }
+.compare-tray .tray-actions > button { min-height: 44px; border-radius: 12px; }
+.compare-tray button:focus-visible { outline-offset: -3px; }
+
+@media (max-width: 600px) {
+  .compare-tray {
+    display: grid; grid-template-columns: minmax(0,1fr); gap: 9px;
+    left: 12px; right: 12px; width: auto; max-width: none;
+    transform: none; margin: 0; padding: 11px;
+  }
+  .compare-tray .compare-items { display: flex; gap: 6px; min-width: 0; width: 100%; }
+  .compare-tray .compare-items > button { flex: 1 1 0; min-width: 0; max-width: none; min-height: 48px; padding: 8px 7px; gap: 6px; }
+  .compare-tray .compare-items button > span:nth-child(2) { font-size: 11px; line-height: 1.3; }
+  .compare-tray .compare-items small { margin-top: 3px; font-size: 9px; }
+  .compare-tray .compare-remove-icon { min-width: 16px; width: 16px; }
+  .compare-tray .compare-remove-icon svg { width: 14px; height: 14px; }
+  .compare-tray .tray-actions { width: 100%; justify-content: space-between; gap: 12px; order: initial; margin: 0; }
+  .compare-tray .tray-actions > button:first-child { min-height: 44px; padding: 9px 5px; font-size: 12px; }
+  .compare-tray .tray-actions > .button-primary { min-height: 44px; padding: 10px 16px; font-size: 12px; }
+  dialog.global-search {
+    width: calc(100% - 16px); max-width: none;
+    height: calc(100dvh - max(16px, env(safe-area-inset-top,0px)) - 8px);
+    max-height: calc(100dvh - max(16px, env(safe-area-inset-top,0px)) - 8px);
+    margin: auto 8px 8px; border-radius: 25px;
+  }
+  .global-search .gs-top { padding: 14px 16px 12px; gap: 8px; }
+  .global-search .gs-top > .eyebrow { font-size: 9px; letter-spacing: .13em; }
+  .global-search .gs-escape-hint { display: none; }
+  .global-search [data-gs-close] { width: 44px; height: 44px; min-height: 44px; }
+  .global-search .gs-input-wrap { margin: 0 16px 12px; padding-inline: 12px; min-height: 54px; border-radius: 14px; gap: 10px; }
+  .global-search .gs-input-wrap > input { min-height: 52px; font-size: 16px; }
+  .global-search .gs-input-wrap > input::placeholder { font-size: 13px; }
+  .global-search .gs-filters { padding: 0 16px; gap: 3px; }
+  .global-search .gs-filters > button { min-height: 40px; padding: 8px 10px; font-size: 11px; border-radius: 11px; }
+  .global-search .gs-status { margin: 12px 16px 8px; font-size: 11px; line-height: 1.45; }
+  .global-search #global-results,
+  .global-search .gs-scroll { padding-inline: 7px; max-height: none; }
+  .global-search .gs-result { grid-template-columns: 42px minmax(0,1fr) 16px; gap: 10px; min-height: 84px; padding: 11px 9px; border-radius: 14px; }
+  .global-search .gs-result > img,
+  .global-search .gs-result .gs-topic-icon { width: 42px; height: 44px; border-radius: 10px; }
+  .global-search .gs-result strong { font-size: 13px; }
+  .global-search .gs-result small { font-size: 8px; }
+  .global-search .gs-result > span > span { font-size: 10px; }
+  .global-search .gs-footer { padding-inline: 16px; font-size: 10px; }
+  .global-search .gs-footer > span:first-child { display: none; }
+  .global-search .gs-footer > span:last-child { display: inline; }
+  .global-search .gs-recents { margin-inline: 9px; }
+  .global-search .gs-recent-item button { min-height: 44px; }
+  .global-search .gs-recent-item [data-gs-recent] { max-width: 200px; }
+  dialog.comparison-dialog {
+    width: calc(100% - 16px); height: calc(100dvh - 24px); max-height: calc(100dvh - 24px);
+    margin: auto; border-radius: 24px;
+  }
+  #dialog.comparison-dialog #close { inset: 12px 12px auto auto; width: 44px; height: 44px; }
+  #dialog.comparison-dialog #dialogbody { padding: 22px 16px max(22px, env(safe-area-inset-bottom,0px)); }
+  .comparison-dialog .cmp-heading { padding: 2px 40px 0 0; margin-bottom: 20px; gap: 14px; }
+  .comparison-dialog .cmp-heading h2 { font-size: 34px; margin: 12px 0; }
+  .comparison-dialog .cmp-heading p { font-size: 12px; }
+  .comparison-dialog .cmp-heading-aside { align-self: flex-start; gap: 6px; font-size: 10px; text-align: left; }
+  .comparison-dialog .cmp-cars { grid-template-columns: minmax(0,1fr); gap: 9px; }
+  .comparison-dialog .cmp-slot-filled { display: grid; grid-template-columns: minmax(100px,.8fr) minmax(0,1.2fr); }
+  .comparison-dialog .cmp-slot-photo { height: 100%; min-height: 152px; aspect-ratio: auto; }
+  .comparison-dialog .cmp-slot-copy { padding: 15px 14px 0; }
+  .comparison-dialog .cmp-slot h3 { font-size: 20px; line-height: 1.2; margin: 8px 0 12px; }
+  .comparison-dialog .cmp-slot-index { display: none; }
+  .comparison-dialog .cmp-slot-generation { left: 12px; bottom: 12px; font-size: 11px; }
+  .comparison-dialog .cmp-remove { width: 38px; height: 38px; min-height: 38px; top: 7px; right: 7px; }
+  .comparison-dialog .cmp-slot-empty { display: grid; grid-template-columns: 42px minmax(0,1fr); min-height: 100px; gap: 6px 13px; padding: 16px; text-align: left; }
+  .comparison-dialog .cmp-slot-empty strong { font-size: 17px; }
+  .comparison-dialog .cmp-slot-empty > span:last-child { max-width: none; font-size: 11px; text-align: left; }
+  .comparison-dialog .cmp-slot-plus { grid-row: 1/3; width: 42px; height: 42px; margin: 0; }
+  .comparison-dialog .cmp-picker { padding: 18px 14px; }
+  .comparison-dialog .cmp-picker-heading { gap: 10px; }
+  .comparison-dialog .cmp-picker h3 { font-size: 24px; }
+  .comparison-dialog .cmp-picker-grid { grid-template-columns: minmax(0,1fr); max-height: 48dvh; }
+  .comparison-dialog .cmp-candidate > img { width: 64px; }
+  .comparison-dialog .cmp-suggestion-grid { grid-template-columns: minmax(0,1fr); }
+  .comparison-dialog .cmp-suggestion { display: grid; grid-template-columns: 43% minmax(0,1fr); }
+  .comparison-dialog .cmp-suggestion-copy { padding: 14px; }
+  .comparison-dialog .cmp-scroll { max-height: 62dvh; }
+  .comparison-dialog .cmp-unit-control { max-width: 100%; }
+  .comparison-dialog .cmp-unit-control button { font-size: 11px; padding-inline: 10px; }
+  .comparison-dialog .cmp-unit-control button small { font-size: 9px; }
+  .comparison-dialog .cmp-difference { flex-basis: 100%; margin: 0; }
+  .comparison-dialog .cmp-spec-heading { gap: 8px; }
+  .comparison-dialog .cmp-spec-heading > h3 { max-width: 245px; font-size: 20px; }
+}
+@media (max-height: 520px) {
+  dialog.global-search { height: calc(100dvh - 24px); max-height: calc(100dvh - 24px); }
+  .global-search .gs-top { padding-top: 8px; padding-bottom: 6px; }
+  .global-search .gs-input-wrap { margin-bottom: 9px; min-height: 46px; }
+  .global-search .gs-input-wrap > input { min-height: 44px; }
+  .global-search .gs-filters > button { min-height: 32px; padding-block: 6px; }
+  .global-search .gs-status { margin-block: 8px; }
+  .global-search .gs-footer { display: none; }
+}
+@media (max-height: 520px) and (max-width: 600px) {
+  .global-search .gs-filters { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  dialog.global-search *, dialog.comparison-dialog * { scroll-behavior: auto; transition: none; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  dialog.global-search, dialog.comparison-dialog, .compare-tray {
+    background: var(--surface); backdrop-filter: none; -webkit-backdrop-filter: none;
+  }
+}

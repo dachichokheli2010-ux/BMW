@@ -18,7 +18,7 @@ export function createModelAudit(catalog=allModels){
       unknownSourceYears:fields.filter(field=>field.sources.some(source=>source.year===null)).map(field=>field.id),
       fields,
       photos:{slots:profile.photos,availableExterior:review.approved.length,availableEngine:review.engine.length,rejected:review.rejected,
-        missingRequiredSlots:profile.photos.filter(photo=>photo.required&&photo.status==='unavailable').map(photo=>photo.slot)}
+        missingRequiredSlots:profile.photos.filter(photo=>photo.required&&(photo.status==='unavailable'||photo.referenceOnly)).map(photo=>photo.slot)}
     };
   });
   const fields=models.flatMap(model=>model.fields),photos=catalog.flatMap(model=>[...model.approvedPhotos.car,...model.approvedPhotos.engine]);
@@ -26,14 +26,15 @@ export function createModelAudit(catalog=allModels){
     sourceLinked:fields.filter(field=>field.status==='source-linked').length,unavailable:fields.filter(field=>field.status==='unavailable').length,
     notApplicable:fields.filter(field=>field.status==='not-applicable').length,uniqueApprovedPhotos:new Set(photos.map(photo=>photo.src)).size,
     modelsWithEnginePhoto:catalog.filter(model=>model.approvedPhotos.engine.length).length,
+    modelsWithExactEnginePhoto:catalog.filter(model=>model.approvedPhotos.engine.some(photo=>photo.matchStatus==='model-engine-reference')).length,
     modelsWithExteriorPhoto:catalog.filter(model=>model.approvedPhotos.car.length).length,
     completeVerifiedProfiles:models.filter(model=>!model.missingFields.length&&!model.unverifiedFields.length&&!model.photos.missingRequiredSlots.length).length};
   return {schemaVersion:PROFILE_SCHEMA_VERSION,scope:'Current catalogue after Phase 1 source and photo safeguards; unavailable is explicit and does not mean researched content is complete.',
     yearPolicy:'A source year is the identified specification year, not an inferred production range or publication date. Null means unknown.',
-    photoPolicy:{providers:'Wikimedia Commons records with CC BY, CC BY-SA, CC0 or public-domain metadata. Manufacturer material remains excluded until applicable permission is established.',
-      matching:'Existing generation/body references retain trim/year/market differences in their captions. Engine photographs require a positively identified model application.',
-      rightsReference:'https://www.press.bmwgroup.com/global/info/legal',rightsCheckedDate:'2026-10-19',
-      note:'No new photographs were downloaded or AI-generated. Recorded source metadata is preserved; this is not a legal opinion.'},
+    photoPolicy:{providers:'Wikimedia Commons records with CC BY, CC BY-SA, CC0, public-domain metadata or an individually checked attribution-only permission. Manufacturer material remains excluded until applicable permission is established.',
+      matching:'Generation/body references retain trim/year/market differences. Engine-family references identify the actual photographed subject and remain exact-application research tasks.',
+      rightsReference:'https://commons.wikimedia.org/wiki/Commons:Licensing',rightsCheckedDate:'2026-10-20',
+      note:'Fourteen additional Commons engine/drive references were downloaded, inspected, resized and converted to WebP with credits preserved. No AI photographs are used.'},
     totals,
     fieldCoverage:profileFieldDefinitions.map(({id,label})=>({id,label,...Object.fromEntries(['verified','source-linked','unavailable','not-applicable'].map(status=>[status,fields.filter(field=>field.id===id&&field.status===status).length]))})),
     photoCoverage:requiredPhotoSlots.map(({slot,label,required=true})=>({slot,label,required,available:models.filter(model=>model.photos.slots.some(photo=>photo.slot===slot&&photo.status==='available')).length,unavailable:models.filter(model=>model.photos.slots.some(photo=>photo.slot===slot&&photo.status==='unavailable')).length})),
@@ -88,7 +89,7 @@ if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.ur
       fs.writeFileSync(path.join(root,'reports/model-completeness.md'),modelAuditMarkdown(report));
     }
     console.log(`${report.totals.models} models; ${report.totals.verified} verified fields; ${report.totals.sourceLinked} source-linked; ${report.totals.unavailable} unavailable.`);
-    for(const model of report.models)console.log(`${model.id}: missing [${model.missingFields.join(', ')}]; photos [${model.photos.missingRequiredSlots.join(', ')}]; unverified [${model.unverifiedFields.join(', ')}]`);
+    if(!process.argv.includes('--summary'))for(const model of report.models)console.log(`${model.id}: missing [${model.missingFields.join(', ')}]; photos [${model.photos.missingRequiredSlots.join(', ')}]; unverified [${model.unverifiedFields.join(', ')}]`);
   }
   if(process.argv.includes('--strict')&&report.totals.completeVerifiedProfiles!==report.totals.models)process.exitCode=1;
 }

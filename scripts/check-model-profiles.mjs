@@ -5,6 +5,9 @@ import {buildModelProfile,PROFILE_SCHEMA_VERSION,profileFieldDefinitions,profile
 import {modelPhotos,auditModelPhotos,photoRightsStatus,matchedEngineModelIds,requiredPhotoSlots} from '../public/model-photo-policy.js';
 import {responsivePhotoData} from '../public/responsive-photo-data.js';
 import {responsivePhotoAttributes,photoBlurStyle} from '../public/responsive-photos.js';
+import {storyFor} from '../public/car-stories.js';
+import {renderModelProfile} from '../public/model-profile-ui.js';
+import {parseHTML} from 'linkedom';
 
 let groups=0;
 function check(label,callback){callback();groups++;console.log('PASS Profiles: '+label);}
@@ -67,7 +70,7 @@ check('missing measurements and years stay unavailable; factories are not inferr
 
 check('electric variants preserve their own powertrain rather than inheriting xDrive facts',()=>{
   for(const id of ['u11-ix1-edrive20','u10-ix2-edrive20']){
-    const model=known.get(id),fields=fieldsOf(model);assert.equal(model.powertrain,'Electric');assert.doesNotMatch(model.layout,/all-wheel|AWD/i);assert.equal(fields.drivetrain.status,'unavailable');
+    const model=known.get(id),fields=fieldsOf(model);assert.equal(model.powertrain,'Electric');assert.doesNotMatch(model.layout,/all-wheel|AWD/i);assert.equal(fields.drivetrain.status,'source-linked');assert.equal(fields.drivetrain.value,'Front-wheel drive');
     for(const field of ['displacement','redline','fuelTank','fuelConsumption','combustionPower'])assert.equal(fields[field].status,'not-applicable',id+': '+field);
   }
   for(const model of allElectricModels){assert.equal(fieldsOf(model).engineCode.status,'not-applicable');assert.equal(fieldsOf(model).fuelTank.value,null);}
@@ -90,7 +93,7 @@ check('every displayed photo has recorded reusable rights and actual intrinsic d
     assert.doesNotMatch(photo.credit.license,/all rights reserved|permission required/i);assert.match(photo.src,/^images\/[\w./-]+\.webp$/);assert.ok(fs.existsSync('public/'+photo.src));
     assert.ok(Number.isInteger(photo.width)&&photo.width>0&&Number.isInteger(photo.height)&&photo.height>0,photo.src);
     if(!checked.has(photo.src)){assert.deepEqual({width:photo.width,height:photo.height},imageDimensions('public/'+photo.src),photo.src);checked.add(photo.src);}
-    assert.equal(photo.rightsStatus,'licensed');assert.equal(photo.matchStatus,mode==='engine'?'model-engine-reference':'generation-body-reference');
+    assert.equal(photo.rightsStatus,'licensed');if(mode==='engine'){assert.ok(['model-engine-reference','engine-family-reference'].includes(photo.matchStatus));if(photo.matchStatus==='engine-family-reference'){assert.equal(photo.referenceCode,model.code);assert.ok(photo.caption.length>20);}}else assert.equal(photo.matchStatus,'generation-body-reference');
   }
   assert.ok(checked.size>0);
   const photo={credit:{author:'Example',license:'CC BY-SA 4.0',page:'https://commons.wikimedia.org/wiki/File:Example.webp',url:'https://creativecommons.org/licenses/by-sa/4.0'}};
@@ -98,20 +101,34 @@ check('every displayed photo has recorded reusable rights and actual intrinsic d
   assert.notEqual(photoRightsStatus({...photo,credit:{...photo.credit,page:'https://commons.wikimedia.org.attacker.example/file'}}),'licensed');
   assert.notEqual(photoRightsStatus({...photo,credit:{...photo.credit,license:'All rights reserved'}}),'licensed');
   assert.notEqual(photoRightsStatus({...photo,credit:{...photo.credit,author:''}}),'licensed');
+  assert.notEqual(photoRightsStatus({...photo,credit:{...photo.credit,author:'M 93',license:'Attribution'}}),'licensed','An unchecked attribution-only page must remain unapproved');
 });
 
-check('all required photo views are explicit and uncertain engines never substitute',()=>{
+check('every car has an individual story and missing research remains inspectable without empty photo tiles',()=>{
+  const stories=new Set();
+  for(const model of allModels){
+    const story=storyFor(model);assert.ok(story?.story&&story.bestFor&&story.tradeOff,model.id);assert.ok(story.facts.length>=2);assert.equal(story.source,model.source);assert.ok(!stories.has(story.story));stories.add(story.story);
+    const {document}=parseHTML(renderModelProfile(model));assert.ok(document.querySelector('.car-story h2'));assert.equal(document.querySelectorAll('.car-facts > p').length,2);
+    assert.equal(document.querySelectorAll('.profile-photo-placeholder').length,0);assert.equal(document.querySelector('.profile-research')?.hasAttribute('open'),false);
+    for(const image of document.querySelectorAll('.profile-photo-slot img'))assert.ok(image.getAttribute('width')&&image.getAttribute('height'));
+    assert.equal(document.querySelectorAll('[data-profile-field]').length,flatten(model.profile).filter(field=>field.status!=='not-applicable').length);
+  }
+});
+
+check('all required views are explicit and engine-family references retain their scope',()=>{
   const expected=['hero','side','rear','front','dashboard','seats','engine','detail'];assert.deepEqual(requiredPhotoSlots.map(item=>item.slot),expected);
   for(const model of allModels){
     const review=auditModelPhotos(model);assert.deepEqual(review.slots.map(item=>item.slot),expected);assert.deepEqual(model.profile.photos,review.slots);
     for(const slot of review.slots){assert.ok(slot.label);if(slot.status==='unavailable'){assert.equal(slot.photo,null);assert.ok(slot.reason);}else{assert.equal(slot.status,'available');assert.ok(slot.photo);assert.equal(photoRightsStatus(slot.photo),'licensed');}}
     const engine=modelPhotos(model,{mode:'engine'});
-    if(!matchedEngineModelIds.includes(model.id)){assert.equal(engine.length,0,model.id);assert.equal(model.engine,null);}
-    else{assert.ok(engine.length<=1);if(engine.length)assert.equal(model.engine,engine[0].src);}
+    assert.ok(engine.length,model.id+' has an identified engine or drive-system reference');
+    if(!matchedEngineModelIds.includes(model.id))for(const photo of engine)assert.equal(photo.matchStatus,'engine-family-reference',model.id);
+    if(engine.length)assert.equal(model.engine,engine[0].src);
     assert.equal(model.car,review.approved[0]?.src||'images/photo-unavailable.svg');
     for(const rejected of review.rejected)assert.ok(rejected.src&&rejected.reason);
   }
-  assert.equal(modelPhotos(known.get('f10-m5'),{mode:'engine'}).length,0,'F90 S63 imagery must not become an F10 S63TU engine photograph');
+  const f10Photo=modelPhotos(known.get('f10-m5'),{mode:'engine'})[0];assert.equal(f10Photo.matchStatus,'engine-family-reference');assert.match(f10Photo.caption,/not a photograph verified as the F10/);assert.equal(auditModelPhotos(known.get('f10-m5')).slots.find(slot=>slot.slot==='engine').referenceOnly,true);
+  const m54=modelPhotos(known.get('e46-330i'),{mode:'engine'})[0];assert.match(m54.caption,/M54B25/);assert.match(m54.caption,/not the 3.0-litre M54B30/);
   const interior={id:'synthetic-interior-reference',views:[{src:'images/angles/e92-0.webp',angle:'Interior',credit:{author:'Example',license:'CC BY-SA 4.0',page:'https://commons.wikimedia.org/wiki/File:Example.webp',url:'https://creativecommons.org/licenses/by-sa/4.0'}}]};
   const slots=auditModelPhotos(interior).slots;assert.equal(slots.find(slot=>slot.slot==='dashboard').status,'unavailable');assert.equal(slots.find(slot=>slot.slot==='seats').status,'unavailable');
 });

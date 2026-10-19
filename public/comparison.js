@@ -187,12 +187,12 @@ export function createComparisonController({catalog, getSelected, onSelectionCha
     const current = root();
     if (!current?.isConnected || current.closest('dialog')?.open === false) return;
     const scroll = current.querySelector('.cmp-scroll'), left = scroll?.scrollLeft || 0, top = scroll?.scrollTop || 0;
-    const dialogElement = current.closest('dialog'), outerTop = dialogElement?.scrollTop || 0;
+    const dialogElement = current.closest('dialog'), outerScroll = current.closest('#dialogbody') || dialogElement, outerTop = outerScroll?.scrollTop || 0;
     current.outerHTML = content();
     if (!mountedHost) dialogRoot = document.querySelector('dialog .comparison-v2');
     const next = root()?.querySelector('.cmp-scroll');
     if (next) { next.scrollLeft = left; next.scrollTop = top; }
-    if (dialogElement) dialogElement.scrollTop = outerTop;
+    if (outerScroll) outerScroll.scrollTop = outerTop;
     if (focusSelector) root()?.querySelector(focusSelector)?.focus({preventScroll:true});
   }
   function select(ids, focusSelector) {
@@ -201,9 +201,22 @@ export function createComparisonController({catalog, getSelected, onSelectionCha
     syncAddress(); refresh(focusSelector);
   }
   function openPicker(index) {
-    pickerIndex = Math.min(Number(index), chosen().length, 2); pickerQuery = ''; pickerFilter = 'all'; showAll = false;
+    const requested = Number(index);
+    if (!Number.isInteger(requested) || requested < 0 || requested > 2) return;
+    pickerIndex = Math.min(requested, chosen().length); pickerQuery = ''; pickerFilter = 'all'; showAll = false;
     refresh('[data-cmp-search]');
-    root()?.querySelector('.cmp-picker')?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block:'nearest'});
+    reveal('.cmp-picker');
+  }
+  function reveal(selector) {
+    const target = root()?.querySelector(selector);
+    if (!target) return;
+    const behavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth';
+    const scrollHost = target.closest('dialog') ? target.closest('#dialogbody') || target.closest('dialog') : null;
+    if (scrollHost) {
+      const bounds = target.getBoundingClientRect(), viewport = scrollHost.getBoundingClientRect();
+      if (bounds.top < viewport.top + 20 || bounds.bottom > viewport.bottom - 20)
+        scrollHost.scrollTo({top:Math.max(0, scrollHost.scrollTop + bounds.top - viewport.top - 20), behavior});
+    } else target.scrollIntoView({behavior, block:'nearest'});
   }
   function updatePicker() { const results = root()?.querySelector('#cmp-picker-results'); if (results) results.innerHTML = pickerResults(); }
   async function copyLink() {
@@ -219,9 +232,16 @@ export function createComparisonController({catalog, getSelected, onSelectionCha
   function open() {
     if (mountedHost) { refresh(); return; }
     if (dialogRoot?.isConnected && dialogRoot.closest('dialog')?.open) { refresh(); return; }
-    pickerIndex = null; dialog(content()); dialogRoot = document.querySelector('dialog .comparison-v2');
+    pickerIndex = null; pickerQuery = ''; shareVisible = false; copied = false;
+    dialog(content()); dialogRoot = document.querySelector('dialog .comparison-v2');
     const element = dialogRoot?.closest('dialog');
-    if (element) { element.scrollTop = 0; element.setAttribute('aria-label', t('Compare models')); }
+    if (element) {
+      element.classList.add('comparison-dialog'); element.scrollTop = 0;
+      const scrollHost = dialogRoot.closest('#dialogbody'); if (scrollHost) scrollHost.scrollTop = 0;
+      element.setAttribute('aria-label', t('Compare models'));
+      element.addEventListener('close', () => {element.classList.remove('comparison-dialog'); pickerIndex = null;}, {once:true, signal:abort.signal});
+      dialogRoot.querySelector('[data-cmp-pick]')?.focus({preventScroll:true});
+    }
   }
   function mount(container) {
     mountedHost = typeof container === 'string' ? document.querySelector(container) : container;
@@ -233,16 +253,16 @@ export function createComparisonController({catalog, getSelected, onSelectionCha
     if (!belongs(event)) return;
     const button = event.target.closest('button'); if (!button) return;
     if (button.matches('[data-cmp-pick]')) { openPicker(button.dataset.cmpPick); return; }
-    if (button.matches('[data-cmp-close-picker]')) { const index = pickerIndex; pickerIndex = null; refresh(`[data-cmp-pick="${index}"]`); return; }
+    if (button.matches('[data-cmp-close-picker]')) { const index = pickerIndex; pickerIndex = null; refresh(`[data-cmp-pick="${index}"]`); reveal(`.cmp-cars > :nth-child(${index + 1})`); return; }
     if (button.matches('[data-cmp-choose]')) {
       const id = button.dataset.cmpChoose, ids = selectedId();
       if (ids.includes(id) || !byId.has(id) || pickerIndex === null) return;
       const index = Math.min(pickerIndex, ids.length, 2); ids[index] = id; pickerIndex = null;
-      select(ids, `[data-cmp-pick="${index}"]`); return;
+      select(ids, `[data-cmp-pick="${index}"]`); reveal(`.cmp-cars > :nth-child(${index + 1})`); return;
     }
-    if (button.matches('[data-cmp-remove]')) { pickerIndex = null; select(selectedId().filter(id => id !== button.dataset.cmpRemove), '[data-cmp-pick]'); return; }
-    if (button.matches('[data-cmp-clear]')) { pickerIndex = null; select([], '[data-cmp-pick]'); return; }
-    if (button.matches('[data-cmp-preset]')) { pickerIndex = null; select(button.dataset.cmpPreset.split(','), '[data-cmp-pick]'); return; }
+    if (button.matches('[data-cmp-remove]')) { pickerIndex = null; select(selectedId().filter(id => id !== button.dataset.cmpRemove), '[data-cmp-pick]'); reveal('.cmp-cars > :first-child'); return; }
+    if (button.matches('[data-cmp-clear]')) { pickerIndex = null; select([], '[data-cmp-pick]'); reveal('.cmp-cars > :first-child'); return; }
+    if (button.matches('[data-cmp-preset]')) { pickerIndex = null; select(button.dataset.cmpPreset.split(','), '[data-cmp-pick]'); reveal('.cmp-cars > :first-child'); return; }
     if (button.matches('[data-cmp-units]')) { units = button.dataset.cmpUnits; copied = false; syncAddress(); refresh(`[data-cmp-units="${units}"]`); return; }
     if (button.matches('[data-cmp-share],[data-cmp-copy]')) { void copyLink(); return; }
     if (button.matches('[data-cmp-filter]')) { pickerFilter = button.dataset.cmpFilter; showAll = false; refresh(`[data-cmp-filter="${pickerFilter}"]`); return; }
@@ -258,7 +278,7 @@ export function createComparisonController({catalog, getSelected, onSelectionCha
   }, {signal:abort.signal});
   document.addEventListener('keydown', event => {
     if (!belongs(event)) return;
-    if (event.key === 'Escape' && pickerIndex !== null) { event.preventDefault(); event.stopPropagation(); const index = pickerIndex; pickerIndex = null; refresh(`[data-cmp-pick="${index}"]`); }
+    if (event.key === 'Escape' && pickerIndex !== null) { event.preventDefault(); event.stopPropagation(); const index = pickerIndex; pickerIndex = null; refresh(`[data-cmp-pick="${index}"]`); reveal(`.cmp-cars > :nth-child(${index + 1})`); }
     if (event.key === 'ArrowDown' && event.target.matches('[data-cmp-search]')) { event.preventDefault(); root()?.querySelector('[data-cmp-choose]:not(:disabled)')?.focus(); }
   }, {signal:abort.signal});
   window.addEventListener('apex:languagechange', () => refresh(), {signal:abort.signal});

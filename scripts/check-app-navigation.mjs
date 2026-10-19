@@ -63,11 +63,28 @@ try{
   assert.equal(document.querySelector('[data-part="1"]').getAttribute('aria-pressed'),'true');
   document.querySelector('#carview').click();
   assert.equal(location.search,'','Exterior view removes stale engine/component parameters');
+  const {allModels}=await import('../public/catalog.js'),{threeModels}=await import('../public/three-models.js');
+  for(const car of allModels){
+    model.value=car.id;model.dispatchEvent(new window.Event('change'));
+    assert.equal(location.pathname,'/cars/'+car.id);assert.ok(document.querySelector('.car-story h2'),car.id+' has its story');
+    assert.equal(document.querySelectorAll('.engineering-detail-actions').length,1,'Model changes must replace their toolbar');
+    assert.equal(document.querySelectorAll('.model-profile').length,1,'Model changes must replace their profile');
+    document.querySelector('#engineview').click();assert.equal(document.querySelector('#enginedetails').hidden,false,car.id+' engine view opens');
+    assert.equal(document.querySelector('#enginecode').textContent,car.code);
+    if(threeModels[car.id]){
+      assert.equal(document.querySelector('#threeview').hidden,false);document.querySelector('#threeview').click();
+      assert.equal(document.querySelector('#threecanvas').hidden,false);assert.equal(document.querySelector('#threetitle').textContent,threeModels[car.id].title);
+      assert.equal(document.querySelector('#threeplayer iframe'),null,'3D stays click-to-load');
+    }
+    document.querySelector('#carview').click();
+  }
+  const profilePhoto=document.querySelector('.profile-photo-slot img');assert.ok(profilePhoto);
+  profilePhoto.dispatchEvent(new window.Event('error',{bubbles:true}));assert.equal(profilePhoto.getAttribute('src'),'/images/photo-unavailable.svg');assert.equal(profilePhoto.hasAttribute('srcset'),false,'Failed photo candidates must not keep retrying their srcset');
   const {resolvePage}=await import('../public/routes.js');
   for(const link of document.querySelectorAll('.header-user-menu a[href]'))assert.ok(resolvePage(new URL(link.getAttribute('href'),location.href).pathname),'Account-menu links must resolve to real pages: '+link.getAttribute('href'));
   await new Promise(resolve=>setTimeout(resolve,80));
   assert.deepEqual(errors,[],'Actual app entry point and navigation should not throw');
-  console.log('PASS App navigation: collection, gallery view URLs, component selection, Back/Forward restoration (DOM simulation).');
+  console.log('PASS App navigation: collection, all 93 cars, 12 3D entries, engine views, URLs and Back/Forward restoration (DOM simulation).');
 }finally{
   account.destroy();console.error=originalError;
   window.dispatchEvent(new window.Event('pagehide'));

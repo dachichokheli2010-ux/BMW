@@ -50,6 +50,9 @@ assert.equal(restorePlayState({version:1,correct:999,answers:1,mistakes:['bogus'
 
 const {document,window}=parseHTML('<!doctype html><html><body><main></main></body></html>');
 const container=document.querySelector('main'),values=new Map();
+let questionTop=120;const scrollCalls=[];window.innerHeight=780;window.scrollY=0;
+window.scrollTo=options=>{scrollCalls.push(options);window.scrollY=options.top;};
+window.HTMLElement.prototype.getBoundingClientRect=function(){return {top:questionTop,bottom:questionTop+60,height:60};};
 const storage={getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,value)};
 let snapshot={ready:true,user:null},listeners=new Set();
 const account={getSnapshot:()=>snapshot,subscribe(fn){listeners.add(fn);fn(snapshot);return()=>listeners.delete(fn);}};
@@ -69,7 +72,10 @@ function answer(right=true){
   }else for(let index=0;index<question.pairs.length;index++){click(`[data-play-memory="${index}-0"]`);click(`[data-play-memory="${index}-1"]`);}
   assert.ok(container.querySelector('.play-feedback'),'Every submitted answer includes an explanation');
 }
-start('practice');answer(false);const mistake=currentQuestion().id;assert.ok(saved().mistakes.includes(mistake));click('[data-play-action="finish"]');
+start('practice');answer(false);const mistake=currentQuestion().id;assert.ok(saved().mistakes.includes(mistake));
+questionTop=-850;window.scrollY=2200;scrollCalls.length=0;click('[data-play-action="next"]');
+assert.notEqual(currentQuestion().id,mistake);assert.equal(scrollCalls.at(-1).top,1334,'Next brings an offscreen new question back into view');assert.equal(scrollCalls.at(-1).behavior,'smooth');
+questionTop=120;click('[data-play-action="finish"]');
 start('mistakes');assert.equal(currentQuestion().id,mistake);answer();click('[data-play-action="next"]');assert.equal(saved().mistakes.includes(mistake),false);assert.equal(saved().reviewed,1);
 for(const mode of ['cars','engines','parts','match','timeline','memory','build-engine','higher-lower','true-false','endless']){
   start(mode);answer();click('[data-play-action="finish"]');assert.ok(container.querySelector('.play-result'),mode+' finishes with a real result');

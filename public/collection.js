@@ -5,7 +5,8 @@ import {responsivePhotoAttributes,photoBlurStyle} from './responsive-photos.js';
 const icons = {
   heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg>',
   compare: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7h16m-4-4 4 4-4 4M20 17H4m4-4-4 4 4 4"/></svg>',
-  arrow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>'
+  arrow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>',
+  close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg>'
 };
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function stored(key) { try { const value=JSON.parse(localStorage.getItem(key)||'[]'); return Array.isArray(value)?value.filter(x=>typeof x==='string'):[]; } catch { return []; } }
@@ -80,7 +81,7 @@ export function mountCollection({models, catalog=models, getCurrent=()=>null, se
   function updateCompare() {
     const chosen=[...comparison].map(id=>catalog.find(m=>m.id===id)).filter(Boolean);
     $('#compare-tray').hidden=!chosen.length||!['/models','/electric'].includes(location.pathname);
-    $('#compare-items').innerHTML=chosen.map(m=>`<button data-uncompare="${esc(m.id)}" aria-label="${esc(t('Remove'))} ${esc(m.name)}"><img src="${esc(m.car)}" alt=""><span>${esc(m.name.replace('BMW ',''))}<small>${esc(m.generation.split(' / ')[1].trim())}</small></span><span aria-hidden="true">×</span></button>`).join('');
+    $('#compare-items').innerHTML=chosen.map(m=>`<button type="button" data-uncompare="${esc(m.id)}" aria-label="${esc(t('Remove'))} ${esc(m.name)}"><img src="${esc(m.car)}" alt=""><span>${esc(m.name.replace('BMW ',''))}<small>${esc(m.generation.split(' / ')[1].trim())}</small></span><span class="compare-remove-icon" aria-hidden="true">${icons.close}</span></button>`).join('');
     $('#open-comparison').textContent=t('Compare')+' ('+chosen.length+'/3)';
     $('#open-comparison').disabled=chosen.length<1;
     compareController?.refresh();

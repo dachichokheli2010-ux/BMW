@@ -32,6 +32,7 @@ const addedElectricModels=electricModelVariants.map(({photoBase,...variant})=>{
   return enrichModel({...details,photoNote,car:reference.car,carCredit:reference.carCredit,width:reference.width,height:reference.height,views:(reference.views||[]).map(view=>({...view,caption:photoNote})),powertrain:'Electric'});
 });
 export const allModels=[...existingModels,...addedElectricModels].map(model=>{
+  model={...model,relatedModelNames:[...existingModels,...addedElectricModels].filter(other=>other.id!==model.id&&other.code===model.code).slice(0,5).map(other=>other.name+' / '+other.generation.split(' / ').at(-1))};
   const photoReview=auditModelPhotos(model),profile=buildModelProfile(model),hero=photoReview.approved[0],engine=photoReview.engine[0];
   return {...model,profile,photoReview,approvedPhotos:{car:photoReview.approved,engine:photoReview.engine},
     car:hero?.src||'images/photo-unavailable.svg',carCredit:hero?.credit||null,

@@ -1,0 +1,113 @@
+/* Car pages use compact toolbars. Links must never stretch to a tall sibling. */
+#explorer { padding-top: 12px; min-width: 0; }
+#explorer .explorer-breadcrumb { display: flex; align-items: center; justify-content: space-between; gap: 18px; min-width: 0; padding-block: 6px; }
+#explorer .explorer-breadcrumb > button { min-height: 44px; flex: none; padding: 10px 0; font-size: 13px; }
+#explorer #breadcrumbmodel { font-size: 12px; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#explorer .selection-heading { align-items: center; gap: 28px; padding: 22px 0; }
+#explorer .selection-heading > div { min-width: 0; }
+#explorer .selection-heading h1 { font-size: clamp(34px,4.7vw,62px); line-height: 1.1; letter-spacing: -.045em; margin-top: 14px; }
+#explorer .selection-right { flex: 0 1 360px; max-width: 400px; min-width: 240px; display: grid; grid-template-columns: 1fr; gap: 10px; }
+#explorer .selection-right > label { display: none; }
+#explorer .selection-right .browse-3d { justify-self: start; display: inline-flex; align-items: center; gap: 8px; padding: 9px 0; min-height: 40px; font-size: 12px; }
+#explorer .browse-3d span { display: inline-grid; place-content: center; background: var(--surface-raised); border: 1px solid var(--line); padding: 2px 7px; border-radius: 20px; margin: 0; font-size: 11px; }
+#explorer .selection-right select, #explorer .selection-right .apex-select { width: 100%; min-width: 0; max-width: 100%; }
+#explorer .selection-right .apex-select-trigger { border-radius: 14px; min-height: 50px; font-size: 13px; }
+#explorer .detail-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 0; }
+#explorer .detail-actions > button { min-height: 44px; padding: 10px 15px; border-radius: 12px; font-size: 12px; }
+#explorer .engineering-detail-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 12px 0 22px; }
+#explorer .engineering-detail-actions > a, #explorer .engineering-detail-actions > button {
+  display: inline-flex; align-items: center; justify-content: space-between; gap: 12px;
+  flex: 0 1 auto; min-width: 0; min-height: 44px; height: auto; padding: 10px 15px;
+  font-size: 12px; font-weight: 500; line-height: 1.4; text-align: left; border: 1px solid var(--line);
+  border-radius: 12px; color: var(--white); background: var(--surface); white-space: nowrap;
+}
+#explorer .engineering-detail-actions > .learn-car-link { background: color-mix(in srgb,var(--blue) 12%,var(--surface)); border-color: color-mix(in srgb,var(--blue) 35%,var(--line)); color: var(--blue); }
+#explorer .engineering-detail-actions > a:hover, #explorer .engineering-detail-actions > button:hover { background: var(--surface-raised); border-color: var(--blue); }
+#explorer .engineering-detail-actions > a > span, #explorer .engineering-detail-actions > button > span { flex: none; color: var(--blue); }
+#explorer .gallery-tools { padding: 0; margin-bottom: 14px; }
+#explorer .gallery-angle-shortcuts { min-width: 0; display: flex; overflow-x: auto; gap: 6px; scrollbar-width: thin; }
+#explorer .gallery-angle-shortcuts > button { flex: 0 0 auto; min-height: 42px; padding: 10px 14px; font-size: 12px; border-radius: 12px; }
+#explorer .open-gallery { min-height: 42px; border-radius: 12px; font-size: 12px; }
+#explorer .showroom { border-radius: 22px; }
+#explorer .view-tabs { border-radius: 18px; }
+#explorer .view-tabs > button { min-height: 42px; font-size: 12px; border-radius: 12px; }
+#explorer .photo-stepper > button, #explorer .gallery-actions > button { min-height: 42px; }
+#explorer .gallery-caption, #explorer .active-photo-credit { font-size: 12px; line-height: 1.7; overflow-wrap: anywhere; }
+#explorer .direction-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+#explorer .direction-tabs > button { min-height: 42px; font-size: 12px; border-radius: 12px; }
+#explorer .machine-bar { border-radius: 18px; }
+.car-story { margin: 36px 0; padding: clamp(24px,3vw,40px); border: 1px solid var(--line); border-radius: 24px; background: linear-gradient(125deg,#4e88d310,transparent 65%),var(--surface); }
+.car-story h2 { font-size: clamp(28px,3vw,42px); letter-spacing: -.04em; font-weight: 500; margin: 14px 0 18px; line-height: 1.2; }
+.car-story-lead { max-width: 900px; font-size: 16px; line-height: 1.9; color: var(--muted); }
+.car-story-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 22px; margin-top: 28px; }
+.car-story-grid > section { padding: 24px; border: 1px solid var(--line); border-radius: 18px; background: var(--bg); min-width: 0; }
+.car-story-grid h3 { font-size: 16px; margin: 0 0 14px; font-weight: 500; }
+.car-story-grid p, .car-story-grid li { font-size: 13px; line-height: 1.85; color: var(--muted); }
+.car-story-grid ul { margin: 0; padding-left: 18px; }
+.car-story-grid li + li { margin-top: 9px; }
+.car-facts { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; margin: 25px 0 0; }
+.car-facts > p { padding: 22px; margin: 0; font-size: 14px; line-height: 1.85; border-radius: 16px; border: 1px solid var(--line); background: color-mix(in srgb,var(--blue) 6%,var(--bg)); }
+.car-facts strong { display: block; color: var(--blue); margin-bottom: 10px; font-size: 10px; letter-spacing: 1.3px; }
+.car-story-sources { margin-top: 24px; }
+.car-story-sources summary { min-height: 44px; cursor: pointer; display: flex; align-items: center; font-size: 12px; color: var(--muted); }
+.profile-research, .profile-photo-pending { margin-top: 22px; padding: 18px 22px; border: 1px solid var(--line); border-radius: 18px; }
+.profile-research > summary, .profile-photo-pending > summary { cursor: pointer; min-height: 44px; align-content: center; font-size: 13px; color: var(--muted); }
+.profile-research > p, .profile-photo-pending li { font-size: 12px; line-height: 1.8; color: var(--muted); }
+.profile-photo-pending li + li { margin-top: 12px; }
+.profile-research > summary > span { margin-left: 10px; color: var(--blue); }
+.profile-photo-slot > p { overflow-wrap: anywhere; }
+.car-story-sources p { font-size: 12px; line-height: 1.8; color: var(--muted); }
+.car-story-sources a { display: block; padding: 10px 0; font-size: 12px; color: var(--blue); overflow-wrap: anywhere; }
+.model-profile .profile-heading > div > p { max-width: 750px; font-size: 13px; }
+.model-profile .profile-provenance > summary { min-height: 38px; display: flex; align-items: center; }
+.three-load-status { position: absolute; inset: auto 20px 68px; z-index: 5; padding: 16px 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; font-size: 13px; line-height: 1.7; }
+.three-load-status a { color: var(--blue); margin-right: 18px; }
+@media(max-width:900px) {
+  #explorer .selection-heading { align-items: stretch; flex-direction: column; gap: 16px; }
+  #explorer .selection-right { flex: none; max-width: none; min-width: 0; width: 100%; display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; }
+  #explorer .selection-right > .apex-select, #explorer .selection-right > select { grid-column: 1; grid-row: 1; }
+  #explorer .selection-right .browse-3d { grid-column: 2; grid-row: 1; padding-left: 10px; }
+}
+@media(max-width:600px) {
+  #explorer { padding-top: 0; }
+  #explorer .explorer-breadcrumb { gap: 12px; }
+  #explorer .explorer-breadcrumb > button { font-size: 12px; }
+  #explorer #breadcrumbmodel { max-width: 58%; font-size: 10px; }
+  #explorer .selection-heading { padding: 18px 0; gap: 18px; }
+  #explorer .selection-heading h1 { font-size: clamp(31px,7.8vw,42px); line-height: 1.12; letter-spacing: -.045em; }
+  #explorer .selection-heading .eyebrow { font-size: 10px; letter-spacing: 1.8px; }
+  #explorer .selection-right { grid-template-columns: minmax(0,1fr); gap: 8px; }
+  #explorer .selection-right .browse-3d { grid-row: 2; grid-column: 1; justify-self: start; min-height: 38px; padding: 5px 0; }
+  #explorer .selection-right .apex-select-trigger { font-size: 14px; min-height: 48px; }
+  #explorer .detail-actions { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 6px; }
+  #explorer .detail-actions > button { min-width: 0; min-height: 44px; padding: 10px 8px; font-size: 11px; justify-content: center; gap: 6px; border-radius: 12px; }
+  #explorer .detail-actions > button > svg { width: 15px; height: 15px; }
+  #explorer .engineering-detail-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); align-items: stretch; gap: 8px; margin: 10px 0 20px; }
+  #explorer .engineering-detail-actions > a, #explorer .engineering-detail-actions > button { width: 100%; min-height: 44px; font-size: 12px; padding: 11px 13px; gap: 8px; line-height: 1.4; white-space: normal; }
+  #explorer .engineering-detail-actions > .learn-car-link { grid-column: 1/-1; }
+  #explorer .engineering-detail-actions > a:last-child,
+  #explorer .engineering-detail-actions:has(> [data-open-engine]) > [data-open-garage] { grid-column: 1/-1; }
+  #explorer .gallery-tools { gap: 10px; margin-bottom: 12px; }
+  #explorer .gallery-angle-shortcuts { width: 100%; }
+  #explorer .gallery-angle-shortcuts > button { flex: 0 0 auto; min-width: 90px; }
+  #explorer .showroom { border-radius: 18px; }
+  #explorer .view-tabs { left: 12px; right: 12px; top: 12px; justify-content: center; padding: 4px; border-radius: 16px; }
+  #explorer .view-tabs > button { flex: 1; font-size: 11px; padding: 9px 10px; }
+  #explorer .exterior-details { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 16px; align-items: center; }
+  #explorer .exterior-details .engine-badge { min-width: 0; }
+  #explorer .exterior-details .inspect-button { font-size: 12px; min-height: 44px; white-space: normal; padding: 10px 12px; }
+  #explorer .machine-bar { gap: 0; grid-template-columns: repeat(2,minmax(0,1fr)); }
+  #explorer .machine-bar > div { min-width: 0; padding: 18px 14px; }
+  #explorer .machine-bar strong { font-size: 23px; overflow-wrap: anywhere; }
+  #explorer .machine-bar > div > span { font-size: 9px; }
+  #explorer .machine-bar .spec-market { grid-column: 1/-1; }
+  .car-story { margin-block: 26px; padding: 24px 20px; border-radius: 20px; }
+  .car-story-lead { font-size: 14px; }
+  .car-story-grid, .car-facts { grid-template-columns: minmax(0,1fr); gap: 12px; }
+  .car-story-grid > section { padding: 20px; }
+  .car-facts > p { padding: 20px; font-size: 13px; }
+}
+@media(max-width:359px) {
+  #explorer .detail-actions > button { font-size: 10px; padding-inline: 5px; gap: 4px; }
+  #explorer .selection-heading h1 { font-size: 30px; }
+}

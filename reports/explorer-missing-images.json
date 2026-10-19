@@ -38,7 +38,7 @@
       "id": "f10",
       "name": "BMW 535i",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20535i%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -134,7 +134,7 @@
       "id": "f22",
       "name": "BMW M235i Coupé",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M235i%20Coup%C3%A9%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -182,7 +182,7 @@
       "id": "f32",
       "name": "BMW 435i Coupé",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20435i%20Coup%C3%A9%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -230,7 +230,7 @@
       "id": "f13",
       "name": "BMW 640i Gran Coupé",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20640i%20Gran%20Coup%C3%A9%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -278,7 +278,7 @@
       "id": "f25",
       "name": "BMW X3 xDrive35i",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20X3%20xDrive35i%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -318,7 +318,7 @@
       "id": "f15",
       "name": "BMW X5 xDrive35i",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20X5%20xDrive35i%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -358,7 +358,7 @@
       "id": "e46",
       "name": "BMW M3 Convertible",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M3%20Convertible%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -438,7 +438,7 @@
       "id": "f80",
       "name": "BMW M3",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M3%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -518,7 +518,7 @@
       "id": "g80",
       "name": "BMW M3 Competition",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M3%20Competition%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -606,7 +606,7 @@
       "id": "e46-330i",
       "name": "BMW 330i",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20330i%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -624,14 +624,6 @@
       "slot": "side",
       "reason": "No matching, licensed photograph with this view identified is available.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20530i%20Side%20exterior&title=Special:MediaSearch&type=image"
-    },
-    {
-      "kind": "car",
-      "id": "e60-530i",
-      "name": "BMW 530i",
-      "slot": "rear",
-      "reason": "No matching, licensed photograph with this view identified is available.",
-      "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20530i%20Rear%20exterior&title=Special:MediaSearch&type=image"
     },
     {
       "kind": "car",
@@ -662,7 +654,7 @@
       "id": "e60-530i",
       "name": "BMW 530i",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20530i%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -702,7 +694,7 @@
       "id": "e90-335i",
       "name": "BMW 335i",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20335i%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -790,7 +782,7 @@
       "id": "f10-m5",
       "name": "BMW M5",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M5%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -830,7 +822,7 @@
       "id": "g20-330i",
       "name": "BMW 330i",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20330i%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -878,7 +870,7 @@
       "id": "x1",
       "name": "BMW X1 xDrive28i",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20X1%20xDrive28i%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -926,7 +918,7 @@
       "id": "x4",
       "name": "BMW X4 M40i",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20X4%20M40i%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -974,7 +966,7 @@
       "id": "x6",
       "name": "BMW X6 xDrive40i",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20X6%20xDrive40i%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -1022,7 +1014,7 @@
       "id": "x7",
       "name": "BMW X7 xDrive40i",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20X7%20xDrive40i%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -1078,7 +1070,7 @@
       "id": "e26-m1",
       "name": "BMW M1",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M1%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -1134,7 +1126,7 @@
       "id": "e82-1m",
       "name": "BMW 1 Series M Coupé",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%201%20Series%20M%20Coup%C3%A9%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -1190,7 +1182,7 @@
       "id": "f87-m2",
       "name": "BMW M2 Competition",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M2%20Competition%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -1246,7 +1238,7 @@
       "id": "g87-m2",
       "name": "BMW M2",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M2%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -1302,7 +1294,7 @@
       "id": "e30-m3",
       "name": "BMW M3",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M3%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -1358,7 +1350,7 @@
       "id": "e36-m3",
       "name": "BMW M3 3.0 Coupé",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M3%203.0%20Coup%C3%A9%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -1414,7 +1406,7 @@
       "id": "g82-m4",
       "name": "BMW M4 Competition Coupé",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M4%20Competition%20Coup%C3%A9%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -1470,7 +1462,7 @@
       "id": "e28-m5",
       "name": "BMW M5",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M5%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -1526,7 +1518,7 @@
       "id": "e34-m5",
       "name": "BMW M5 3.6",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M5%203.6%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -1582,7 +1574,7 @@
       "id": "g90-m5",
       "name": "BMW M5 M Hybrid",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M5%20M%20Hybrid%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -1638,7 +1630,7 @@
       "id": "e24-m635csi",
       "name": "BMW M635CSi",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M635CSi%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -1694,7 +1686,7 @@
       "id": "e63-m6",
       "name": "BMW M6 Coupé",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M6%20Coup%C3%A9%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -1750,7 +1742,7 @@
       "id": "f13-m6",
       "name": "BMW M6 Coupé",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M6%20Coup%C3%A9%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -1798,7 +1790,7 @@
       "id": "f92-m8",
       "name": "BMW M8 Competition Coupé",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M8%20Competition%20Coup%C3%A9%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -1854,7 +1846,7 @@
       "id": "z3-m",
       "name": "BMW Z3 M Roadster",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20Z3%20M%20Roadster%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -1910,7 +1902,7 @@
       "id": "z4-m",
       "name": "BMW Z4 M Roadster",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20Z4%20M%20Roadster%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -1966,7 +1958,7 @@
       "id": "f97-x3m",
       "name": "BMW X3 M Competition",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20X3%20M%20Competition%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -2022,7 +2014,7 @@
       "id": "f98-x4m",
       "name": "BMW X4 M Competition",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20X4%20M%20Competition%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -2078,7 +2070,7 @@
       "id": "f95-x5m",
       "name": "BMW X5 M Competition",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20X5%20M%20Competition%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -2134,7 +2126,7 @@
       "id": "f96-x6m",
       "name": "BMW X6 M Competition",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20X6%20M%20Competition%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -2190,7 +2182,7 @@
       "id": "g09-xm",
       "name": "BMW XM",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20XM%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -2246,7 +2238,7 @@
       "id": "f40-m135i",
       "name": "BMW M135i xDrive",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M135i%20xDrive%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -2302,7 +2294,7 @@
       "id": "g42-230i",
       "name": "BMW 230i Coupé",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20230i%20Coup%C3%A9%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -2358,7 +2350,7 @@
       "id": "g22-430i",
       "name": "BMW 430i Coupé",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20430i%20Coup%C3%A9%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -2414,7 +2406,7 @@
       "id": "g30-530i",
       "name": "BMW 530i",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20530i%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -2470,7 +2462,7 @@
       "id": "g32-640igt",
       "name": "BMW 640i Gran Turismo",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20640i%20Gran%20Turismo%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -2526,7 +2518,7 @@
       "id": "g11-740i",
       "name": "BMW 740i",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20740i%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -2582,7 +2574,7 @@
       "id": "g15-m850i",
       "name": "BMW M850i xDrive Coupé",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M850i%20xDrive%20Coup%C3%A9%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -2638,7 +2630,7 @@
       "id": "f39-x2",
       "name": "BMW X2 xDrive28i",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20X2%20xDrive28i%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -2694,7 +2686,7 @@
       "id": "g29-z4",
       "name": "BMW Z4 M40i",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20Z4%20M40i%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -2750,7 +2742,7 @@
       "id": "i12-i8",
       "name": "BMW i8 Coupé",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20i8%20Coup%C3%A9%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -2798,7 +2790,7 @@
       "id": "g81-m3-touring",
       "name": "BMW M3 Competition Touring",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M3%20Competition%20Touring%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -2846,7 +2838,7 @@
       "id": "g99-m5-touring",
       "name": "BMW M5 Touring M Hybrid",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M5%20Touring%20M%20Hybrid%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -2902,7 +2894,7 @@
       "id": "g82-m4-csl",
       "name": "BMW M4 CSL",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M4%20CSL%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -2950,7 +2942,7 @@
       "id": "g80-m3-cs",
       "name": "BMW M3 CS",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M3%20CS%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -2998,7 +2990,7 @@
       "id": "f90-m5-cs",
       "name": "BMW M5 CS",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M5%20CS%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -3046,7 +3038,7 @@
       "id": "f87-m2-cs",
       "name": "BMW M2 CS",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M2%20CS%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -3094,7 +3086,7 @@
       "id": "f82-m4-gts",
       "name": "BMW M4 GTS",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M4%20GTS%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -3142,7 +3134,7 @@
       "id": "e46-m3-csl",
       "name": "BMW M3 CSL",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M3%20CSL%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -3198,7 +3190,7 @@
       "id": "e92-m3-gts",
       "name": "BMW M3 GTS",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M3%20GTS%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -3246,7 +3238,7 @@
       "id": "e30-m3-sport-evo",
       "name": "BMW M3 Sport Evolution",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M3%20Sport%20Evolution%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -3294,7 +3286,7 @@
       "id": "e90-m3",
       "name": "BMW M3 Sedan",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M3%20Sedan%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -3342,7 +3334,7 @@
       "id": "f06-m6-gc",
       "name": "BMW M6 Competition Gran Coupé",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M6%20Competition%20Gran%20Coup%C3%A9%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -3390,7 +3382,7 @@
       "id": "f93-m8-gc",
       "name": "BMW M8 Competition Gran Coupé",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M8%20Competition%20Gran%20Coup%C3%A9%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -3438,7 +3430,7 @@
       "id": "f91-m8-convertible",
       "name": "BMW M8 Competition Convertible",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M8%20Competition%20Convertible%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -3494,7 +3486,7 @@
       "id": "e368-z3m-coupe",
       "name": "BMW Z3 M Coupé",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20Z3%20M%20Coup%C3%A9%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -3550,7 +3542,7 @@
       "id": "e20-2002-turbo",
       "name": "BMW 2002 turbo",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%202002%20turbo%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -3606,7 +3598,7 @@
       "id": "e31-850csi",
       "name": "BMW 850CSi",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20850CSi%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -3654,7 +3646,7 @@
       "id": "e38-750i",
       "name": "BMW 750iL",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20750iL%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -3710,7 +3702,7 @@
       "id": "e9-30-csl",
       "name": "BMW 3.0 CSL",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%203.0%20CSL%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -3766,7 +3758,7 @@
       "id": "e21-323i",
       "name": "BMW 323i",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20323i%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -3814,7 +3806,7 @@
       "id": "f44-m235i-gc",
       "name": "BMW M235i xDrive Gran Coupé",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M235i%20xDrive%20Gran%20Coup%C3%A9%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -3862,7 +3854,7 @@
       "id": "e86-z4m-coupe",
       "name": "BMW Z4 M Coupé",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20Z4%20M%20Coup%C3%A9%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -3910,7 +3902,7 @@
       "id": "i3",
       "name": "BMW i3 120 Ah",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20i3%20120%20Ah%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -3958,7 +3950,7 @@
       "id": "i4",
       "name": "BMW i4 eDrive40",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20i4%20eDrive40%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -4006,7 +3998,7 @@
       "id": "ix",
       "name": "BMW iX xDrive50",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20iX%20xDrive50%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -4054,7 +4046,7 @@
       "id": "ix3",
       "name": "BMW iX3",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20iX3%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -4110,7 +4102,7 @@
       "id": "u11-ix1",
       "name": "BMW iX1 xDrive30",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20iX1%20xDrive30%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -4166,7 +4158,7 @@
       "id": "u10-ix2",
       "name": "BMW iX2 xDrive30",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20iX2%20xDrive30%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -4222,7 +4214,7 @@
       "id": "g60-i5",
       "name": "BMW i5 eDrive40",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20i5%20eDrive40%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -4278,7 +4270,7 @@
       "id": "g70-i7",
       "name": "BMW i7 xDrive60",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20i7%20xDrive60%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -4334,7 +4326,7 @@
       "id": "g26-i4-m50",
       "name": "BMW i4 M50",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20i4%20M50%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -4382,7 +4374,7 @@
       "id": "g60-i5-m60",
       "name": "BMW i5 M60 xDrive",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20i5%20M60%20xDrive%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -4430,7 +4422,7 @@
       "id": "g70-i7-m70",
       "name": "BMW i7 M70 xDrive",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20i7%20M70%20xDrive%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -4478,7 +4470,7 @@
       "id": "i20-ix-m60",
       "name": "BMW iX M60",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20iX%20M60%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -4526,7 +4518,7 @@
       "id": "i4-edrive35",
       "name": "BMW i4 eDrive35",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20i4%20eDrive35%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -4574,7 +4566,7 @@
       "id": "i4-xdrive40",
       "name": "BMW i4 xDrive40",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20i4%20xDrive40%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -4630,7 +4622,7 @@
       "id": "u11-ix1-edrive20",
       "name": "BMW iX1 eDrive20",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20iX1%20eDrive20%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
     },
     {
@@ -4686,200 +4678,8 @@
       "id": "u10-ix2-edrive20",
       "name": "BMW iX2 eDrive20",
       "slot": "engine",
-      "reason": "No verified photograph of the selected model’s engine or powertrain is available.",
+      "reason": "A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.",
       "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20iX2%20eDrive20%20Engine%20or%20electric%20powertrain&title=Special:MediaSearch&type=image"
-    },
-    {
-      "kind": "engine",
-      "id": "n55",
-      "name": "BMW N55",
-      "slot": "engine",
-      "reason": "A positively identified, licensed engine or drive-unit photograph is still missing.",
-      "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20N55%20engine&title=Special:MediaSearch&type=image"
-    },
-    {
-      "kind": "engine",
-      "id": "s54",
-      "name": "BMW S54",
-      "slot": "engine",
-      "reason": "A positively identified, licensed engine or drive-unit photograph is still missing.",
-      "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20S54%20engine&title=Special:MediaSearch&type=image"
-    },
-    {
-      "kind": "engine",
-      "id": "s58",
-      "name": "BMW S58",
-      "slot": "engine",
-      "reason": "A positively identified, licensed engine or drive-unit photograph is still missing.",
-      "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20S58%20engine&title=Special:MediaSearch&type=image"
-    },
-    {
-      "kind": "engine",
-      "id": "m54",
-      "name": "BMW M54",
-      "slot": "engine",
-      "reason": "A positively identified, licensed engine or drive-unit photograph is still missing.",
-      "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M54%20engine&title=Special:MediaSearch&type=image"
-    },
-    {
-      "kind": "engine",
-      "id": "s63tu",
-      "name": "BMW S63TU",
-      "slot": "engine",
-      "reason": "A positively identified, licensed engine or drive-unit photograph is still missing.",
-      "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20S63TU%20engine&title=Special:MediaSearch&type=image"
-    },
-    {
-      "kind": "engine",
-      "id": "b48",
-      "name": "BMW B48",
-      "slot": "engine",
-      "reason": "A positively identified, licensed engine or drive-unit photograph is still missing.",
-      "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20B48%20engine&title=Special:MediaSearch&type=image"
-    },
-    {
-      "kind": "engine",
-      "id": "b46",
-      "name": "BMW B46",
-      "slot": "engine",
-      "reason": "A positively identified, licensed engine or drive-unit photograph is still missing.",
-      "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20B46%20engine&title=Special:MediaSearch&type=image"
-    },
-    {
-      "kind": "engine",
-      "id": "b58",
-      "name": "BMW B58",
-      "slot": "engine",
-      "reason": "A positively identified, licensed engine or drive-unit photograph is still missing.",
-      "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20B58%20engine&title=Special:MediaSearch&type=image"
-    },
-    {
-      "kind": "engine",
-      "id": "m88",
-      "name": "BMW M88",
-      "slot": "engine",
-      "reason": "A positively identified, licensed engine or drive-unit photograph is still missing.",
-      "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M88%20engine&title=Special:MediaSearch&type=image"
-    },
-    {
-      "kind": "engine",
-      "id": "s14",
-      "name": "BMW S14",
-      "slot": "engine",
-      "reason": "A positively identified, licensed engine or drive-unit photograph is still missing.",
-      "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20S14%20engine&title=Special:MediaSearch&type=image"
-    },
-    {
-      "kind": "engine",
-      "id": "s50b30",
-      "name": "BMW S50B30",
-      "slot": "engine",
-      "reason": "A positively identified, licensed engine or drive-unit photograph is still missing.",
-      "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20S50B30%20engine&title=Special:MediaSearch&type=image"
-    },
-    {
-      "kind": "engine",
-      "id": "m88-3",
-      "name": "BMW M88/3",
-      "slot": "engine",
-      "reason": "A positively identified, licensed engine or drive-unit photograph is still missing.",
-      "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M88%2F3%20engine&title=Special:MediaSearch&type=image"
-    },
-    {
-      "kind": "engine",
-      "id": "s38b36",
-      "name": "BMW S38B36",
-      "slot": "engine",
-      "reason": "A positively identified, licensed engine or drive-unit photograph is still missing.",
-      "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20S38B36%20engine&title=Special:MediaSearch&type=image"
-    },
-    {
-      "kind": "engine",
-      "id": "s68-plus-edrive",
-      "name": "BMW S68 + eDrive",
-      "slot": "engine",
-      "reason": "A positively identified, licensed engine or drive-unit photograph is still missing.",
-      "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20S68%20%2B%20eDrive%20engine&title=Special:MediaSearch&type=image"
-    },
-    {
-      "kind": "engine",
-      "id": "s50b32",
-      "name": "BMW S50B32",
-      "slot": "engine",
-      "reason": "A positively identified, licensed engine or drive-unit photograph is still missing.",
-      "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20S50B32%20engine&title=Special:MediaSearch&type=image"
-    },
-    {
-      "kind": "engine",
-      "id": "s54b32",
-      "name": "BMW S54B32",
-      "slot": "engine",
-      "reason": "A positively identified, licensed engine or drive-unit photograph is still missing.",
-      "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20S54B32%20engine&title=Special:MediaSearch&type=image"
-    },
-    {
-      "kind": "engine",
-      "id": "n63",
-      "name": "BMW N63",
-      "slot": "engine",
-      "reason": "A positively identified, licensed engine or drive-unit photograph is still missing.",
-      "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20N63%20engine&title=Special:MediaSearch&type=image"
-    },
-    {
-      "kind": "engine",
-      "id": "b38-plus-edrive",
-      "name": "BMW B38 + eDrive",
-      "slot": "engine",
-      "reason": "A positively identified, licensed engine or drive-unit photograph is still missing.",
-      "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20B38%20%2B%20eDrive%20engine&title=Special:MediaSearch&type=image"
-    },
-    {
-      "kind": "engine",
-      "id": "m10-turbo",
-      "name": "BMW M10 / turbo",
-      "slot": "engine",
-      "reason": "A positively identified, licensed engine or drive-unit photograph is still missing.",
-      "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M10%20%2F%20turbo%20engine&title=Special:MediaSearch&type=image"
-    },
-    {
-      "kind": "engine",
-      "id": "s70",
-      "name": "BMW S70",
-      "slot": "engine",
-      "reason": "A positively identified, licensed engine or drive-unit photograph is still missing.",
-      "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20S70%20engine&title=Special:MediaSearch&type=image"
-    },
-    {
-      "kind": "engine",
-      "id": "m73",
-      "name": "BMW M73",
-      "slot": "engine",
-      "reason": "A positively identified, licensed engine or drive-unit photograph is still missing.",
-      "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M73%20engine&title=Special:MediaSearch&type=image"
-    },
-    {
-      "kind": "engine",
-      "id": "m30",
-      "name": "BMW M30",
-      "slot": "engine",
-      "reason": "A positively identified, licensed engine or drive-unit photograph is still missing.",
-      "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M30%20engine&title=Special:MediaSearch&type=image"
-    },
-    {
-      "kind": "engine",
-      "id": "m20",
-      "name": "BMW M20",
-      "slot": "engine",
-      "reason": "A positively identified, licensed engine or drive-unit photograph is still missing.",
-      "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20M20%20engine&title=Special:MediaSearch&type=image"
-    },
-    {
-      "kind": "engine",
-      "id": "edrive",
-      "name": "BMW electric drive systems",
-      "slot": "engine",
-      "reason": "A positively identified, licensed engine or drive-unit photograph is still missing.",
-      "search": "https://commons.wikimedia.org/w/index.php?search=BMW%20eDrive%20engine&title=Special:MediaSearch&type=image"
     },
     {
       "kind": "part",

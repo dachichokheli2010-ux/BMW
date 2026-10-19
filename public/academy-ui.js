@@ -1,4 +1,5 @@
 import {allModels} from './catalog.js';
+import {focusLearningTarget,revealLearningFeedback} from './learning-navigation.js';
 import {partCatalog} from './parts.js';
 import {account,accountStorageMessage} from './account-sync.js';
 import {createCurriculum} from './academy-content.js';
@@ -171,7 +172,7 @@ export function mountLearningAcademy(container,options,content){
     if(!activeLesson&&section==='glossary')glossaryView=mountGlossary(container.querySelector('[data-ac-glossary-view]'),glossaryOptions);
     else definitions=mountGlossaryDefinitions(container,glossaryOptions);
     prepareGlossaryCopy(container);translatePage();localizeGlossaryCopy(container);updateLocalizedDates();
-    if(focus){container.querySelector(`[data-ac-focus="${focus}"]`)?.focus({preventScroll:true});container.scrollIntoView({behavior:'instant',block:'start'});}
+    if(focus)focusLearningTarget(container.querySelector(`[data-ac-focus="${focus}"]`));
   }
   function openLesson(id,newLevel,kind='lesson',custom){
     if(pendingDraft?.session?.lessonId===(custom?.id||id)&&resumeDraft())return true;
@@ -179,7 +180,7 @@ export function mountLearningAcademy(container,options,content){
     if(content.levels.includes(newLevel))level=newLevel;
     activeLesson=l;stage='intro';step=0;questionIndex=0;answer=null;answerState=null;orderSelection=[];matches={};selectedMatch=null;result=null;session=beginSession(l,{kind,day:today()});notice='';
     const targetUnit=units.find(u=>u.lessons.includes(l.id));if(targetUnit){unitId=targetUnit.id;state.selectedPath=unitId;save();}
-    render('lesson');container.scrollIntoView({behavior:'instant',block:'start'});return true;
+    render('lesson');return true;
   }
   function submit(value){const q=activeLesson?.questions[questionIndex];if(!q||answerState)return;const outcome=recordAnswer(state,session,q,value,today());if(!outcome)return;answer=value;answerState=outcome.correct;save();render();}
   function mixedPractice(topic){const pool=lessons.filter(l=>l.topic===topic);if(!pool.length)return;const source=pool.find(l=>!state.completed[l.id])||pool[daySeed(today())%pool.length];openLesson(source.id);}
@@ -201,7 +202,7 @@ export function mountLearningAcademy(container,options,content){
     else if(action==='clear-answer'){orderSelection=[];matches={};selectedMatch=null;answerState=null;render();}
     else if(action==='match-left'){selectedMatch=num;answerState=null;render();}
     else if(action==='match-right'){if(selectedMatch!==null){for(const key of Object.keys(matches))if(matches[key]===num)delete matches[key];matches[selectedMatch]=num;selectedMatch=null;answerState=null;render();}}
-    else if(action==='check'){const q=activeLesson.questions[questionIndex];submit(q.type==='choice'?answer:q.type==='order'?[...orderSelection]:{...matches});container.querySelector('.ac-feedback')?.scrollIntoView({block:'nearest',behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth'});}
+    else if(action==='check'){const q=activeLesson.questions[questionIndex];submit(q.type==='choice'?answer:q.type==='order'?[...orderSelection]:{...matches});revealLearningFeedback(container.querySelector('.ac-feedback'));}
     else if(action==='question-next'&&answerState){questionIndex++;answer=null;answerState=null;orderSelection=[];matches={};selectedMatch=null;render('question');}
     else if(action==='finish'&&answerState){const previousLevel=levelProgress(state.xp).level;result=finishSession(state,session,activeLesson,units,today());if(!result)return;result.leveledUp=result.level.level>previousLevel;if(session.kind==='lesson'&&activeLesson.legacy)for(const difficulty of content.levels)legacy[activeLesson.id+':'+difficulty]=true;save();clearDraft();stage='results';render('result');}
     else if(action==='daily')openLesson(null,null,'daily',dailyLesson());

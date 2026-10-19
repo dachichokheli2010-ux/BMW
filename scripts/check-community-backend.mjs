@@ -1,0 +1,143 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import sharp from 'sharp';
+import {PGlite} from '@electric-sql/pglite';
+import {createLocalDatabase} from '../server/local-db.mjs';
+import {initializePostgres,createPostgresAdapter} from '../server/postgres-db.js';
+import {handleApi} from '../server/api.js';
+import {communityQuestions} from '../server/community-questions.js';
+import {validateCommunityPhoto,encodePhotoBytes,decodePhotoBytes} from '../server/community-photos.js';
+import {emptyGarage} from '../server/validation.js';
+import {createVercelHandler} from '../server/vercel-api.js';
+
+let checks=0;const check=(v,m)=>{assert.ok(v,m);checks++;};
+const jpg=await sharp({create:{width:320,height:200,channels:3,background:'#35618c'}}).jpeg().withExif({IFD0:{Artist:'PRIVATE PHOTO METADATA'}}).toBuffer();
+const webp=await sharp({create:{width:320,height:200,channels:3,background:'#35618c'}}).webp().toBuffer();
+const photo={data:'data:image/jpeg;base64,'+jpg.toString('base64'),caption:'My BMW on a closed driveway'};
+const clean=validateCommunityPhoto(photo);check(clean.width===320&&clean.height===200,'Photo parser reads real JPEG dimensions.');
+check(!(await sharp(decodePhotoBytes(clean.data)).metadata()).exif,'Uploaded EXIF metadata is removed.');
+const progressive=await sharp(jpg).jpeg({progressive:true}).withExif({IFD0:{Artist:'PRIVATE PROGRESSIVE METADATA'}}).toBuffer();
+const late=Buffer.from('PRIVATE AFTER SCAN METADATA'),segment=Buffer.concat([Buffer.from([255,225,0,late.length+2]),late]);
+const lateMetadata=Buffer.concat([progressive.subarray(0,-2),segment,progressive.subarray(-2)]);
+const cleanProgressive=validateCommunityPhoto({data:'data:image/jpeg;base64,'+lateMetadata.toString('base64')});
+check((await sharp(decodePhotoBytes(cleanProgressive.data)).metadata()).width===320&&!Buffer.from(decodePhotoBytes(cleanProgressive.data)).includes(late),'Progressive JPEG remains valid and metadata after scans is stripped.');
+const cleanedWebp=validateCommunityPhoto({data:'data:image/webp;base64,'+webp.toString('base64')});check((await sharp(decodePhotoBytes(cleanedWebp.data)).metadata()).width===320,'WebP survives sanitization.');
+assert.throws(()=>validateCommunityPhoto({...photo,data:'data:image/webp;base64,'+jpg.toString('base64')}));checks++;
+assert.throws(()=>validateCommunityPhoto({data:'data:image/svg+xml;base64,'+Buffer.from('<svg/>').toString('base64')}));checks++;
+assert.throws(()=>validateCommunityPhoto({data:'data:image/jpeg;base64,'+encodePhotoBytes(new Uint8Array(210*1024))}));checks++;
+
+const directory=await fs.mkdtemp(path.join(os.tmpdir(),'apex-community-'));
+const filename=path.join(directory,'isolated.sqlite');let sqlite=await createLocalDatabase(filename);
+const pg=new PGlite();const query=async(sql,values=[])=>{const r=await pg.query(sql,values);return {rows:r.rows,rowCount:r.affectedRows??r.rows.length};};
+const transaction=statements=>pg.transaction(async tx=>{const results=[];for(const [sql,values] of statements)results.push(await tx.query(sql,values));return results;});
+await initializePostgres(query,transaction);const postgres=createPostgresAdapter(query,transaction);
+async function suite(DB,label){
+ const origin='https://garage.example',password='BMW community test password!',env={DB,AUTH_PROVIDER:'password',CLIENT_IP:label,ADMIN_EMAILS:'owner@example.test'};
+ async function call(route,{method='GET',body,actor,headers={}}={}){
+  const response=await handleApi(new Request(origin+route,{method,headers:{Origin:origin,'Content-Type':'application/json',...(actor?{Cookie:actor.cookie,'X-CSRF-Token':actor.csrf}:{}),...headers},body:body===undefined?undefined:JSON.stringify(body)}),env);
+  const data=response.headers.get('Content-Type')?.startsWith('application/json')?await response.json():new Uint8Array(await response.arrayBuffer());return {status:response.status,data,headers:response.headers};
+ }
+ async function user(email,name){await call('/api/auth/signup',{method:'POST',body:{email,name,password}});const result=await call('/api/auth/login',{method:'POST',body:{email,password}});check(result.status===200,label+' account login');return {id:result.data.user.id,cookie:result.headers.get('Set-Cookie').split(';')[0],csrf:result.data.csrfToken};}
+ const alice=await user('alice@example.test','Private Alice'),bob=await user('bob@example.test','Private Bob'),owner=await user('owner@example.test','Private Owner');
+ check((await call('/api/community')).status===401,label+' community account is private');
+ check((await call('/api/admin/community',{actor:alice})).status===403,label+' ordinary user denied admin');
+ check((await call('/api/admin/community',{actor:owner})).status===403,label+' squatted unverified owner email denied admin');
+ check((await call('/api/community/profile',{actor:alice,method:'PUT',body:{handle:'alice-driver',displayName:'Alice Driver',bio:'Learning about BMWs',isAdmin:true}})).status===400,label+' client cannot set admin');
+ for(const [actor,handle,name]of [[alice,'alice-driver','Alice Driver'],[bob,'bob-driver','Bob Driver'],[owner,'owner-driver','Owner Driver']])check((await call('/api/community/profile',{actor,method:'PUT',body:{handle,displayName:name,bio:''}})).status===200,label+' public profile');
+ check((await call('/api/community/profile',{actor:bob,method:'PUT',body:{handle:'alice-driver',displayName:'Bob',bio:''}})).status===409,label+' handle uniqueness');
+ check((await call('/api/community/profile',{actor:alice,method:'PUT',body:{handle:'alice-driver',displayName:'Alice',bio:''},headers:{Origin:'https://evil.test'}})).status===403,label+' origin checked');
+ check((await call('/api/community/profile',{actor:{...alice,csrf:''},method:'PUT',body:{handle:'alice-driver',displayName:'Alice',bio:''}})).status===403,label+' CSRF checked');
+ const bobShare=await call('/api/community/garage-share',{actor:bob,method:'POST',body:{}});
+ const request=await call('/api/community/friends',{actor:alice,method:'POST',body:{handle:'bob-driver'}});check(request.status===201,label+' friend request created');
+ check(!('garageUrl'in (await call('/api/community/friends',{actor:alice})).data.outgoing[0]),label+' unsolicited request cannot discover garage token');
+ check((await call('/api/community/friends',{actor:alice,method:'PATCH',body:{id:request.data.id,action:'accept'}})).status===403,label+' requester cannot accept own request');
+ check((await call('/api/community/friends',{actor:owner,method:'DELETE',body:{id:request.data.id}})).status===404,label+' third party cannot remove friendship');
+ check((await call('/api/community/friends',{actor:bob})).data.incoming[0].profile.handle==='alice-driver',label+' recipient sees incoming');
+ check((await call('/api/community/friends',{actor:bob,method:'PATCH',body:{id:request.data.id,action:'accept'}})).status===200,label+' recipient accepts');
+ check((await call('/api/community/friends',{actor:alice})).data.friends.length===1,label+' mutual friend');
+ check((await call('/api/community/friends',{actor:alice})).data.friends[0].garageUrl===bobShare.data.url,label+' accepted friend can open opted-in garage');
+ check(!(JSON.stringify((await call('/api/community/friends',{actor:alice})).data).includes('example.test')),label+' friends never expose email');
+ const garage={...emptyGarage(),favorites:['f80']};await call('/api/garage',{actor:alice,method:'PUT',body:{state:garage,revision:0}});
+ check((await call('/api/community/garage-share',{actor:alice})).data.enabled===false,label+' sharing off by default');
+ const shared=await call('/api/community/garage-share',{actor:alice,method:'POST',body:{}});check(shared.data.token.length===43&&shared.data.url==='/garage/'+shared.data.token,label+' canonical public garage URL and strong token');
+ const publicGarage=await call('/api/community/shared-garage?token='+shared.data.token);check(publicGarage.data.garage.favorites[0]==='f80',label+' public favorites');
+ const sharedText=JSON.stringify(publicGarage.data);check(!['Private Alice','example.test',alice.id,'academy','legacyProgress','_academyReceipts','password'].some(secret=>sharedText.includes(secret)),label+' public share whitelist');
+ check((await call('/api/community/garage-share',{actor:bob,method:'DELETE'})).status===200,label+' revoke only own share');
+ check((await call('/api/community/shared-garage?token='+shared.data.token)).status===200,label+' another user cannot revoke link');
+ await call('/api/community/garage-share',{actor:alice,method:'DELETE'});check((await call('/api/community/shared-garage?token='+shared.data.token)).status===404,label+' revoked links die');
+ const secondShare=await call('/api/community/garage-share',{actor:alice,method:'POST',body:{}});check(secondShare.data.token!==shared.data.token,label+' new token after revoke');
+ const input={title:'My E46 project',model:'BMW 330i E46',year:2003,engine:'M54B30',transmission:'Six-speed manual',horsepower:231,description:'My daily driven BMW with a documented service history and factory specification.',modifications:'Factory wheels',evidence:'Private ownership note for the administrator only.',photos:[photo]};
+ const created=await call('/api/community/submissions',{actor:alice,method:'POST',body:input});check(created.status===201&&created.data.submission.status==='draft',label+' durable draft');const id=created.data.submission.id,photoURL=created.data.submission.photos[0].url;
+ check((await call('/api/community/submissions',{actor:bob})).data.submissions.length===0,label+' drafts owner-only');
+ check((await call('/api/community/submissions?id='+id,{actor:bob})).status===404,label+' other user cannot inspect proof');
+ check((await call('/api/community/cars?id='+id)).status===404,label+' draft not public');
+ check((await call(photoURL)).status===404,label+' draft photo not public');check((await call(photoURL,{actor:alice})).status===200,label+' owner previews photo');
+ check((await call('/api/community/submissions/submit',{actor:alice,method:'POST',body:{id}})).data.code==='CREDITS_REQUIRED',label+' server credit gate');
+ check((await call('/api/community/submissions',{actor:alice,method:'PUT',body:{...input,id,credits:9999}})).status===400,label+' no client balance grant');
+ const first=await call('/api/community/challenge',{actor:alice});check(first.data.challenge&&!('answer'in first.data.challenge),label+' challenge hides server answer');
+ check((await call('/api/community/challenge',{actor:bob,method:'POST',body:{id:first.data.challenge.id,answer:0}})).status===409,label+' challenge bound to user');
+ const q=communityQuestions.find(q=>q.prompt===first.data.challenge.prompt);const wrong=await call('/api/community/challenge',{actor:alice,method:'POST',body:{id:first.data.challenge.id,answer:(q.answer+1)%3}});check(wrong.data.correct===false&&wrong.data.credits.balance===0,label+' wrong answer earns nothing');
+ check((await call('/api/community/challenge',{actor:alice,method:'POST',body:{id:first.data.challenge.id,answer:q.answer}})).status===409,label+' no answer replay');
+ const expired=await call('/api/community/challenge',{actor:alice});await DB.prepare('UPDATE community_challenges SET expires_at = ? WHERE id = ?').bind(Date.now()-1000,expired.data.challenge.id).run();check((await call('/api/community/challenge',{actor:alice,method:'POST',body:{id:expired.data.challenge.id,answer:0}})).status===409,label+' expired challenge cannot earn');
+ for(let i=0;i<10;i++){const next=await call('/api/community/challenge',{actor:alice}),question=communityQuestions.find(q=>q.prompt===next.data.challenge.prompt);const result=await call('/api/community/challenge',{actor:alice,method:'POST',body:{id:next.data.challenge.id,answer:question.answer}});check(result.data.correct&&result.data.credits.balance===(i+1)*5,label+' server-earned reward');}
+ check((await call('/api/community/challenge',{actor:alice})).data.challenge===null,label+' ten rewarded questions daily cap');
+ const submitted=await call('/api/community/submissions/submit',{actor:alice,method:'POST',body:{id}});check(submitted.status===200&&submitted.data.submission.status==='pending'&&submitted.data.credits.balance===0,label+' spend exactly50 and queue');
+ check((await call('/api/community/submissions/submit',{actor:alice,method:'POST',body:{id}})).data.credits.balance===0,label+' retry idempotent');
+ check((await call('/api/community/submissions',{actor:alice,method:'PUT',body:{...input,id,photos:undefined}})).status===409,label+' pending cannot edit');
+ check((await call('/api/community/cars')).data.cars.length===0,label+' pending never published');
+ check((await call('/api/admin/moderation',{actor:alice,method:'POST',body:{id,action:'approve',note:''}})).status===403,label+' no owner self-approval');
+ await DB.prepare('INSERT INTO user_verifications (user_id,verified_at) VALUES (?,?)').bind(owner.id,Date.now()).run();
+ check((await call('/api/community',{actor:owner})).data.isAdmin===true,label+' verified allowlisted administrator');
+ check((await call('/api/admin/community',{actor:owner})).data.pending.length===1,label+' real private moderation queue');
+ check((await call('/api/admin/moderation',{actor:owner,method:'POST',body:{id,action:'approve',note:'Ownership and specification checked.'}})).status===200,label+' admin approval');
+ const published=(await call('/api/community/cars?id='+id)).data.car;check(published.photos.length===1&&published.author.handle==='alice-driver',label+' approved card published');
+ check(!JSON.stringify(published).includes('Private ownership')&&!('evidence'in published)&&!('moderationNote'in published)&&!('user_id'in published),label+' private proof never public');
+ const binary=await call(photoURL);check(binary.status===200&&binary.headers.get('Content-Type')==='image/jpeg'&&binary.headers.get('Cache-Control').includes('no-store'),label+' approved binary photo');
+ check((await call('/api/admin/moderation',{actor:owner,method:'POST',body:{id,action:'reject',note:'Please clarify the engine replacement history.'}})).status===200,label+' admin can unpublish');
+ check((await call('/api/community/cars?id='+id)).status===404&&(await call(photoURL)).status===404,label+' rejection revokes public car and photo');
+ const edited=await call('/api/community/submissions',{actor:alice,method:'PUT',body:{...input,id,photos:undefined,description:input.description+' The engine replacement history is now attached.'}});check(edited.status===200&&edited.data.submission.photos.length===1,label+' rejected draft retains omitted photos');
+ const captioned=await call('/api/community/submissions',{actor:alice,method:'PUT',body:{...input,id,photos:[{id:edited.data.submission.photos[0].id,caption:'Updated owner caption'}]}});check(captioned.status===200&&captioned.data.submission.photos[0].caption==='Updated owner caption',label+' owner edits retained photo caption');
+ const again=await call('/api/community/submissions/submit',{actor:alice,method:'POST',body:{id}});check(again.status===200&&again.data.credits.balance===0,label+' same reviewed car correction free');
+ const analytics=(await call('/api/admin/community',{actor:owner})).data;check(analytics.stats.accounts===3&&analytics.stats.pending===1&&analytics.stats.creditsEarned===50&&analytics.stats.creditsSpent===50&&analytics.recentActivity.length>=3,label+' database analytics accurate');
+ check(!JSON.stringify(analytics).includes('password_hash'),label+' admin response excludes credentials');
+ const vercel=createVercelHandler({environment:{DATABASE_URL:'postgresql://test:secret@test.invalid/isolated',ADMIN_EMAILS:env.ADMIN_EMAILS},connect:async()=>DB});
+ check((await vercel(new Request(origin+'/api/community/cars'))).status===200,label+' catch-all serverless community route');
+ check((await vercel(new Request(origin+'/api/admin/community',{headers:{Cookie:owner.cookie}}))).status===200,label+' serverless administrator environment forwarded');
+ check((await call('/api/community/friends',{actor:alice,method:'DELETE',body:{id:request.data.id}})).status===200,label+' friend removal');
+ check((await call('/api/community/friends',{actor:bob})).data.friends.length===0,label+' friend removed for both');
+ const reviewRace=(await call('/api/community/submissions',{actor:alice,method:'POST',body:{...input,title:'Competing reviewer record'}})).data.submission;
+ await DB.prepare('UPDATE community_wallets SET balance = 50 WHERE user_id = ?').bind(alice.id).run();await call('/api/community/submissions/submit',{actor:alice,method:'POST',body:{id:reviewRace.id}});
+ const beforeAudit=Number((await DB.prepare('SELECT COUNT(*) AS count FROM community_audit WHERE car_id = ?').bind(reviewRace.id).first()).count);
+ // Hold both reviewers after reading the same pending snapshot. Batch statements
+ // stay original adapter statements, exercising actual atomic SQL and row locks.
+ let readers=0,release;const barrier=new Promise(resolve=>{release=resolve;});env.ADMIN_USER_IDS=bob.id;
+ env.DB={...DB,prepare(sql){const statement=DB.prepare(sql);if(sql!=='SELECT * FROM community_cars WHERE id = ?')return statement;return {...statement,bind(...values){const bound=statement.bind(...values);return {...bound,async first(...args){const row=await bound.first(...args);if(row?.id===reviewRace.id&&row.status==='pending'){if(++readers===2)release();await barrier;}return row;}};}};}};
+ const decisions=await Promise.all([call('/api/admin/moderation',{actor:owner,method:'POST',body:{id:reviewRace.id,action:'approve',note:'Approved after review.'}}),call('/api/admin/moderation',{actor:bob,method:'POST',body:{id:reviewRace.id,action:'reject',note:'Please clarify the factory engine specification.'}})]);env.DB=DB;delete env.ADMIN_USER_IDS;
+ check(decisions.filter(r=>r.status===200).length===1&&decisions.filter(r=>r.data.code==='MODERATION_CHANGED').length===1,label+' stale competing reviewer gets conflict');
+ const afterAudit=Number((await DB.prepare('SELECT COUNT(*) AS count FROM community_audit WHERE car_id = ?').bind(reviewRace.id).first()).count);check(afterAudit===beforeAudit+1,label+' competing moderation records only actual winning action');
+ const reviewed=await DB.prepare('SELECT status FROM community_cars WHERE id = ?').bind(reviewRace.id).first(),decision=decisions.find(r=>r.status===200);check(reviewed.status===decision.data.submission.status,label+' moderation response matches committed result');
+ // Race requests against the real database adapter. Seed funds only inside the
+ // isolated test DB; the public API deliberately has no balance-grant endpoint.
+ const draftA=(await call('/api/community/submissions',{actor:alice,method:'POST',body:{...input,title:'Concurrency car one'}})).data.submission;
+ const draftB=(await call('/api/community/submissions',{actor:alice,method:'POST',body:{...input,title:'Concurrency car two'}})).data.submission;
+ check((await call('/api/community/submissions',{actor:alice,method:'PUT',body:{...input,id:draftA.id,photos:[{id:edited.data.submission.photos[0].id}]}})).status===403,label+' photo reuse stays bound to exact car');
+ await DB.prepare('UPDATE community_wallets SET balance = 50 WHERE user_id = ?').bind(alice.id).run();
+ const raced=await Promise.all([draftA,draftB].map(car=>call('/api/community/submissions/submit',{actor:alice,method:'POST',body:{id:car.id}})));
+ check(raced.filter(r=>r.status===200).length===1&&raced.filter(r=>r.data.code==='CREDITS_REQUIRED').length===1,label+' two concurrent cars cannot spend same50');
+ check((await call('/api/community',{actor:alice})).data.credits.balance===0,label+' concurrent balance never negative');
+ const same=(await call('/api/community/submissions',{actor:alice,method:'POST',body:{...input,title:'Concurrent retry car'}})).data.submission;
+ await DB.prepare('UPDATE community_wallets SET balance = 100 WHERE user_id = ?').bind(alice.id).run();
+ const retried=await Promise.all([1,2].map(()=>call('/api/community/submissions/submit',{actor:alice,method:'POST',body:{id:same.id}})));
+ check(retried.every(r=>r.status===200),label+' concurrent retry returns pending success');
+ check((await call('/api/community',{actor:alice})).data.credits.balance===50,label+' concurrent retry charges only once');
+ env.ADMIN_USER_IDS=bob.id;check((await call('/api/community',{actor:bob})).data.isAdmin===true,label+' explicit immutable admin ID supported');delete env.ADMIN_USER_IDS;
+ check((await call('/api/admin/community',{actor:bob})).status===403,label+' removing server admin ID revokes privilege');
+ return {id,photoURL,alice,call};
+}
+try{
+ const result=await suite(sqlite,'SQLite');sqlite.close();sqlite=await createLocalDatabase(filename);
+ check((await sqlite.prepare('SELECT status FROM community_cars WHERE id = ?').bind(result.id).first()).status==='pending','SQLite car survives close/reopen');check((await sqlite.prepare('SELECT data FROM community_photos WHERE car_id = ?').bind(result.id).first()).data.length>100,'SQLite photo survives close/reopen');check((await sqlite.prepare('SELECT balance FROM community_wallets WHERE user_id = ?').bind(result.alice.id).first()).balance===50,'SQLite balance survives close/reopen');
+ await suite(postgres,'PostgreSQL');console.log(`Community backend: ${checks} checks passed (SQLite persistence, real PostgreSQL, consent, friends, photos, server credits, private review and admin permissions).`);
+}finally{sqlite.close();await pg.close();const resolved=path.resolve(directory),relative=path.relative(path.resolve(os.tmpdir()),resolved);if(relative.startsWith('..')||path.isAbsolute(relative)||!path.basename(resolved).startsWith('apex-community-'))throw new Error('Refusing to remove an unexpected test directory.');await fs.rm(resolved,{recursive:true,force:true});}

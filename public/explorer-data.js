@@ -1,4 +1,6 @@
 import {allModels} from './catalog.js';
+import {storyFor} from './car-stories.js';
+import {engineNotes} from './engine-notes.js';
 
 // A separate index over the retained catalogue. Family pages never turn the
 // specification of one car into a universal specification of its engine.
@@ -56,7 +58,10 @@ const extraCarDefinitions=[
 
 export const carRecords=allModels.map(model=>({
   id:model.id,name:model.name,url:carURL(model.id),engineId:engineId(model.code),
-  fields:[...model.profile.sections.flatMap(section=>section.fields),...extraCarDefinitions.map(([id,label])=>unknown(id,label,'A matching model, year and market reference has not yet been checked.'))],
+  fields:[...model.profile.sections.flatMap(section=>section.fields),...extraCarDefinitions.map(([id,label])=>{
+    const story=storyFor(model),value=id==='bestFor'?story?.bestFor:id==='cons'?story?.tradeOff:null;
+    return value&&model.source?{id,label,status:'source-linked',value,unit:null,sources:[{url:model.source,title:model.name+' factory reference'}],note:'APEX editorial guidance, not a factory buying recommendation.'}:unknown(id,label,'A matching model, year and market reference has not yet been checked.');
+  })],
   photos:model.profile.photos,context:model.profile.context
 }));
 
@@ -77,6 +82,10 @@ export const engineRecords=[...new Set(allModels.map(model=>model.code))].map(co
     unknown('weaknesses','Known weaknesses','No blanket reliability claim is published without a matching revision and a checked technical reference.'),
     unknown('funFact','Engine fact','A separately sourced engine fact has not yet been added.')];
   const setFact=(key,value,sources,note)=>Object.assign(fields.find(field=>field.id===key),{status:'cross-checked',value,unit:key==='displacement'?'cm³':null,sources,note});
+  const design=engineNotes[code];
+  if(design){
+    for(const [key,value]of [['funFact',design[0]],['strengths',design[1]]])Object.assign(fields.find(field=>field.id===key),{status:'source-linked',label:key==='strengths'?'Design character':'Engine fact',value,sources:[{url:applications[0].source,title:applications[0].name+' factory reference'}],note:'APEX design guide with the represented application’s factory reference; not a blanket reliability assessment.'});
+  }
   if(code==='S58'){
     setFact('engineLayout','Inline-six',[legends,s58Detail],'Both BMW M references describe the S58 series engine.');
     setFact('displacement',2993,[legends,s58Detail],'Engine-family displacement; output remains specific to each application.');
@@ -86,7 +95,7 @@ export const engineRecords=[...new Set(allModels.map(model=>model.code))].map(co
   if(code==='B58')setFact('engineLayout','Inline-six',[b58Award,b58Photo],'Two BMW references identify the B58 six-cylinder family.');
   const photos=[...new Map(applications.flatMap(model=>model.approvedPhotos.engine.map(photo=>({...photo,modelId:model.id}))).map(photo=>[photo.src,photo])).values()];
   return {id,code,name:electric?'BMW electric drive systems':'BMW '+code,kind:electric?'electric':hybrid?'hybrid':code.startsWith('S')||code.startsWith('M88')?'m':'petrol',tagline,overview,
-    editorialStatus:'editorial-guide',fields,photos,photoStatus:photos.length?'available':'unavailable',searchTerms:applications.flatMap(model=>[model.layout,model.shortLayout]).filter(Boolean),
+    editorialStatus:'editorial-guide',fields,photos,photoStatus:photos.length?'available':'unavailable',relatedPart:design?.[2],searchTerms:applications.flatMap(model=>[model.layout,model.shortLayout]).filter(Boolean),
     photoNote:photos.length?'Photographs retain their identified application. They are not evidence that every revision looks identical.':'A positively identified, licensed engine or drive-unit photograph is still missing.',
     applications:applications.map(model=>({id:model.id,name:model.name,url:carURL(model.id),generation:model.generation,market:model.market||'Market not recorded',specificationYear:model.profile.context.modelYear,power:model.power,powerUnit:model.powerUnit,powertrain:model.powertrain,source:model.source})),
     sources:[...new Map([...fields.flatMap(field=>field.sources),...applications.filter(model=>model.source).map(model=>({url:model.source,title:model.name+' factory reference'}))].map(item=>[item.url,item])).values()],
@@ -153,7 +162,7 @@ function reviewFields(kind,record){return record.fields.flatMap(field=>{
 
 export function createExplorerAudit({parts=[]}={}){
   const needsReview=[...carRecords.flatMap(record=>reviewFields('car',record)),...engineRecords.flatMap(record=>reviewFields('engine',record))];
-  const missingImages=[...carRecords.flatMap(record=>record.photos.filter(slot=>slot.required&&slot.status==='unavailable').map(slot=>({kind:'car',id:record.id,name:record.name,slot:slot.slot,reason:slot.reason,search:'https://commons.wikimedia.org/w/index.php?search='+encodeURIComponent(record.name+' '+slot.label)+'&title=Special:MediaSearch&type=image'}))),
+  const missingImages=[...carRecords.flatMap(record=>record.photos.filter(slot=>slot.required&&(slot.status==='unavailable'||slot.referenceOnly)).map(slot=>({kind:'car',id:record.id,name:record.name,slot:slot.slot,reason:slot.referenceOnly?'A labelled engine-family reference is displayed; an exact selected-vehicle/revision photograph still needs identification.':slot.reason,search:'https://commons.wikimedia.org/w/index.php?search='+encodeURIComponent(record.name+' '+slot.label)+'&title=Special:MediaSearch&type=image'}))),
     ...engineRecords.filter(record=>!record.photos.length).map(record=>({kind:'engine',id:record.id,name:record.name,slot:'engine',reason:record.photoNote,search:'https://commons.wikimedia.org/w/index.php?search='+encodeURIComponent('BMW '+record.code+' engine')+'&title=Special:MediaSearch&type=image'}))];
   for(const part of parts){
     if(part.fields)needsReview.push(...reviewFields('part',{...part,fields:Array.isArray(part.fields)?part.fields:Object.entries(part.fields).map(([id,field])=>({id,...field}))}));

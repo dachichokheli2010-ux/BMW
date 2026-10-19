@@ -29,6 +29,11 @@ async function inventory(directory){
   }
 }
 await inventory(output);
+// Keep this framework-free project within its 12-function deployment budget.
+// Community endpoints share api/[...path].js rather than creating 12 functions.
+async function apiEntries(directory){let files=[];for(const entry of await fs.readdir(directory,{withFileTypes:true})){const filename=path.join(directory,entry.name);if(entry.isDirectory())files.push(...await apiEntries(filename));else if(/\.[cm]?[jt]s$/.test(entry.name))files.push(filename);}return files;}
+const functions=await apiEntries(path.join(project,'api'));
+assert.ok(functions.length<=12,'Too many Vercel function entry points; consolidate routes in the existing catch-all API.');
 async function existing(url,label){
   assert.equal(url.origin,origin,label+' must stay on this origin');
   const relative=decodeURIComponent(url.pathname).replace(/^\//,'');
@@ -93,7 +98,8 @@ while(queue.length){
 // Every known route must land on the same HTML shell in Vercel and local
 // preview. This catches nested engine/part pages that otherwise work locally.
 const manifest=JSON.parse(await fs.readFile(path.join(output,'discovery-manifest.json'),'utf8'));
-for(const url of manifest.paths){
+const routes=new Set([...manifest.paths,...Object.keys(pageRoutes),'/garage/'+'x'.repeat(43),'/community/cars/00000000-0000-0000-0000-000000000000']);
+for(const url of routes){
   const route=new URL(url,origin).pathname;
   const shell=resolvePage(route);assert.ok(shell,'Unknown discovery route '+route);
   if(route==='/')continue;

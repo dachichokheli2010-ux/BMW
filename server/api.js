@@ -2,9 +2,10 @@ import {hashPassword,verifyPassword,randomToken,tokenHash,timingSafeEqual} from 
 import {validName,normalizeEmail,validPassword,emptyGarage,validateGarage} from './validation.js';
 import {validateAcademyTransition} from './academy-policy.js';
 import {accountMailConfigured,sendAccountMail} from './account-mail.js';
+import {COMMUNITY_PATHS,handleCommunity} from './community-api.js';
 
 const SESSION_MS=7*24*60*60*1000;
-export const AUTH_PATHS=new Set(['/api/auth/session','/api/auth/signup','/api/auth/login','/api/auth/logout','/api/auth/forgot-password','/api/auth/reset-password','/api/auth/verify-email','/api/auth/resend-verification','/api/account/profile','/api/garage']);
+export const AUTH_PATHS=new Set(['/api/auth/session','/api/auth/signup','/api/auth/login','/api/auth/logout','/api/auth/forgot-password','/api/auth/reset-password','/api/auth/verify-email','/api/auth/resend-verification','/api/account/profile','/api/garage',...COMMUNITY_PATHS]);
 const json=(body,status=200,headers={})=>Response.json(body,{status,headers:{'Cache-Control':'no-store','Pragma':'no-cache','X-Content-Type-Options':'nosniff','Vary':'Cookie',...headers}});
 class ApiError extends Error {constructor(message,status=400,code){super(message);this.status=status;this.code=code;}}
 const only=(body,keys)=>body&&typeof body==='object'&&!Array.isArray(body)&&Object.keys(body).every(key=>keys.includes(key));
@@ -110,6 +111,7 @@ export async function handleApi(request,env={}){
     const method=request.method,write=['POST','PUT','PATCH','DELETE'].includes(method);
     if(write)requireOrigin(request);
     session=await getSession(request,env);
+    if(COMMUNITY_PATHS.has(pathname))return await handleCommunity(request,env,{session,ApiError,readJSON,requireCSRF,authRequired,limit,json,sessionHeaders});
     const info=providerInfo(env);
     if(pathname==='/api/auth/session'){
       if(method!=='GET')return json({error:'Method not allowed.'},405,{Allow:'GET'});

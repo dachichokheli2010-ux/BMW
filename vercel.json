@@ -87,9 +87,32 @@
     {
       "source": "/generation-guides/:path*",
       "destination": "/index.html"
+    },
+    {
+      "source": "/community/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/friends/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/submit-car/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/garage/:path*",
+      "destination": "/index.html"
     }
   ],
   "framework": null,
+  "env": {
+    "ADMIN_EMAILS": "dachi.chokheli2010@gmail.com"
+  },
   "outputDirectory": "dist/vercel",
   "buildCommand": "npm run build:vercel",
   "headers": [

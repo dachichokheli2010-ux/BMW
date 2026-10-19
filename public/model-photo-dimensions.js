@@ -1,4 +1,4 @@
-// Intrinsic dimensions read from the existing WebP image headers. No resampling.
+// Intrinsic dimensions read from local WebP headers by npm run photos:prepare.
 export const modelPhotoDimensions={
   "images/angles/e46-0.webp": {
     "width": 960,
@@ -80,6 +80,10 @@ export const modelPhotoDimensions={
     "width": 1280,
     "height": 759
   },
+  "images/coverage/e60-530i-rear.webp": {
+    "width": 1280,
+    "height": 802
+  },
   "images/coverage/e90-335i-rear.webp": {
     "width": 1280,
     "height": 960
@@ -115,6 +119,62 @@ export const modelPhotoDimensions={
   "images/e92-m3.webp": {
     "width": 1400,
     "height": 946
+  },
+  "images/engine-references/b38.webp": {
+    "width": 1600,
+    "height": 1200
+  },
+  "images/engine-references/i3-drive.webp": {
+    "width": 1600,
+    "height": 1200
+  },
+  "images/engine-references/m10-turbo.webp": {
+    "width": 1600,
+    "height": 1198
+  },
+  "images/engine-references/m20.webp": {
+    "width": 1600,
+    "height": 1200
+  },
+  "images/engine-references/m30.webp": {
+    "width": 1600,
+    "height": 1200
+  },
+  "images/engine-references/m73.webp": {
+    "width": 1600,
+    "height": 1200
+  },
+  "images/engine-references/m88-3.webp": {
+    "width": 1600,
+    "height": 1200
+  },
+  "images/engine-references/m88.webp": {
+    "width": 1600,
+    "height": 1067
+  },
+  "images/engine-references/n63.webp": {
+    "width": 1600,
+    "height": 1200
+  },
+  "images/engine-references/s14.webp": {
+    "width": 1024,
+    "height": 575
+  },
+  "images/engine-references/s38-b36.webp": {
+    "width": 1600,
+    "height": 1133
+  },
+  "images/engine-references/s50-b32.webp": {
+    "width": 1600,
+    "height": 1067
+  },
+  "images/engine-references/s68.webp": {
+    "width": 1600,
+    "height": 1066
+  },
+  "images/engine-references/s70.webp": {
+    "width": 1600,
+    "height": 1064
   },
   "images/exact/e46-left.webp": {
     "width": 960,
@@ -159,6 +219,10 @@ export const modelPhotoDimensions={
   "images/expanded/e28-m5.webp": {
     "width": 1024,
     "height": 683
+  },
+  "images/expanded/e30-m3.webp": {
+    "width": 1280,
+    "height": 622
   },
   "images/expanded/e34-m5.webp": {
     "width": 1280,
@@ -324,6 +388,10 @@ export const modelPhotoDimensions={
     "width": 1337,
     "height": 1050
   },
+  "images/local/b58-engine.webp": {
+    "width": 600,
+    "height": 800
+  },
   "images/local/i3-front.webp": {
     "width": 800,
     "height": 491
@@ -388,6 +456,14 @@ export const modelPhotoDimensions={
     "width": 800,
     "height": 468
   },
+  "images/n55.webp": {
+    "width": 1200,
+    "height": 704
+  },
+  "images/new/b48-family.webp": {
+    "width": 965,
+    "height": 850
+  },
   "images/new/e39-m5.webp": {
     "width": 1150,
     "height": 635
@@ -395,6 +471,10 @@ export const modelPhotoDimensions={
   "images/new/e46-330i.webp": {
     "width": 1150,
     "height": 708
+  },
+  "images/new/e60-530i.webp": {
+    "width": 1150,
+    "height": 739
   },
   "images/new/e90-335i.webp": {
     "width": 1125,
@@ -411,6 +491,10 @@ export const modelPhotoDimensions={
   "images/new/g20-330i.webp": {
     "width": 1150,
     "height": 863
+  },
+  "images/new/m54-b25-family.webp": {
+    "width": 1150,
+    "height": 770
   },
   "images/new/n54-engine.webp": {
     "width": 453,
@@ -624,9 +708,17 @@ export const modelPhotoDimensions={
     "width": 1600,
     "height": 841
   },
+  "images/s54-ref.webp": {
+    "width": 1280,
+    "height": 960
+  },
   "images/s55-ref.webp": {
     "width": 1280,
     "height": 960
+  },
+  "images/s58-ref.webp": {
+    "width": 1280,
+    "height": 890
   },
   "images/s63.webp": {
     "width": 1400,

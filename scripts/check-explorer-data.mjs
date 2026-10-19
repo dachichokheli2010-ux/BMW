@@ -21,6 +21,7 @@ check('all retained cars have unique clean URLs and an exact engine-code destina
     assert.equal(engineURL(model.code),engine.url);assert.ok(engine.applications.some(item=>item.id===model.id));
     for(const field of model.profile.sections.flatMap(section=>section.fields))assert.deepEqual(record.fields.find(item=>item.id===field.id),field);
   }
+  for(const record of engineRecords){assert.ok(record.fields.find(field=>field.id==='funFact').value,record.code+' needs an engine fact');assert.ok(record.fields.find(field=>field.id==='strengths').value,record.code+' needs a design guide');assert.ok(parts.some(part=>part.id===record.relatedPart),record.code+' has a real connected part');}
   assert.notEqual(engineURL('S63'),engineURL('S63TU'));
   assert.notEqual(engineURL('M88'),engineURL('M88/3'));
   assert.notEqual(engineURL('S54'),engineURL('S54B32'));
@@ -34,7 +35,7 @@ check('application power and EV identity cannot become a guessed universal engin
   assert.equal(electric.applications.length,16);assert.ok(electric.applications.every(item=>item.powertrain==='Electric'));
   const displacement=electric.fields.find(field=>field.id==='displacement');assert.equal(displacement.status,'not-applicable');assert.equal(displacement.value,null);
   for(const record of engineRecords)assert.equal(record.fields.find(field=>field.id==='productionYears').value,null);
-  assert.equal(getEngineRecord('S63TU').photoStatus,'unavailable');assert.ok(getEngineRecord('S63').photos.length);
+  assert.equal(getEngineRecord('S63TU').photoStatus,'available');assert.equal(getEngineRecord('S63TU').photos[0].matchStatus,'engine-family-reference');assert.ok(getEngineRecord('S63').photos.length);
 });
 
 check('evidence validation catches fabricated values, false cross-checks and unknown applications',()=>{
@@ -52,7 +53,8 @@ check('the audit lists genuine field/photo gaps and recognises missing current g
   assert.ok(report.needsReview.some(item=>item.kind==='car'&&item.field==='designer'&&item.reason==='missing-field'));
   assert.ok(report.needsReview.some(item=>item.kind==='car'&&item.id==='e92'&&item.reason==='second-source-required'));
   assert.ok(report.missingImages.some(item=>item.kind==='car'&&item.id==='f10-m5'&&item.slot==='engine'));
-  assert.ok(report.missingImages.some(item=>item.kind==='engine'&&item.id==='edrive'));
+  assert.ok(engineRecords.every(record=>record.photos.length),'Every indexed engine/drive entry has a credited photograph');
+  assert.equal(getEngineRecord('edrive').photos[0].referenceCode,'eDrive');assert.match(getEngineRecord('edrive').photos[0].caption,/BMW i3.*2013/);
   assert.ok(report.missingImages.every(item=>new URL(item.search).hostname==='commons.wikimedia.org'));
   assert.match(currentLineupCoverage.find(row=>row.family==='i3').gap,/different vehicle/);
   assert.match(currentLineupCoverage.find(row=>row.family==='iX3').gap,/older generation/);
@@ -85,7 +87,7 @@ check('detail pages retain real credits and root-relative responsive image URLs'
   for(const candidate of image.getAttribute('srcset').split(', '))assert.ok(candidate.startsWith('/images/'));
   assert.ok(document.querySelector('figcaption a').getAttribute('href').startsWith('https://commons.wikimedia.org/'));
   const links=[...document.querySelectorAll('tbody th a')].map(link=>link.getAttribute('href'));assert.ok(links.includes('/cars/e92'));
-  assert.match(renderEngineDirectoryPage('edrive'),/Drive-unit photo being researched/);
+  assert.match(renderEngineDirectoryPage('edrive'),/BMW i3 electric drive unit/);assert.doesNotMatch(renderEngineDirectoryPage('edrive'),/Drive-unit photo being researched/);
   assert.match(renderEngineDirectoryPage('unknown-engine'),/Browse all engines/);
   assert.doesNotMatch(renderEngineDirectoryPage('<script>'),/<script>/);
 });
