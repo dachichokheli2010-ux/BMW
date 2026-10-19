@@ -4,11 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node scripts/check.mjs && node scripts/check-academy.mjs && node scripts/check-academy-session.mjs && node scripts/check-academy-translations.mjs && node scripts/check-backend.mjs && node scripts/check-account-sync.mjs && node scripts/check-postgres.mjs && npm run check:translations && npm run check:profiles && npm run check:icons && node scripts/check-explorer-data.mjs && node scripts/check-parts-encyclopedia.mjs && node scripts/check-play.mjs && node scripts/check-experience.mjs && node scripts/check-platform-upgrade.mjs",
+    "check": "node scripts/check.mjs && node scripts/check-academy.mjs && node scripts/check-academy-session.mjs && node scripts/check-academy-translations.mjs && node scripts/check-backend.mjs && node scripts/check-account-sync.mjs && node scripts/check-postgres.mjs && npm run check:translations && npm run check:profiles && npm run check:icons && node scripts/check-explorer-data.mjs && node scripts/check-parts-encyclopedia.mjs && node scripts/check-play.mjs && node scripts/check-experience.mjs && node scripts/check-platform-upgrade.mjs && node scripts/check-app-navigation.mjs",
     "build": "node scripts/build.mjs",
     "db:generate": "drizzle-kit generate",
     "start": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/preview-local.mjs",
-    "build:vercel": "npm run check",
+    "build:vercel": "npm run check && node scripts/build-vercel.mjs && node scripts/check-vercel-build.mjs",
     "db:check": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/database.mjs check",
     "db:migrate": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/database.mjs migrate",
     "check:translations": "node scripts/check-translations.mjs",

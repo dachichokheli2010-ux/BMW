@@ -1,6 +1,6 @@
 ﻿export function mountNavigation({openSearch}){
   const header=document.querySelector('.site-header'),tools=header.querySelector('.header-tools');
-  const events=new AbortController(),signal=events.signal,mobile=matchMedia('(max-width:1100px)'),reduced=matchMedia('(prefers-reduced-motion:reduce)');
+  const events=new AbortController(),signal=events.signal,mobile=matchMedia('(max-width:1120px)'),reduced=matchMedia('(prefers-reduced-motion:reduce)');
   const button=document.createElement('button');
   button.type='button';button.className='mobile-menu-toggle icon-button';button.setAttribute('aria-label','Open navigation');button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-expanded','false');
   button.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>';tools.append(button);
@@ -46,8 +46,8 @@
     if(event.target.closest('a'))void close(true);
   },{signal});
   dialog.querySelector('.mn-search').addEventListener('click',async()=>{await close();openSearch();},{signal});
-  dialog.querySelector('.mn-top').addEventListener('pointerdown',event=>{if(event.pointerType==='touch')touchStart={x:event.clientX,y:event.clientY};},{signal});
-  dialog.querySelector('.mn-top').addEventListener('pointerup',event=>{if(touchStart&&event.clientX-touchStart.x>70&&Math.abs(event.clientY-touchStart.y)<45)void close();touchStart=null;},{signal});
+  dialog.querySelector('.mn-top').addEventListener('pointerdown',event=>{if(event.pointerType==='touch'&&!event.target.closest('a,button'))touchStart={x:event.clientX,y:event.clientY};},{signal});
+  dialog.querySelector('.mn-top').addEventListener('pointerup',event=>{if(touchStart&&((event.clientY-touchStart.y>70&&Math.abs(event.clientX-touchStart.x)<70)||(event.clientX-touchStart.x>90&&Math.abs(event.clientY-touchStart.y)<45)))void close();touchStart=null;},{signal});
   mobile.addEventListener('change',preferences);preferences();
   return {close,destroy(){close(true);events.abort();mobile.removeEventListener('change',preferences);for(const {control,anchor} of anchors){anchor.after(control.closest('.apex-select')||control);anchor.remove();}dialog.remove();button.remove();}};
 }

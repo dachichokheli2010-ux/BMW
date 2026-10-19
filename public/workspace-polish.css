@@ -1,0 +1,408 @@
+/* Shared workspace finish. Component parents intentionally outrank lazy-loaded
+   styles, so opening a workspace cannot change its responsive layout. */
+:is(.garage-app,.garage-hub,.personal-garage,.parts-encyclopedia,.play-shell,.engine-directory,.comparison-v2,.model-profile,.bmw-academy) {
+  min-width: 0;
+  --workspace-radius: 22px;
+  --workspace-shadow: 0 16px 44px rgb(0 0 0 / .09), inset 0 1px 0 rgb(255 255 255 / .07);
+}
+:is(.garage-app,.parts-encyclopedia,.play-shell,.engine-directory,.comparison-v2,.model-profile,.bmw-academy) :is(h1,h2,h3,h4) {
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+:is(.garage-app,.parts-encyclopedia,.play-shell,.engine-directory,.comparison-v2,.model-profile,.bmw-academy) :is(p,dd,figcaption) {
+  overflow-wrap: anywhere;
+}
+:is(.garage-app,.parts-encyclopedia,.play-shell,.engine-directory,.comparison-v2,.model-profile,.bmw-academy) :is(input,select,textarea) {
+  max-width: 100%;
+}
+:is(.garage-app,.parts-encyclopedia,.play-shell,.engine-directory,.comparison-v2,.model-profile,.bmw-academy) :is(button,a,summary,input,select) {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Subtle glass highlights sit on opaque-enough surfaces for readable text. */
+.garage-app :is(.garage-selector,.garage-vehicle,.garage-configuration,.garage-performance,.garage-saved-card),
+.parts-encyclopedia :is(.pe-card,.pe-xray,.pe-engine,.pe-related-grid>a),
+.play-shell :is(.play-mode,.play-rules,.play-result,.play-question,.play-badge,.play-handover),
+.engine-directory :is(.ed-card,.ed-starter,.ed-facts article,.ed-next),
+.comparison-v2 :is(.cmp-slot,.cmp-slot-empty,.cmp-picker,.cmp-suggestion),
+.bmw-academy :is(.ac-unit-banner,.ac-resume-card,.ac-player,.ac-challenge-card,.ac-course-card,.ac-achievements article) {
+  border-radius: var(--workspace-radius);
+  box-shadow: var(--workspace-shadow);
+}
+.garage-app :is(.garage-selector,.garage-vehicle-info,.garage-results),
+.parts-encyclopedia :is(.pe-card-copy,.pe-related-grid>a),
+.engine-directory :is(.ed-card-body,.ed-facts article),
+.comparison-v2 .cmp-slot-copy {
+  min-width: 0;
+}
+.garage-app :is(.garage-presets button,.garage-saved-actions button,.garage-step-footer button),
+.parts-encyclopedia :is(.pe-button,.pe-segmented),
+.comparison-v2 :is(.cmp-unit-control,.cmp-search),
+.play-shell :is(.play-primary,.play-secondary) {
+  border-radius: 14px;
+}
+
+/* The comparison keeps actual specifications in one local scroll region. */
+.comparison-v2 .cmp-cars { align-items: stretch; }
+.comparison-v2 .cmp-slot { display: flex; flex-direction: column; min-width: 0; }
+.comparison-v2 .cmp-slot-photo { flex: none; }
+.comparison-v2 .cmp-slot-copy { display: flex; flex: 1; flex-direction: column; }
+.comparison-v2 .cmp-slot h3 { min-height: 0; line-height: 1.22; }
+.comparison-v2 .cmp-replace { margin-top: auto; min-height: 46px; font-size: 12px; }
+.comparison-v2 .cmp-remove { width: 40px; height: 40px; min-height: 40px; border-radius: 50%; padding: 10px; }
+.comparison-v2 :is(.cmp-slot-meta,.cmp-slot-generation,.cmp-table-generation) { font-size: 11px; line-height: 1.6; }
+.comparison-v2 .cmp-scroll { max-width: 100%; scrollbar-gutter: stable; border-radius: 18px; }
+.comparison-v2 .cmp-difference { min-height: 44px; }
+.comparison-v2 .cmp-utilities button { min-height: 44px; }
+.comparison-v2 .cmp-unit-control button { min-height: 44px; }
+.comparison-v2 .cmp-table :is(th,td) { word-break: normal; }
+.comparison-v2 :is(.cmp-footnotes p,.cmp-suggestion-copy>small) { font-size: 12px; line-height: 1.75; }
+.comparison-v2 .cmp-section-heading>span { font-size: 11px; white-space: normal; }
+
+/* A safe-sized type scale and controls keep the tuning workspace useful. */
+.garage-app .garage-heading h2 { font-size: clamp(38px,5.2vw,70px); letter-spacing: -.045em; }
+.garage-app :is(.garage-step-label,.garage-presets button>span,.garage-factory-facts span) { font-size: 10px; letter-spacing: .08em; }
+.garage-app :is(.garage-fine,.garage-control p,.garage-review-item p,.garage-review-list li,.garage-save p,.garage-method) { font-size: 12px; line-height: 1.8; }
+.garage-app :is(.garage-control label>span,.garage-result em,.garage-dyno-readout small,.garage-saved-estimate) { font-size: 10px; line-height: 1.6; }
+.garage-app :is(.garage-step-tabs button,.garage-insight-tabs button) { min-height: 56px; font-size: 12px; }
+.garage-app :is(.garage-step-footer button,.garage-saved-actions button,.garage-car-heading button,.garage-review-item button) { min-height: 44px; font-size: 12px; }
+.garage-app .garage-step-footer { flex-wrap: wrap; }
+.garage-app .garage-draft-state { font-size: 11px; max-width: none; }
+.garage-app .garage-presets strong { font-size: clamp(16px,1.6vw,20px); line-height: 1.35; }
+.garage-app .garage-presets small { font-size: 12px; }
+.garage-app .garage-compare-scroll { max-width: 100%; }
+.garage-app .garage-result>div { grid-template-columns: minmax(0,1fr) 24px minmax(0,1fr); }
+.garage-app .garage-save>div { gap: 10px; }
+.garage-app .garage-save>div button { min-height: 44px; }
+
+/* Personal garage is a sheet with its own horizontal tab scroll. */
+:is(dialog.personal-garage,.personal-garage.pg-inline) {
+  --pg-bg: var(--surface,#0c141f);
+  --pg-card: var(--surface-raised,#121f2e);
+  --pg-surface: var(--bg,#0e1a28);
+  --pg-text: var(--white,#ecf3fb);
+  --pg-muted: var(--muted,#95a9bf);
+  --pg-line: var(--line,#8aa9c52b);
+  --pg-blue: var(--blue,#8bc4ff);
+}
+dialog.personal-garage {
+  width: min(1100px,calc(100% - 32px));
+  max-width: 1100px;
+  max-height: calc(100dvh - 48px);
+  border-radius: 28px;
+  box-shadow: 0 28px 100px rgb(0 0 0 / .3), inset 0 1px 0 rgb(255 255 255 / .1);
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-gutter: stable;
+}
+:is(dialog.personal-garage,.personal-garage.pg-inline) .pg-tabs {
+  gap: 8px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: thin;
+}
+:is(dialog.personal-garage,.personal-garage.pg-inline) .pg-tabs button { flex: 0 0 auto; min-height: 52px; padding-inline: 12px; white-space: nowrap; font-size: 13px; }
+:is(dialog.personal-garage,.personal-garage.pg-inline) .pg-tabs button>span { font-size: 11px; }
+:is(dialog.personal-garage,.personal-garage.pg-inline) :is(.pg-model-grid,.pg-recent-list) { grid-template-columns: repeat(auto-fit,minmax(min(100%,240px),1fr)); }
+:is(dialog.personal-garage,.personal-garage.pg-inline) :is(.pg-model-card,.pg-build-card,.pg-empty,.pg-next-lesson) { border-radius: 18px; }
+:is(dialog.personal-garage,.personal-garage.pg-inline) :is(.pg-text-button,.pg-recent-save,.pg-close,.pg-lesson-levels button) { min-height: 44px; font-size: 12px; }
+:is(dialog.personal-garage,.personal-garage.pg-inline) .pg-close { min-width: 44px; font-size: 26px; border-radius: 50%; }
+:is(dialog.personal-garage,.personal-garage.pg-inline) .pg-model-body h4 { font-size: 17px; }
+:is(dialog.personal-garage,.personal-garage.pg-inline) :is(.pg-header p,.pg-empty p,.pg-next-lesson p,.pg-learning-summary p) { font-size: 14px; }
+:is(dialog.personal-garage,.personal-garage.pg-inline) :is(.pg-model-spec,.pg-build-model,.pg-saved-date,.pg-footer p,.pg-storage-note) { font-size: 12px; }
+:is(dialog.personal-garage,.personal-garage.pg-inline) .pg-compare-choice { min-height: 44px; font-size: 12px; }
+:is(dialog.personal-garage,.personal-garage.pg-inline) .pg-compare-choice input { width: 18px; height: 18px; flex: none; }
+:is(dialog.personal-garage,.personal-garage.pg-inline) .pg-model-actions { flex-wrap: wrap; gap: 4px 14px; }
+:is(dialog.personal-garage,.personal-garage.pg-inline) .pg-primary { min-height: 46px; white-space: normal; text-align: center; font-size: 12px; }
+:is(dialog.personal-garage,.personal-garage.pg-inline) .pg-footer { flex-wrap: wrap; }
+:is(dialog.personal-garage,.personal-garage.pg-inline) .pg-footer>div { flex-wrap: wrap; min-width: 0; }
+:is(dialog.personal-garage,.personal-garage.pg-inline) .pg-backup-actions button { min-height: 44px; font-size: 12px; white-space: normal; }
+
+/* Keep the reference photo and its text spacious on phones. */
+.parts-encyclopedia .pe-intro h2 { font-size: clamp(34px,4.5vw,60px); letter-spacing: -.04em; }
+.parts-encyclopedia :is(.pe-xray-layout,.pe-engine-layout,.pe-detail-intro,.pe-detail-sections) { grid-template-columns: minmax(0,1.1fr) minmax(0,1fr); }
+.parts-encyclopedia :is(.pe-xray-key,.pe-engine-copy,.pe-detail-intro>div,.pe-detail-sections>div) { min-width: 0; }
+.parts-encyclopedia .pe-filters { grid-template-columns: minmax(0,1.6fr) minmax(0,1fr) auto; }
+.parts-encyclopedia .pe-filters label { min-width: 0; }
+.parts-encyclopedia .pe-card { height: 100%; }
+.parts-encyclopedia .pe-card-copy { display: flex; flex-direction: column; }
+.parts-encyclopedia .pe-card-copy>p { font-size: 13px; }
+.parts-encyclopedia .pe-card-link { margin-top: auto; min-height: 44px; font-size: 12px; }
+.parts-encyclopedia .pe-media figcaption { font-size: 11px; }
+.parts-encyclopedia :is(.pe-proof span,.pe-photo-policy,.pe-note) { font-size: 12px; }
+.parts-encyclopedia .pe-hotspot-name { max-width: 160px; white-space: normal; text-align: center; }
+.parts-encyclopedia .pe-section-title>a { min-height: 44px; display: inline-flex; align-items: center; white-space: normal; }
+.parts-encyclopedia .pe-segmented button { min-height: 44px; font-size: 12px; }
+.parts-encyclopedia .pe-total { flex: none; }
+
+.engine-directory .ed-grid { gap: 22px; }
+.engine-directory .ed-toolbar>* { min-width: 0; }
+.engine-directory .ed-select select { max-width: 100%; }
+.engine-directory :is(.ed-heading h1,.ed-detail-intro h1) { font-size: clamp(52px,7vw,98px); letter-spacing: -.035em; }
+.engine-directory .ed-starter>a { white-space: normal; flex-shrink: 0; }
+.engine-directory .ed-card-body h2 { gap: 12px; }
+.engine-directory .ed-card-body p { font-size: 13px; }
+.engine-directory .ed-card-body small { font-size: 12px; }
+.engine-directory .ed-table-wrap { max-width: 100%; overscroll-behavior-inline: contain; }
+
+/* The lab stays self-contained without its inspector squeezing the canvas. */
+.engine-lab .el-intro>div { min-width: 0; }
+.engine-lab .el-camera-controls { flex-wrap: wrap; }
+.engine-lab .el-camera-controls button { width: 44px; min-height: 44px; }
+.engine-lab .el-flow-controls>select { flex: 0 1 280px; min-width: 0; min-height: 44px; }
+.engine-lab .el-parts-heading { flex-wrap: wrap; }
+.engine-lab .el-parts-heading input { min-width: 0; }
+.engine-lab .el-hotspot { width: 38px; height: 38px; min-height: 38px; }
+.engine-lab .el-view-label { flex-wrap: wrap; line-height: 1.6; }
+.engine-lab .el-viewport-note { right: 20px; }
+.engine-lab .el-part-name { overflow-wrap: anywhere; }
+
+/* Play has one reading rhythm at every screen size. */
+.destination-page .play-shell { padding-inline: 0; }
+.play-shell :is(.play-identity,.play-lower,.play-rules-grid,.play-answer-grid,.play-stats,.play-badge-grid) { min-width: 0; }
+.play-shell .play-identity { grid-template-columns: minmax(0,1fr) minmax(220px,280px); }
+.play-shell .play-mode { min-height: 260px; }
+.play-shell .play-mode strong { line-height: 1.18; }
+.play-shell .play-mode>span:not([class]) { font-size: 14px; }
+.play-shell .play-mode>small { font-size: 12px; }
+.play-shell .play-stats { grid-template-columns: repeat(4,minmax(0,1fr)); }
+.play-shell .play-stats button { min-height: 44px; }
+.play-shell .play-answer { overflow-wrap: anywhere; }
+.play-shell .play-answer>span { flex: none; }
+.play-shell .play-hints button { min-height: 44px; font-size: 12px; }
+.play-shell .play-badge p,.play-shell .play-badge small { font-size: 12px; }
+.play-shell .play-badge h3 { font-size: 15px; }
+.play-shell .play-badge-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+.play-shell .play-order-slots li button { flex-wrap: wrap; }
+.play-shell .play-order-slots li button small { white-space: normal; }
+.play-shell .play-matches label { grid-template-columns: minmax(0,1fr) minmax(0,2fr); }
+
+/* Sidebars make way before the Academy's central content gets too narrow. */
+.bmw-academy .ac-shell>* { min-width: 0; }
+.bmw-academy .ac-navigation,.bmw-academy .ac-stats { top: calc(var(--header-height,88px) + 24px); }
+.bmw-academy :is(.ac-player,.ac-results) { border-radius: 22px; }
+.bmw-academy :is(.ac-kicker,.ac-card-copy>small,.ac-card-copy>b,.ac-road-stop>div small) { font-size: 11px; line-height: 1.6; }
+.bmw-academy .ac-view-heading h1 { font-size: clamp(32px,3.5vw,48px); line-height: 1.15; letter-spacing: -.04em; }
+.bmw-academy .ac-view-heading p { font-size: 14px; }
+.bmw-academy .ac-navigation nav button { min-height: 46px; font-size: 12px; }
+.bmw-academy .ac-unit-picker button { min-height: 64px; font-size: 12px; }
+.bmw-academy .ac-unit-picker button small { font-size: 10px; line-height: 1.6; }
+.bmw-academy .ac-road-stop>div strong { font-size: 14px; line-height: 1.45; }
+.bmw-academy .ac-road-stop>div .ac-start-tag { font-size: 12px; }
+.bmw-academy .ac-road-note { font-size: 12px; }
+.bmw-academy :is(.ac-achievements p,.ac-collectible p,.ac-code-card>p,.ac-timeline p,.ac-local-ranking p) { font-size: 13px; }
+.bmw-academy .ac-achievements article>div { flex-wrap: wrap; gap: 8px; font-size: 11px; }
+.bmw-academy .ac-achievements article>div strong { font-size: 10px; letter-spacing: .06em; }
+.bmw-academy .ac-calendar small { font-size: 10px; }
+.bmw-academy .ac-calendar b { font-size: 11px; }
+.bmw-academy .ac-collectible .ac-kicker { font-size: 10px; }
+.bmw-academy .ac-code-card button { min-height: 44px; font-size: 12px; }
+.bmw-academy :is(.ac-source,.ac-photo figcaption,.ac-question-sources) { font-size: 11px; }
+.bmw-academy .ac-matching button small { white-space: normal; }
+.bmw-academy .ac-player-bottom>.ac-primary { min-width: 0; }
+.bmw-academy .acg-inline { touch-action: manipulation; }
+.model-profile .profile-coverage { flex-shrink: 1; }
+.model-profile .profile-photo-heading { flex-wrap: wrap; }
+.model-profile .profile-data-group>summary { gap: 12px; }
+.model-profile .profile-data-group>summary small { white-space: normal; text-align: right; }
+
+@media (max-width: 1180px) {
+  .bmw-academy .ac-shell,.bmw-academy .ac-shell.has-player { grid-template-columns: 172px minmax(0,1fr); gap: 28px; }
+  .bmw-academy .ac-stats { position: static; grid-column: 2; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; border-top: 1px solid var(--ac-line); padding-top: 28px; }
+  .bmw-academy .ac-stats .ac-profile-mini { grid-column: 1/-1; margin: 0; }
+  .bmw-academy .ac-stats :is(.ac-xp-card,.ac-streak-card,.ac-week-card,.ac-mastery-mini,.ac-device-note) { margin: 0; }
+  .bmw-academy .ac-stats .ac-streak-card { border: 1px solid var(--ac-line); padding: 18px; border-radius: 18px; }
+  .parts-encyclopedia .pe-filters { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .parts-encyclopedia .pe-filters label:first-child { grid-column: 1/-1; }
+  .parts-encyclopedia .pe-filters>.pe-button { align-self: end; }
+}
+@media (max-width: 900px) {
+  .engine-lab .el-workspace { grid-template-columns: minmax(0,1fr); }
+  .engine-lab .el-viewport { height: clamp(360px,60vw,520px); }
+  .engine-lab .el-inspector { border-left: 0; border-top: 1px solid var(--el-line); padding: 26px; }
+  .engine-lab .el-connections { margin-top: 18px; }
+  .engine-lab .el-focus { max-width: 280px; }
+  .garage-app .garage-columns { grid-template-columns: minmax(0,1fr); }
+  .play-shell .play-mode-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (max-width: 760px) {
+  .comparison-v2 .cmp-cars { grid-template-columns: minmax(0,1fr); gap: 14px; }
+  .comparison-v2 .cmp-slot { display: grid; grid-template-columns: minmax(105px,.8fr) minmax(0,1.2fr); }
+  .comparison-v2 .cmp-slot-photo { aspect-ratio: auto; min-height: 180px; height: 100%; }
+  .comparison-v2 .cmp-slot-copy { padding: 18px 18px 0; }
+  .comparison-v2 .cmp-slot h3 { font-size: 23px; margin: 10px 0 18px; }
+  .comparison-v2 .cmp-slot-index { display: block; font-size: 10px; }
+  .comparison-v2 .cmp-slot-generation { font-size: 11px; }
+  .comparison-v2 .cmp-slot-meta { font-size: 10px; letter-spacing: .04em; }
+  .comparison-v2 .cmp-replace { font-size: 12px; min-height: 48px; gap: 8px; }
+  .comparison-v2 .cmp-replace svg { display: block; }
+  .comparison-v2 .cmp-slot-empty { min-height: 112px; display: grid; grid-template-columns: 44px minmax(0,1fr); align-content: center; justify-content: start; text-align: left; gap: 8px 16px; padding: 20px; }
+  .comparison-v2 .cmp-slot-empty .cmp-slot-index { display: none; }
+  .comparison-v2 .cmp-slot-plus { width: 44px; height: 44px; margin: 0; grid-row: 1/3; }
+  .comparison-v2 .cmp-slot-empty strong { font-size: 18px; }
+  .comparison-v2 .cmp-slot-empty>span:last-child { max-width: none; text-align: left; font-size: 12px; }
+  .comparison-v2 .cmp-heading-aside { position: static; font-size: 11px; align-self: flex-start; }
+  .comparison-v2 .cmp-heading { flex-wrap: wrap; }
+  .comparison-v2 .cmp-heading h1,.comparison-v2 .cmp-heading h2 { font-size: clamp(36px,8vw,52px); letter-spacing: -.045em; }
+  .comparison-v2 .cmp-heading p { font-size: 14px; }
+  .comparison-v2 .cmp-toolbar { gap: 12px; }
+  .comparison-v2 .cmp-difference { font-size: 12px; margin-left: 0; }
+  .comparison-v2 .cmp-unit-control button { font-size: 12px; padding-inline: 13px; }
+  .comparison-v2 .cmp-unit-control button small { font-size: 10px; }
+  .comparison-v2 .cmp-utilities button { font-size: 12px; }
+  .comparison-v2 .cmp-table :is(th,td) { font-size: 12px; }
+  .comparison-v2 .cmp-table tbody tr:not(.cmp-group)>th,.comparison-v2 .cmp-table tfoot th { font-size: 11px; }
+  .comparison-v2 .cmp-table .cmp-detail-row>* { font-size: 11px; }
+  .comparison-v2 .cmp-footnotes p { font-size: 12px; }
+  .play-shell .play-identity { grid-template-columns: minmax(0,1fr); gap: 26px; padding-top: 36px; }
+  .play-shell .play-stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .play-shell .play-badge-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .play-shell .play-matches label { grid-template-columns: minmax(0,1fr); }
+  .play-shell .play-mode { min-height: 260px; }
+  .bmw-academy .ac-shell,.bmw-academy .ac-shell.has-player { display: block; }
+  .bmw-academy .ac-navigation { position: static; }
+  .bmw-academy .ac-view-heading h1 { font-size: clamp(30px,7vw,40px); }
+  .bmw-academy .ac-stats { margin-top: 32px; }
+  .bmw-academy .ac-player-bottom .ac-primary { width: 100%; }
+  .parts-encyclopedia :is(.pe-xray-layout,.pe-engine-layout,.pe-detail-intro,.pe-detail-sections) { grid-template-columns: minmax(0,1fr); }
+  .parts-encyclopedia .pe-detail-sections aside { border-left: 0; border-top: 1px solid var(--pe-line); padding: 24px 0 0; }
+}
+@media (max-width: 600px) {
+  :is(.garage-app,.parts-encyclopedia,.play-shell,.engine-directory,.comparison-v2,.model-profile,.bmw-academy) { --workspace-radius: 18px; }
+  /* A 16px form font prevents involuntary zoom in iOS Safari. */
+  .garage-app :is(select,input:not([type=range]),textarea),
+  .parts-encyclopedia .pe-filters :is(input,select),
+  .play-shell :is(select,textarea),
+  .engine-directory :is(.ed-search input,.ed-select select),
+  .comparison-v2 :is(.cmp-search input,.cmp-share-panel input),
+  .engine-lab :is(select,input[type=search]),
+  .bmw-academy :is(.ac-profile-form input,.ac-code-search),
+  :is(dialog.personal-garage,.personal-garage.pg-inline) input { font-size: 16px !important; }
+  .garage-app .garage-heading p { font-size: 14px; }
+  .garage-app .garage-presets { grid-template-columns: minmax(0,1fr); gap: 10px; }
+  .garage-app .garage-presets button { padding: 18px; }
+  .garage-app .garage-presets strong { margin: 7px 0; font-size: 20px; }
+  .garage-app .garage-step-tabs { flex-wrap: wrap; }
+  .garage-app .garage-step-tabs button { flex: 1 1 45%; min-height: 58px; font-size: 12px; }
+  .garage-app .garage-step-tabs button span { display: inline-block; margin: 0 8px 0 0; font-size: 10px; }
+  .garage-app .garage-car-heading { flex-wrap: wrap; }
+  .garage-app .garage-car-heading h3 { font-size: 28px; }
+  .garage-app .garage-factory-facts { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .garage-app .garage-factory-facts>div:last-child { grid-column: 1/-1; border-top: 1px solid var(--line); padding-top: 14px; }
+  .garage-app .garage-factory-facts>div:last-child strong { font-size: 21px; }
+  .garage-app .garage-factory-facts small { font-size: 12px; }
+  .garage-app .garage-result>div>span:first-child,.garage-app .garage-result strong { font-size: clamp(25px,7vw,32px); }
+  .garage-app .garage-result small { display: block; margin: 3px 0 0; font-size: 12px; }
+  .garage-app .garage-step-footer { gap: 12px; }
+  .garage-app .garage-step-footer>div { flex-wrap: wrap; }
+  .garage-app .garage-starter-cards strong { font-size: 18px; }
+  .garage-app .garage-starter-cards span,.garage-app .garage-starter-cards small { font-size: 12px; }
+  .garage-app .garage-saved-heading { flex-wrap: wrap; }
+  .garage-app .garage-saved-heading p { font-size: 13px; }
+  .garage-app .garage-saved-heading>button { min-height: 44px; font-size: 12px; }
+  .garage-app .garage-saved-description>p { font-size: 12px; }
+  .parts-encyclopedia .pe-grid { grid-template-columns: minmax(0,1fr); }
+  .parts-encyclopedia .pe-card { display: flex; flex-direction: column; }
+  .parts-encyclopedia .pe-card>.pe-media { height: auto; border-right: 0; }
+  .parts-encyclopedia .pe-card .pe-art { height: auto; aspect-ratio: 16/9; }
+  .parts-encyclopedia .pe-card .pe-photo img { height: auto; aspect-ratio: 16/9; }
+  .parts-encyclopedia .pe-card-copy { padding: 22px; flex: 1; }
+  .parts-encyclopedia .pe-card h3 { font-size: 24px; margin: 12px 0; }
+  .parts-encyclopedia .pe-card-copy>.eyebrow { font-size: 10px; }
+  .parts-encyclopedia .pe-card-copy>p { font-size: 14px; line-height: 1.8; }
+  .parts-encyclopedia .pe-card .pe-art-label { font-size: 11px; }
+  .parts-encyclopedia .pe-total { font-size: 46px; letter-spacing: -.045em; }
+  .parts-encyclopedia .pe-intro-line { flex-wrap: wrap; }
+  .parts-encyclopedia .pe-total small { max-width: none; font-size: 11px; }
+  .parts-encyclopedia .pe-xray-key ol { grid-template-columns: minmax(0,1fr); gap: 0; }
+  .parts-encyclopedia .pe-xray-key li { font-size: 13px; }
+  .parts-encyclopedia .pe-xray-key li a { min-height: 44px; align-items: center; }
+  .parts-encyclopedia .pe-filters { grid-template-columns: minmax(0,1fr); }
+  .parts-encyclopedia .pe-filters>.pe-button { margin-top: 0; }
+  .parts-encyclopedia .pe-section-title { flex-wrap: wrap; gap: 15px; }
+  .engine-directory .ed-card { display: block; }
+  .engine-directory .ed-card-photo { min-height: 0; height: auto; aspect-ratio: 16/10; }
+  .engine-directory .ed-card-body { padding: 22px; }
+  .engine-directory .ed-card-body>.eyebrow { font-size: 10px; }
+  .engine-directory .ed-card-body h2 { font-size: 30px; }
+  .engine-directory .ed-card-body p { font-size: 14px; line-height: 1.7; }
+  .engine-directory .ed-kind { font-size: 11px; }
+  .engine-directory .ed-starter>a { min-height: 44px; font-size: 13px; }
+  .engine-lab .el-intro { flex-wrap: wrap; }
+  .engine-lab .el-model-tag { max-width: none; font-size: 10px; padding: 7px 10px; }
+  .engine-lab .el-toolbar button { min-height: 44px; font-size: 12px; }
+  .engine-lab .el-speed { flex-wrap: wrap; font-size: 12px; }
+  .engine-lab .el-viewport { height: clamp(330px,90vw,440px); }
+  .engine-lab .el-render-status { display: none; }
+  .engine-lab .el-parts button { min-height: 48px; font-size: 12px; }
+  .engine-lab .el-hotspot { width: 38px; height: 38px; min-height: 38px; }
+  .play-shell .play-mode-grid { grid-template-columns: minmax(0,1fr); gap: 14px; }
+  .play-shell .play-mode { min-height: 0; padding: 24px; gap: 14px; }
+  .play-shell .play-mode strong { font-size: 27px; }
+  .play-shell .play-mode>span:not([class]) { max-width: none; }
+  .play-shell .play-mode>small { margin-top: 10px; }
+  .play-shell .play-mode-icon { margin-bottom: 3px; }
+  .play-shell .play-mode .play-eyebrow { font-size: 10px; }
+  .play-shell :is(.play-rules,.play-result,.play-handover) { padding: 24px 20px; }
+  .play-shell .play-question-body { padding: 22px 18px; }
+  .play-shell .play-answer { font-size: 15px; min-height: 68px; padding: 16px; }
+  .play-shell .play-feedback { padding: 20px 16px; }
+  .play-shell .play-memory-tile { padding: 13px 10px; min-height: 135px; }
+  .play-shell .play-badge { padding: 18px 14px; }
+  .play-shell .play-badge-grid { gap: 12px; }
+  .play-shell .play-level { gap: 8px; }
+  .play-shell .play-stats { font-size: 13px; }
+  .model-profile .profile-photo-grid { grid-template-columns: minmax(0,1fr); }
+  .model-profile .profile-photo-slot>img,.model-profile .profile-photo-placeholder { height: auto; min-height: 175px; aspect-ratio: 16/10; }
+  .model-profile .profile-photo-slot h4 { font-size: 16px; margin: 17px 18px 6px; }
+  .model-profile .profile-photo-slot p { font-size: 12px; margin-inline: 18px; }
+  .model-profile .profile-photo-slot>a { padding-inline: 18px; font-size: 13px; }
+  /* Flow layout replaces the absolute-positioned road on narrow screens. */
+  .bmw-academy .ac-road { height: auto !important; display: grid; gap: 24px; margin: 28px 0; padding: 8px 0 16px; overflow: visible; }
+  .bmw-academy .ac-road>svg { display: none; }
+  .bmw-academy .ac-road:before { content: ''; position: absolute; top: 20px; bottom: 36px; left: 28px; border-left: 2px dashed var(--ac-line); }
+  .bmw-academy .ac-road-stop { position: relative; left: auto; top: auto; transform: none; display: grid; grid-template-columns: 58px minmax(0,1fr); gap: 22px; align-items: center; min-height: 76px; }
+  .bmw-academy .ac-road-stop>button { width: 58px; height: 58px; }
+  .bmw-academy .ac-road-stop>div,.bmw-academy .ac-road-stop.ac-label-left>div { position: static; left: auto; right: auto; top: auto; width: auto; transform: none; text-align: left; }
+  .bmw-academy .ac-road-stop>div strong { font-size: 16px; }
+  .bmw-academy .ac-unit-picker { grid-template-columns: minmax(0,1fr); }
+  .bmw-academy .ac-unit-picker button { font-size: 13px; padding: 14px; }
+  .bmw-academy .ac-unit-picker button small { font-size: 11px; }
+  .bmw-academy .ac-stats { grid-template-columns: minmax(0,1fr); }
+  .bmw-academy .ac-achievements,.bmw-academy .ac-collectibles { grid-template-columns: minmax(0,1fr); }
+  .bmw-academy .ac-achievements p { min-height: 0; }
+  .bmw-academy .ac-collectible>img { height: auto; aspect-ratio: 16/9; }
+  .bmw-academy .ac-collectible small { font-size: 11px; }
+  .bmw-academy .ac-collectible button,.bmw-academy .ac-collectible-link { min-height: 44px; font-size: 12px; }
+  .bmw-academy .ac-timeline li { grid-template-columns: minmax(0,1fr); gap: 10px; }
+  .bmw-academy .ac-timeline .ac-year { font-size: 30px; }
+  dialog.personal-garage { width: calc(100% - 16px); max-height: calc(100dvh - 16px); border-radius: 22px; scrollbar-gutter: auto; }
+  :is(dialog.personal-garage,.personal-garage.pg-inline) :is(.pg-header,.pg-content,.pg-footer) { padding-inline: 20px; }
+  :is(dialog.personal-garage,.personal-garage.pg-inline) .pg-overview { margin-inline: 20px; }
+  :is(dialog.personal-garage,.personal-garage.pg-inline) .pg-overview>div { padding: 16px 10px; }
+  :is(dialog.personal-garage,.personal-garage.pg-inline) .pg-overview span { font-size: 11px; line-height: 1.5; }
+  :is(dialog.personal-garage,.personal-garage.pg-inline) .pg-tabs { padding-inline: 10px; }
+  :is(dialog.personal-garage,.personal-garage.pg-inline) .pg-compare-bar { align-items: stretch; flex-direction: column; }
+  :is(dialog.personal-garage,.personal-garage.pg-inline) .pg-compare-bar span { max-width: none; font-size: 12px; }
+  :is(dialog.personal-garage,.personal-garage.pg-inline) .pg-compare-bar .pg-primary { font-size: 13px; }
+  :is(dialog.personal-garage,.personal-garage.pg-inline) .pg-lesson-levels { margin-left: 0; flex-wrap: wrap; }
+  :is(dialog.personal-garage,.personal-garage.pg-inline) .pg-lesson-levels button { flex-basis: 45%; font-size: 12px; }
+}
+@media (max-width: 360px) {
+  .comparison-v2 .cmp-slot { grid-template-columns: minmax(0,1fr); }
+  .comparison-v2 .cmp-slot-photo { height: auto; min-height: 0; aspect-ratio: 16/10; }
+  .play-shell .play-badge-grid { grid-template-columns: minmax(0,1fr); }
+  .garage-app .garage-starter-cards button { grid-template-columns: 88px minmax(0,1fr); }
+  .garage-app .garage-starter-cards img { width: 88px; }
+  .garage-app .garage-starter-cards strong,.garage-app .garage-starter-cards span,.garage-app .garage-starter-cards small { padding-inline: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.garage-app,.parts-encyclopedia,.play-shell,.engine-directory,.comparison-v2,.model-profile,.bmw-academy) * { scroll-behavior: auto; }
+}
+@media print {
+  .comparison-v2 .cmp-cars { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .comparison-v2 .cmp-slot { display: block; box-shadow: none; }
+  .comparison-v2 .cmp-slot-photo { min-height: 0; height: auto; }
+  .comparison-v2 .cmp-scroll { max-height: none; overflow: visible; }
+}

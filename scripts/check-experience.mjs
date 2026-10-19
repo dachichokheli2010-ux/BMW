@@ -65,7 +65,7 @@ try{
   await check('three onboarding taps save a scoped preference and recommend working destinations',()=>{
     setUser(null);const {host,storage}=fixture('/');storage.setItem('apex-favorites','["e92"]');const instance=mountGuideTools(host,{catalog:allModels,onboarding:true});
     host.querySelector('[data-welcome=new]').click();assert.match(host.textContent,/2 \/ 3/);host.querySelector('[data-welcome=electric]').click();assert.match(host.textContent,/3 \/ 3/);host.querySelector('[data-welcome=play]').click();
-    assert.deepEqual(JSON.parse(storage.getItem('apex-welcome-v1:guest')),{level:'new',vibe:'electric',goal:'play'});assert.equal(document.documentElement.dataset.detail,'easy');
+    assert.deepEqual(JSON.parse(storage.getItem('apex-welcome-v1:guest')),{level:'new',vibe:'electric',goal:'play'});assert.equal(document.documentElement.dataset.detail,undefined);
     const destinations=[...host.querySelectorAll('.welcome-options>a')].map(link=>link.getAttribute('href'));assert.ok(destinations.includes('/learn?lesson=electrification'));assert.ok(destinations.includes('/play?mode=practice'));assert.ok(destinations.some(link=>link.startsWith('/cars/')));
     assert.equal(storage.getItem('apex-favorites'),'["e92"]');instance.destroy();
     const remount=mountGuideTools(host,{catalog:allModels,onboarding:true});assert.ok(host.querySelector('[data-restart]'));remount.destroy();
@@ -98,9 +98,9 @@ try{
     setUser({id:'bob',name:'Bob'});assert.ok(host.querySelector('[data-value="f10-m5"]'));assert.equal(host.querySelector('[data-value=e92]'),null);assert.deepEqual(JSON.parse(storage.getItem('apex-collection-v1:alice')),alice);assert.deepEqual(JSON.parse(storage.getItem('apex-collection-v1:bob')),bob);instance.destroy();setUser(null);
   });
 
-  await check('Easy/Nerd and unit controls update real PS-based car readings',()=>{
+  await check('unit controls update real PS-based car readings without a global detail mode',()=>{
     const {document,window,storage}=fixture('/cars/f10-m5');const model=allModels.find(car=>car.id==='f10-m5');const details=document.createElement('details');details.className='profile-data-group';document.querySelector('main').append(details);const instance=mountExperience({catalog:allModels,getCurrent:()=>model});
-    assert.equal(document.documentElement.dataset.detail,'easy');document.querySelector('.detail-mode-toggle').click();assert.equal(document.documentElement.dataset.detail,'nerd');assert.equal(details.open,true);document.querySelector('.detail-mode-toggle').click();assert.equal(details.open,false);
+    assert.equal(document.querySelector('.detail-mode-toggle'),null);assert.equal(document.documentElement.dataset.detail,undefined);assert.ok(!details.open);details.open=true;window.dispatchEvent(new window.CustomEvent('apex:modelselected'));assert.equal(details.open,true,'Refreshing a model must not force manually opened specifications closed');
     assert.match(document.querySelector('.friendly-readings').textContent,/552 hp/);const power=document.querySelector('[data-unit=power]');power.value='kw';power.dispatchEvent(new window.Event('change'));assert.match(document.querySelector('.friendly-readings').textContent,/412 kW/);
     const speed=document.querySelector('[data-unit=speed]');speed.value='mph';speed.dispatchEvent(new window.Event('change'));assert.match(document.querySelector('.friendly-readings').textContent,/155 mph/);assert.match(document.querySelector('.friendly-readings').textContent,/0–62.1 mph/);assert.equal(JSON.parse(storage.getItem('apex-display-units')).power,'kw');assert.ok(document.querySelector('.glass-bottom-nav a[href="/play"]'));
     const fuel=document.querySelector('[data-unit=fuel]');fuel.value='mpg';fuel.dispatchEvent(new window.Event('change'));assert.match(document.querySelector('.friendly-readings').textContent,/23\.8 mpg \(US\)/);instance.destroy();

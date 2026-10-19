@@ -42,7 +42,9 @@ if(!process.argv.includes('--route')){
   assert.equal(document.querySelector('.workspace-loading'),null,'The requested destination must finish loading');
   assert.deepEqual(errors,[],'Platform and all imported modules should have no console or unhandled errors');
   assert.equal(document.querySelectorAll('.site-header nav a').length,6);
-  assert.ok(document.querySelector('.header-xp')&&document.querySelector('.header-units')&&document.querySelector('.detail-mode-toggle'));
+  assert.ok(document.querySelector('.header-xp')&&document.querySelector('.header-units'));
+  assert.equal(document.querySelector('.detail-mode-toggle'),null,'The removed Easy/Nerd control must not return');
+  assert.equal(document.documentElement.dataset.detail,undefined,'No global detail mode should alter page layout');
   assert.ok(document.querySelector('link[rel="canonical"]'));
   assert.equal(document.querySelector('.footer-brand small').textContent,'Unofficial fan site. Not affiliated with BMW AG. BMW names and trademarks belong to BMW AG.');
   if(routeURL.pathname==='/')assert.ok(document.querySelector('#start-here [data-welcome]'),'Home immediately offers beginner onboarding');
@@ -50,6 +52,11 @@ if(!process.argv.includes('--route')){
   if(current){assert.ok(document.querySelector('.model-profile'));assert.ok(document.querySelector('#vehicle-schema'));assert.ok(document.querySelector('.engineering-detail-actions a[href="/engines/s63tu"]'));}
   if(routeURL.pathname==='/engines')assert.equal(document.querySelectorAll('.ed-card').length,30);
   if(routeURL.pathname==='/engines/s65')assert.ok(document.querySelector('.ed-detail-photo'));
+  if(['/engines','/engines/s65','/play','/parts/turbocharger'].includes(routeURL.pathname)){
+    assert.equal(document.querySelector('.destination-heading'),null,'A destination with its own introduction should not repeat a shell title');
+    assert.equal(document.querySelectorAll('#destination h1').length,1,'The destination has one primary title');
+  }
+  if(routeURL.pathname==='/engines/s65')assert.equal(document.querySelector('[data-destination-crumb]').textContent,'S65');
   if(routeURL.pathname==='/start')assert.ok(document.querySelector('.tool-card'));
   if(routeURL.pathname==='/play'){
     assert.ok(document.querySelector('.play-shell'));

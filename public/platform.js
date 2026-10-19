@@ -84,14 +84,19 @@ export function mountPlatform({catalog,getCurrent,selectModel,showCollection,ope
     document.title='The BMW collection · APEX';markNavigation('models');
   }
   if(path==='/electric'||getCurrent())markNavigation('models');
-  if(path==='/parts')markNavigation('parts');
+  if(path==='/parts'||partSlug)markNavigation('parts');
   if(path==='/photos'){
     const sources=document.createElement('section');sources.className='photo-source-page';document.querySelector('main').prepend(sources);
     import('./photo-sources.js').then(({mountPhotoSources})=>{instances.photos=mountPhotoSources(sources,{catalog});}).catch(()=>{sources.textContent='This page could not load.';});
   }
   if(page&&!getCurrent()){
     destination=document.createElement('section');destination.className='destination-page';destination.id='destination';
-    destination.innerHTML=`<nav class="destination-breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><span>${esc(page.title.replace(/\.$/,''))}</span></nav><div class="destination-heading"><div><span class="eyebrow">${page.kicker}</span><h1>${page.title}</h1><p>${page.description}</p></div><span class="destination-label">${page.label}</span></div><div class="destination-panel" id="${page.id}" tabindex="-1"><div class="workspace-loading" role="status"><span class="loading-orbit" aria-hidden="true"></span>Opening ${esc(page.title.toLowerCase())}…</div></div>`;
+    // These destinations already supply their own page introduction. Rendering
+    // the shell introduction as well repeats two large titles before the content.
+    const ownsHeading=['engines','part-detail','play','compare','account'].includes(page.id);
+    const parent=engineSlug?['/engines','Engines']:partSlug?['/parts','Parts']:null;
+    const breadcrumb=parent?`<a href="${parent[0]}">${parent[1]}</a><span aria-hidden="true">/</span><span data-destination-crumb aria-current="page">Details</span>`:`<span aria-current="page">${esc(page.title.replace(/\.$/,''))}</span>`;
+    destination.innerHTML=`<nav class="destination-breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span>${breadcrumb}</nav>${ownsHeading?'':`<div class="destination-heading"><div><span class="eyebrow">${page.kicker}</span><h1>${page.title}</h1><p>${page.description}</p></div><span class="destination-label">${page.label}</span></div>`}<div class="destination-panel" id="${page.id}" tabindex="-1"><div class="workspace-loading" role="status"><span class="loading-orbit" aria-hidden="true"></span>Opening ${esc(page.title.toLowerCase())}…</div></div>`;
     document.querySelector('main').prepend(destination);panel=destination.querySelector('.destination-panel');
     document.title=page.title+' · APEX BMW';markNavigation(page.id);
     pending=loadPage();
@@ -121,6 +126,7 @@ export function mountPlatform({catalog,getCurrent,selectModel,showCollection,ope
         if(lesson){if(['mechanic','history'].includes(lesson))instance?.setTab?.(lesson);else instance?.openLesson?.(lesson,entry.get('level'));}
         else if(tab)instance?.setTab?.(tab);
       }
+      const crumb=destination.querySelector('[data-destination-crumb]');if(crumb)crumb.textContent=panel.querySelector('h1')?.textContent.trim()||'Details';
       updateSEO();return instance;
     }catch(error){panel.innerHTML='<div class="destination-error"><h2>This page could not load.</h2><p>Your saved cars and learning progress are still here.</p><button type="button">Try again</button></div>';panel.querySelector('button').onclick=()=>{pending=loadPage();};console.error('Page load failed:',page.id,error);return null;}
   }
