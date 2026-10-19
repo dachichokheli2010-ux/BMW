@@ -6,18 +6,21 @@ import {allModels,allElectricModels} from '../public/catalog.js';
 import {verifiedSpecs,enrichModel} from '../public/verified-specs.js';
 import {partCatalog} from '../public/parts.js';
 import {systemComponents} from '../public/system-guide.js';
-import {academyLessons} from '../public/academy.js';
+import {academyLessons,academyReferenceData} from '../public/academy.js';
 import {createSearchIndex,searchIndex,comparisonFromQuery} from '../public/smart-search.js';
 import {estimateBuild,syntheticDynoPoint,validateBuildImport,garageDefaults} from '../public/garage.js';
-import {readPersonalGarage} from '../public/personal-garage.js';
+import {createPersonalGarageBackup,readPersonalGarage,validatePersonalGarageBackup} from '../public/personal-garage.js';
+import {groupGenerationModels} from '../public/generation-guides.js';
+import {generationGuideSources} from '../public/generation-guide-sources.js';
 
 import {resolvePage,canonicalPageURL} from '../public/routes.js';
 import {convertedPower,convertedTorque} from '../public/comparison.js';
+import {powerToWeightKwPerTonne,comparisonWinner,comparisonBarPercent,comparisonShareURL} from '../public/comparison.js';
 
 let checks=0;
 function check(name,fn){fn();checks++;console.log('PASS '+name);}
 check('Dedicated pages and legacy deep links resolve without losing context',()=>{
-  for(const route of ['/models','/learn','/compare','/engine-lab','/tuning-garage','/my-garage']) {
+  for(const route of ['/models','/learn','/compare','/engine-lab','/tuning-garage','/my-garage','/generation-guides']) {
     assert.equal(resolvePage(route),'index.html');assert.equal(resolvePage(route+'/'),'index.html');
   }
   assert.equal(resolvePage('/unknown'),null);
@@ -39,6 +42,23 @@ check('Comparison units retain real horsepower definitions and missing data',()=
   assert.equal(convertedPower({power:500,powerUnit:'unknown'}),null);
   assert.equal(convertedTorque({torque:0,torqueUnit:'Nm'}),null);
 });
+check('Comparison rankings, ratio bars and three-car share links use valid data',()=>{
+  assert.equal(comparisonWinner([220,null,230],'higher'),230);
+  assert.equal(comparisonWinner([4,5],'lower'),4);
+  assert.equal(comparisonWinner([null,4],'lower'),null);
+  assert.equal(comparisonWinner([4,4],'lower'),4);
+  assert.equal(comparisonBarPercent(4,4,'lower'),100);
+  assert.equal(comparisonBarPercent(8,4,'lower'),50);
+  assert.equal(comparisonBarPercent(4,8,'higher'),50);
+  const m5=allModels.find(model=>model.id==='f10-m5');
+  assert.ok(Math.abs(powerToWeightKwPerTonne(m5)-(convertedPower(m5).kw/(m5.weightKg/1000)))<.001);
+  assert.equal(powerToWeightKwPerTonne({power:500,powerUnit:'hp'}),null);
+  const url=new URL(comparisonShareURL('https://apex.example',['g80','f90','e92','e60'],'imperial',true));
+  assert.equal(url.pathname,'/compare');
+  assert.equal(url.searchParams.get('compare'),'g80,f90,e92');
+  assert.equal(url.searchParams.get('units'),'imperial');
+  assert.equal(url.searchParams.get('differences'),'1');
+});
 check('Application JavaScript parses',()=>{
   for(const directory of ['public','scripts','worker','server','api'])for(const filename of fs.readdirSync(directory)){
     if(!/\.(?:mjs|js)$/.test(filename))continue;
@@ -53,6 +73,19 @@ check('Catalog identities and local vehicle/engine photos are intact',()=>{
   for(const m of allModels){assert.match(m.source,/^https:\/\//);assert.ok(m.parts.length,m.id);for(const photo of [m.car,m.engine].filter(Boolean))assert.ok(fs.existsSync('public/'+photo)||fs.existsSync('public/'+photo.replace(/\.jpg$/,'.webp')),`${m.id}: ${photo}`);}
   assert.equal(allModels.length,93);assert.equal(allElectricModels.length,16);
   for(const id of ['i4-edrive35','i4-xdrive40','u11-ix1-edrive20','u10-ix2-edrive20'])assert.ok(allElectricModels.some(model=>model.id===id),`${id} is catalogued as electric.`);
+});
+check('Every catalog generation has source-linked buyer-guide examples',()=>{
+  const groups=groupGenerationModels(allModels),included=groups.flatMap(group=>group.models);
+  assert.equal(new Set(groups.map(group=>group.code)).size,groups.length);
+  assert.equal(included.length,allModels.length);
+  assert.equal(new Set(included.map(model=>model.id)).size,allModels.length);
+  for(const code of ['E46','E92','E90','F80','G80','E36/7'])assert.ok(groups.some(group=>group.code===code),`Missing ${code} buyer guide.`);
+  for(const model of included)assert.match(model.source,/^https:\/\//,`${model.id} needs a factory source.`);
+  for(const item of Object.values(generationGuideSources).flat()){
+    assert.match(item.source.url,/^https:\/\//);
+    assert.ok(item.source.label);
+    assert.ok(item.claim);
+  }
 });
 check('Expanded data retains exact launch configurations and units',()=>{
   const m=allModels.find(m=>m.id==='f10-m5');assert.equal(m.powerUnit,'PS');assert.equal(m.acceleration100,4.4);assert.equal(m.weightKg,1870);assert.equal(m.verified.weightEU,1945);
@@ -71,6 +104,24 @@ check('Build imports validate inputs and discard supplied performance claims',()
   assert.throws(()=>validateBuildImport({...valid,modelId:'e92',config:{...garageDefaults,turbo:'1'}},allModels));
   assert.throws(()=>validateBuildImport([valid,{...valid,name:''}],allModels));
 });
+check('Garage backup validates and merges an exportable full local snapshot',()=>{
+  const payload=createPersonalGarageBackup({
+    favorites:['f10-m5'],recent:['g80'],
+    builds:[{id:'saved-1',modelId:'f10-m5',name:'Road concept',config:{...garageDefaults},savedAt:'2026-01-01T00:00:00.000Z'}],
+    progress:{'combustion:beginner':true,'unknown:advanced':true},
+    academy:{version:2,xp:25,completed:{'first-engine':{day:'2026-01-01',accuracy:100,topic:'basics'}}}
+  });
+  assert.equal(payload.version,3);
+  assert.equal(payload.builds.length,1);
+  const restored=validatePersonalGarageBackup(payload,allModels);
+  assert.deepEqual(restored.favorites,['f10-m5']);
+  assert.deepEqual(restored.recent,['g80']);
+  assert.equal(restored.builds[0].id,'saved-1');
+  assert.deepEqual(restored.progress,{'combustion:beginner':true});
+  assert.equal(restored.academy.xp,25);
+  assert.throws(()=>validatePersonalGarageBackup({...payload,builds:[{...payload.builds[0],modelId:'unknown'}]},allModels));
+  assert.throws(()=>validatePersonalGarageBackup({...payload,version:9},allModels));
+});
 check('Personal garage reads valid progress and saved models without changing storage',()=>{
   const records={'apex-favorites':JSON.stringify(['f10-m5','f10-m5','not-a-BMW']),'bmw-academy-progress-v1':JSON.stringify({'combustion:beginner':true,'fake:advanced':true})};
   const state=readPersonalGarage(allModels,{getItem:key=>records[key]??null,setItem:()=>{throw new Error('Read must not write');}});
@@ -80,7 +131,7 @@ check('Personal garage reads valid progress and saved models without changing st
 check('My garage shares the new academy completion and next lesson',()=>{
   const records={'bmw-academy-state-v2':JSON.stringify({version:2,xp:25,credits:5,completed:{'first-engine':{day:'2026-10-18',accuracy:100,topic:'basics'},unknown:{day:'2026-10-18'}},days:['2026-10-18']})};
   const state=readPersonalGarage(allModels,{getItem:key=>records[key]??null,setItem:()=>{throw new Error('Read must not write');}});
-  assert.equal(state.academy.completed,1);assert.equal(state.academy.total,40);assert.equal(state.academy.xp,25);
+  assert.equal(state.academy.completed,1);assert.equal(state.academy.total,42);assert.equal(state.academy.xp,25);
   assert.ok(state.academy.next);assert.notEqual(state.academy.next.id,'first-engine');
 });
 check('Search resolves chassis, engine, natural questions and comparisons',()=>{
@@ -89,6 +140,8 @@ check('Search resolves chassis, engine, natural questions and comparisons',()=>{
   assert.ok(searchIndex(index,'S63 engine').some(r=>r.id==='engine-lab'));
   assert.ok(searchIndex(index,'What does an intercooler do?').some(r=>r.id==='intercooler'));
   assert.ok(searchIndex(index,'N54 vs N55').some(r=>r.id==='engine-codes'));
+  assert.ok(searchIndex(index,'automotive glossary').some(r=>r.id==='glossary'));
+  assert.ok(searchIndex(index,'BMW M photo challenges').some(r=>r.id==='m-recognition'));
   assert.ok(searchIndex(index,'cooling','Lessons').every(r=>r.category==='Lessons'));
   assert.equal(searchIndex(index,'nonexistent-zzzzz').length,0);
   const pair=comparisonFromQuery(allModels,'N54 vs N55');assert.equal(pair.length,2);assert.match(allModels.find(m=>m.id===pair[0]).code,/N54/);assert.match(allModels.find(m=>m.id===pair[1]).code,/N55/);
@@ -101,7 +154,7 @@ check('Tuning estimates preserve factory reset and physical power/torque units',
   assert.equal(estimateBuild(allModels.find(m=>m.id==='f90')).mass,null);
 });
 check('Educational content is linked, sourced and uniquely identified',()=>{
-  assert.equal(academyLessons.length,8);assert.equal(new Set(academyLessons.map(l=>l.id)).size,8);
+  assert.equal(academyLessons.length,10);assert.equal(new Set(academyLessons.map(l=>l.id)).size,10);
   assert.ok(systemComponents.length>=26);assert.equal(new Set(systemComponents.map(p=>p.id)).size,systemComponents.length);assert.ok(systemComponents.every(p=>p.sources.length&&p.connections.length>=2&&p.symptoms&&p.location));
   assert.ok(partCatalog.every(p=>p.photo.license&&p.photo.author&&fs.existsSync('public/'+p.photo.src)));
 });

@@ -1,0 +1,48 @@
+.bmw-academy .ac-objectives-panel{border:1px solid var(--ac-line);border-radius:9px;padding:22px;margin:25px 0;background:color-mix(in srgb,var(--ac-blue) 4%,var(--ac-bg))}
+.bmw-academy .ac-objectives-panel h2,.bmw-academy .ac-vehicle-examples h2{font-size:15px;font-weight:500;letter-spacing:-.2px;line-height:1.5;margin:0 0 12px}
+.bmw-academy .ac-objectives-panel ul{padding-left:20px;margin:0;color:var(--ac-muted);font-size:13px;line-height:1.9;display:grid;gap:8px}
+.bmw-academy .ac-objectives-panel li::marker{color:var(--ac-blue)}
+.bmw-academy .ac-advanced-explanation{border-block:1px solid var(--ac-line);margin:25px 0}
+.bmw-academy .ac-advanced-explanation>summary{min-height:52px;padding:17px 0;cursor:pointer;color:var(--ac-blue);font-size:13px}
+.bmw-academy .ac-advanced-explanation .ac-teaching-notes{margin-top:6px}
+.bmw-academy .ac-vehicle-examples{padding:22px 0;margin:22px 0;border-block:1px solid var(--ac-line)}
+.bmw-academy .ac-vehicle-examples>p{font-size:11px;line-height:1.8;color:var(--ac-muted);margin-bottom:15px}
+.ac-vehicle-examples>a{display:flex;align-items:center;gap:12px;padding:13px 0;min-height:48px;color:var(--ac-text);border-top:1px solid var(--ac-line);font-size:13px}
+.ac-vehicle-examples>a>strong{font-weight:500;flex:1}
+.ac-vehicle-examples>a>span{font-size:11px;color:var(--ac-muted)}
+.ac-vehicle-examples>a>b{font-size:18px;color:var(--ac-blue);font-weight:400}
+.ac-resume-card{border:1px solid var(--ac-blue);background:color-mix(in srgb,var(--ac-blue) 6%,var(--ac-bg));border-radius:10px;padding:23px;margin-bottom:24px}
+.ac-resume-card>div:first-child{display:flex;flex-direction:column;gap:10px}
+.ac-resume-card strong{font-size:22px;font-weight:450;letter-spacing:-.5px;line-height:1.4}
+.ac-resume-card p{font-size:12px;line-height:1.8;color:var(--ac-muted)}
+.ac-resume-card>div:last-child{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:22px}
+.ac-resume-card .ac-text-button{font-size:10px;max-width:150px;text-align:right}
+.bmw-academy .ac-unlock-date{font-size:10px!important;line-height:1.7;color:var(--ac-green);margin-top:14px}
+.ac-streak-facts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:22px 0 14px}
+.ac-streak-facts>span{border:1px solid var(--ac-line);border-radius:7px;padding:17px;font-size:10px;color:var(--ac-muted);display:flex;flex-direction:column;gap:12px}
+.ac-streak-facts strong{font-size:20px;font-weight:450;color:var(--ac-text)}
+.bmw-academy .ac-rank-note{font-size:10px;color:var(--ac-muted);line-height:1.8;margin:12px 0}
+.ac-key-terms{margin:22px 0;font-size:12px}
+.ac-key-terms h2{font-size:12px;font-weight:500;margin-bottom:12px}
+.ac-key-terms>div{display:flex;flex-wrap:wrap;gap:8px}
+.bmw-academy .ac-key-terms button{font-size:12px;min-height:44px;border:1px solid var(--ac-line);border-radius:20px;padding:8px 15px;color:var(--ac-blue)}
+.ac-reward-breakdown{font-size:11px!important;color:var(--ac-muted);line-height:1.9;margin-top:20px!important}
+.bmw-academy .acg-inline{display:inline;padding:0 2px;border:0;border-bottom:1px dotted currentColor;border-radius:0;min-height:0;font:inherit;line-height:inherit;color:var(--ac-blue);vertical-align:baseline;background:transparent}
+.bmw-academy .acg-inline>span{font-size:.7em}
+.bmw-academy .ac-matching button strong{min-width:0;overflow-wrap:anywhere}
+.bmw-academy .ac-stats .ac-profile-mini strong[data-no-i18n]{overflow:hidden;text-overflow:ellipsis}
+@media(max-width:760px){
+  .ac-resume-card{padding:20px}
+  .ac-resume-card>div:last-child{align-items:stretch;flex-direction:column}
+  .ac-resume-card .ac-text-button{max-width:none;text-align:center;font-size:12px}
+  .bmw-academy .ac-objectives-panel{padding:20px 17px}
+  .bmw-academy .ac-objectives-panel ul{font-size:13px}
+  .bmw-academy .ac-vehicle-examples>p{font-size:12px}
+  .ac-vehicle-examples>a{flex-wrap:wrap;min-height:54px;font-size:13px}
+  .ac-vehicle-examples>a>strong{flex-basis:65%}
+  .ac-streak-facts strong{font-size:17px}
+  html[lang=ka] .bmw-academy h1{letter-spacing:-.02em;font-size:clamp(24px,6.5vw,32px);line-height:1.4}
+  html[lang=ka] .bmw-academy .ac-primary{line-height:1.6}
+  html[lang=ka] .ac-challenge-copy>strong{letter-spacing:-.02em;font-size:23px;line-height:1.4}
+  html[lang=ru] .bmw-academy .ac-mobile-shortcuts button{font-size:11px}
+}

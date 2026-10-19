@@ -23,11 +23,25 @@ export async function createLocalDatabase(filename) {
       } catch (error) {database.exec('ROLLBACK'); throw error;}
     }
   } catch (error) {database.close(); throw error;}
-  const statement = (sql, values = []) => ({
+  const statements=new WeakMap();
+  const statement = (sql, values = []) => {
+   const prepared={
     bind(...next) {return statement(sql,next);},
     async first(column) {const row = database.prepare(sql).get(...values) || null; return column && row ? row[column] : row;},
     async all() {return {results:database.prepare(sql).all(...values),success:true};},
     async run() {const result=database.prepare(sql).run(...values);return {success:true,meta:{changes:Number(result.changes),last_row_id:Number(result.lastInsertRowid)}};}
-  });
-  return {prepare:sql=>statement(sql), async exec(sql) {database.exec(sql);return {success:true};}, close() {database.close();}};
+   };
+   statements.set(prepared,{sql,values});return prepared;
+  };
+  return {prepare:sql=>statement(sql), async batch(batch) {
+    database.exec('BEGIN IMMEDIATE');
+    try {
+      const results=batch.map(prepared=>{
+        const entry=statements.get(prepared);if(!entry)throw new Error('Batch statements must belong to this database.');
+        const result=database.prepare(entry.sql).run(...entry.values);
+        return {success:true,meta:{changes:Number(result.changes)}};
+      });
+      database.exec('COMMIT');return results;
+    }catch(error){database.exec('ROLLBACK');throw error;}
+  }, async exec(sql) {database.exec(sql);return {success:true};}, close() {database.close();}};
 }

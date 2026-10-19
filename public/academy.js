@@ -11,10 +11,15 @@ const SOURCES = {
   electronics: ['Bosch · stability control', 'https://www.bosch-mobility.com/en/solutions/braking-systems/electronic-stability-program/'],
   electric: ['US Department of Energy · electric drive', 'https://afdc.energy.gov/vehicles/electric'],
   history: ['BMW Group · company history', 'https://www.bmwgroup.com/en/company/history.html'],
+  m1history: ['BMW M · M1 engine history', 'https://www.bmw-m.com/en/topics/magazine-article-pool/bmw-m-engines.html'],
+  m5history: ['BMW M · M5 generation history', 'https://www.bmw-m.com/en/topics/magazine-article-pool/the-generations-of-the-bmw-m5-an-overview.html'],
+  m3history: ['BMW · 30 years of the M3', 'https://www.press.bmwgroup.com/usa/article/detail/T0264196EN_US/30-years-of-the-bmw-m3-%E2%80%93-the-story-behind-the-legend?language=en_US'],
+  currentM5: ['BMW · seventh-generation M5', 'https://www.press.bmwgroup.com/india/article/detail/T0446483EN/duality-untamed%3A-the-all-new-bmw-m5-launched-in-india?language=en'],
   n55: ['BMW · 2011 135i / N55', 'https://www.press.bmwgroup.com/usa/article/detail/T0076814EN_US/the-2011-bmw-135i-coupe-and-convertible?language=en_US'],
   n54: ['BMW · N54 and N55 applications', 'https://www.press.bmwgroup.com/usa/article/detail/T0451994EN_US/bmw-na-50th-anniversary-%7C-50-stories-for-50-years-chapter-33%3A-%E2%80%9Cjust-for-u-s-%3A-bmw-of-north-america-creates-special-models-with-enhanced-enthusiast-appeal%E2%80%9D?language=en_US'],
   b58: ['BMW · B58 in the 340i and 740i', 'https://www.press.bmwgroup.com/usa/article/detail/T0251866EN_US/bmw-twinpower-turbo-technology-once-again-takes-a-spot-on-2016-wards-10-best-engines-list'],
   s63: ['BMW · fifth-generation M5 / S63', 'https://www.press.bmwgroup.com/canada/article/detail/T0114793EN/the-all-new-bmw-m5?language=en'],
+  m3cs: ['BMW · M3 CS and M xDrive', 'https://www.press.bmwgroup.com/global/article/detail/T0407668EN/the-all-new-bmw-m3-cs'],
 };
 const levels = ['beginner', 'intermediate', 'advanced'];
 const titleCase = value => value.charAt(0).toUpperCase() + value.slice(1);
@@ -66,7 +71,7 @@ export const academyLessons = [
     ]
   },
   {
-    id:'engine-codes', title:'Read an engine identity', summary:'Explore verified BMW engine families.', category:'BMW knowledge', duration:'3 min', source:'n55',
+    id:'engine-codes', title:'Inline-six, V8 & engine codes', summary:'Explore verified BMW engine families.', category:'BMW knowledge', duration:'3 min', source:'n55',
     content:[
       'An engine family code is a more precise clue than a boot badge. BMW identifies the N55 as a turbocharged inline six, and the S63 family underpins the V8 in the F10 M5. A car model badge alone is not a complete engine identification.',
       'Family names such as N55 and B58 cover multiple versions and applications. Production date, market and the complete engine designation matter. Look up a documented example instead of assuming every digit follows one universal rule.',
@@ -134,6 +139,33 @@ export const academyLessons = [
       question('What is regenerative braking?', ['Recovering some motion energy as electrical energy','Creating fuel from brake dust','Charging only from the wall'],0,'A motor operating as a generator can recover some kinetic energy during deceleration.'),
       question('Why can regeneration be limited with a nearly full battery?', ['The battery has less capacity available to accept energy','The tires become larger','The car needs a turbo'],0,'The system must limit charging to protect the battery. Friction brakes provide braking when regeneration is unavailable or insufficient.')
     ]
+  },
+  {
+    id:'drivetrain-layouts', title:'RWD or xDrive?', summary:'Follow drive to the rear axle or both axles.', category:'Drivetrain', duration:'3 min', source:'s63', extraSource:SOURCES.m3cs,
+    content:[
+      'Rear-wheel drive sends drive to the rear axle. BMW’s F10 M5 launch material identifies that model as rear-wheel drive and describes its Active M Differential. This is a documented example, not a rule for every BMW.',
+      'BMW describes M xDrive as the all-wheel-drive system in the M3 CS. All-wheel drive can send drive to both axles, but its hardware and behavior depend on the specific model. The diagram compares basic power paths, not exact BMW hardware.',
+      'A badge or chassis code alone does not confirm a particular car’s drivetrain. Check the exact model, production details and market documentation before identifying its configuration.'
+    ],
+    steps:[['Engine and gearbox','The engine’s output passes through the gearbox in both simplified layouts.'],['Rear-wheel drive','A propeller shaft sends drive to the rear differential and rear wheels.'],['All-wheel drive','A transfer path can also send drive to the front axle; the implementation varies by model.'],['Check the model','Use the exact BMW model documentation instead of inferring a system from its badge.']],
+    quizzes:[
+      question('In the documented F10 M5 example, which axle is driven?', ['Rear axle','Front axle only','Both axles'],0,'BMW’s F10 M5 launch material identifies rear-wheel drive.'),
+      question('What does xDrive describe?', ['BMW all-wheel drive','A manual gearbox','A cylinder layout'],0,'xDrive is BMW’s all-wheel-drive name; exact hardware varies by model.'),
+      question('Can a chassis code alone prove a car has xDrive?', ['Yes, always','No, confirm the exact model and documentation','Only if it has a V8'],1,'A chassis or generation can include different versions. Verify the exact vehicle application.')
+    ]
+  },
+  {
+    id:'m-performance', title:'What changes on an M car?', summary:'Explore documented M powertrain, drivetrain and chassis examples.', category:'BMW M', duration:'4 min', source:'s63', extraSource:SOURCES.m3cs,
+    content:[
+      'There is no single parts list that describes every BMW M car. BMW’s F10 M5 launch material documents an S63 V8, rear-wheel drive and an Active M Differential, alongside M-specific chassis and braking systems.',
+      'BMW’s M3 CS release documents a different combination, including M xDrive. These examples show why the engine, drivetrain and chassis should be checked for the exact model rather than assumed from the M name alone.',
+      'M equipment and engineering vary across models and generations. The illustration groups areas to investigate; it is not a checklist of parts shared by all M cars. Follow the linked BMW documentation for each example.'
+    ],
+    quizzes:[
+      question('Which configuration does BMW document for the F10 M5 in the linked launch material?', ['S63 V8, rear-wheel drive and Active M Differential','Inline-six, front-wheel drive and open differential','Battery-electric drive only'],0,'The linked BMW F10 M5 material documents the S63 V8, rear-wheel drive and Active M Differential.'),
+      question('What is the safe way to identify an M car’s hardware?', ['Assume every generation uses the same parts','Check the official information for its exact model','Use the exterior badge alone'],1,'BMW’s documented examples differ. Use the exact model and source rather than generalizing.'),
+      question('Which system is identified for the M3 CS in the linked BMW release?', ['M xDrive','A manual-only gearbox','Front-wheel drive'],0,'BMW identifies M xDrive in its M3 CS release; this does not establish specifications for other models.')
+    ]
   }
 ];
 
@@ -151,6 +183,14 @@ const timeline = [
   {year:'1972',title:'Motorsport gets a home',text:'BMW Motorsport GmbH is established, the foundation of today’s BMW M GmbH.'},
   {year:'2013',title:'The electric i3 arrives',text:'The i3 launches as the BMW Group’s first series-produced fully electric model.'}
 ];
+const mTimeline = [
+  {year:'1972',title:'BMW Motorsport is founded',text:'BMW establishes BMW Motorsport GmbH. The company later becomes BMW M GmbH.',source:SOURCES.history},
+  {year:'1978',title:'The M1 reaches production',text:'The M1 becomes the first road car developed by BMW Motorsport.',source:SOURCES.m1history},
+  {year:'1984',title:'The first M5',text:'The first BMW M5 arrives, bringing motorsport-developed performance to a production sedan.',source:SOURCES.m5history},
+  {year:'1986',title:'The M3 begins',text:'The first BMW M3 enters production as a road-going model rooted in touring-car competition.',source:SOURCES.m3history},
+  {year:'2023',title:'The M3 CS',text:'BMW introduces the M3 CS with a 405 kW / 550 hp inline-six and M xDrive.',source:SOURCES.m3cs},
+  {year:'2024',title:'Electrified M5 generation',text:'The latest M5 generation adds a plug-in hybrid drivetrain to the model line.',source:SOURCES.currentM5}
+];
 const mechanicParts = ['air-filter','turbocharger','throttle-body','fuel-injector','ignition-coil','spark-plug'].map(id=>partCatalog.find(part=>part.id===id)).filter(Boolean);
 const scenarios = [
   {id:'cooling-flow',title:'Heat at a standstill',system:'Cooling',clues:['Simulated engine temperature rises while stationary.','Temperature returns toward normal when road airflow increases.','The simulator reports normal coolant circulation.'],prompt:'Which system most directly matches the airflow clue?',answers:['Radiator fan / airflow control','Spark-plug gap','Transmission gear ratio'],correct:0,explanation:'The radiator needs airflow to reject heat. A fan provides it at low speed. In this deliberately limited scenario, the contrast between stationary and moving points toward fan or airflow control. It does not prove which component failed in a real vehicle.',source:'cooling'},
@@ -160,7 +200,7 @@ const scenarios = [
 let instanceCount = 0;
 
 function svgFrame(title,description,body) {
-  return `<svg class="ac-diagram" viewBox="0 0 640 300" role="img" aria-label="${esc(title)}"><title>${esc(title)}</title><desc>${esc(description)}</desc><defs><pattern id="ac-grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" fill="none" stroke="currentColor" stroke-opacity=".055"/></pattern></defs><rect width="640" height="300" fill="url(#ac-grid)"/>${body}</svg>`;
+  return `<svg class="ac-diagram" data-ac-diagram viewBox="0 0 640 300" role="img" aria-label="${esc(title)}"><title>${esc(title)}</title><desc>${esc(description)}</desc><defs><pattern id="ac-grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" fill="none" stroke="currentColor" stroke-opacity=".055"/></pattern></defs><rect width="640" height="300" fill="url(#ac-grid)"/>${body}</svg>`;
 }
 function label(x,y,text,color='currentColor',size=13){return `<text x="${x}" y="${y}" fill="${color}" font-size="${size}" text-anchor="middle" font-family="inherit">${esc(text)}</text>`;}
 function flowLine(path,active,color='#68b3ff'){return `<path d="${path}" fill="none" stroke="${color}" stroke-width="${active?6:3}" opacity="${active?1:.3}" ${active?'class="ac-flow"':''}/>`;}
@@ -168,7 +208,7 @@ function diagramFor(id,step) {
   const accent='#68b3ff', warm='#f4a275';
   if(id==='combustion'){
     const top=[174,98,174,98][step],intake=step===0,exhaust=step===3;
-    return svgFrame('Four-stroke cylinder: '+academyLessons[0].steps[step][0],'A simplified piston, connecting rod and crankshaft. Valve positions and piston position change with the selected stroke.',`<path d="M232 76V222H408V76" fill="none" stroke="currentColor" stroke-width="5"/><rect x="237" y="80" width="166" height="${top-80}" fill="${step===2?warm:accent}" opacity=".17"/><path d="M245 75H285M355 75H395" stroke="${intake?accent:'currentColor'}" stroke-width="7"/><path d="M${intake?267:263} 49V${intake?95:75}M${exhaust?377:373} 49V${exhaust?95:75}" stroke="${exhaust?warm:accent}" stroke-width="5"/><rect x="239" y="${top}" width="162" height="22" rx="3" fill="${accent}"/><path d="M320 ${top+22}L${step%2?346:294} 246L320 265" fill="none" stroke="currentColor" stroke-width="9"/><circle cx="320" cy="265" r="16" fill="none" stroke="currentColor" stroke-width="4"/>${label(320,35,step===2?'COMBUSTION':'FOUR-STROKE PETROL',step===2?warm:accent)}${label(150,100,'Intake',accent)}${label(490,100,'Exhaust',warm)}${label(492,top+16,'Piston')}${label(164,264,'Crankshaft')}${step===2?'<path d="M320 50L310 69H326L316 89" fill="none" stroke="#f4a275" stroke-width="4"/>':''}`);
+    return svgFrame('Four-stroke cylinder: '+(step===2?'Power stroke':academyLessons[0].steps[step][0]),'A simplified piston, connecting rod and crankshaft. Valve positions and piston position change with the selected stroke.',`<path d="M232 76V222H408V76" fill="none" stroke="currentColor" stroke-width="5"/><rect x="237" y="80" width="166" height="${top-80}" fill="${step===2?warm:accent}" opacity=".17"/><path d="M245 75H285M355 75H395" stroke="${intake?accent:'currentColor'}" stroke-width="7"/><path d="M${intake?267:263} 49V${intake?95:75}M${exhaust?377:373} 49V${exhaust?95:75}" stroke="${exhaust?warm:accent}" stroke-width="5"/><rect x="239" y="${top}" width="162" height="22" rx="3" fill="${accent}"/><path d="M320 ${top+22}L${step%2?346:294} 246L320 265" fill="none" stroke="currentColor" stroke-width="9"/><circle cx="320" cy="265" r="16" fill="none" stroke="currentColor" stroke-width="4"/>${label(320,35,step===2?'COMBUSTION':'FOUR-STROKE PETROL',step===2?warm:accent)}${label(150,100,'Intake',accent)}${label(490,100,'Exhaust',warm)}${label(492,top+16,'Piston')}${label(164,264,'Crankshaft')}${step===2?'<path d="M320 50L310 69H326L316 89" fill="none" stroke="#f4a275" stroke-width="4"/>':''}`);
   }
   if(id==='turbocharging'){
     const turbine=step<2,compressor=step===1||step===2;
@@ -194,11 +234,19 @@ function diagramFor(id,step) {
     const nodes=[['Sensors',130,105],['Controller',320,105],['Actuators',510,105],['Feedback',320,225]];
     return svgFrame('Electronic control feedback loop','Sensors feed a controller, the controller commands actuators, and measurements provide feedback.',`${flowLine('M195 105H255',step===0)}${flowLine('M385 105H445',step===1)}${flowLine('M510 134V225H385',step===2)}${flowLine('M255 225H130V134',step===3)}${nodes.map(([name,x,y],i)=>`<rect x="${x-65}" y="${y-28}" width="130" height="56" rx="5" fill="${step===i?'#234769':'#172333'}" stroke="${step===i?accent:'currentColor'}" stroke-width="${step===i?3:1}"/>${label(x,y+5,name,'#edf4ff')}`).join('')}`);
   }
+  if(id==='drivetrain-layouts'){
+    const rwd=step===1,awd=step===2;
+    return svgFrame('Rear-wheel drive and all-wheel drive comparison','Simplified power paths: rear-wheel drive sends drive to the rear axle; all-wheel drive can send drive to both axles. Exact vehicle hardware varies.',`<text x="68" y="77" fill="${accent}" font-size="17" font-family="inherit">RWD</text><rect x="105" y="45" width="176" height="54" rx="6" fill="${rwd?'#234769':'#172333'}" stroke="${rwd?accent:'currentColor'}"/><text x="193" y="78" fill="currentColor" font-size="13" text-anchor="middle" font-family="inherit">Engine + gearbox</text><rect x="465" y="45" width="138" height="54" rx="6" fill="${rwd?'#234769':'#172333'}" stroke="${rwd?accent:'currentColor'}"/><text x="534" y="78" fill="currentColor" font-size="13" text-anchor="middle" font-family="inherit">Rear axle</text>${flowLine('M281 72H465',rwd)}<text x="68" y="183" fill="${accent}" font-size="17" font-family="inherit">xDrive</text><rect x="105" y="151" width="176" height="54" rx="6" fill="${awd?'#234769':'#172333'}" stroke="${awd?accent:'currentColor'}"/><text x="193" y="184" fill="currentColor" font-size="13" text-anchor="middle" font-family="inherit">Engine + gearbox</text><rect x="465" y="151" width="138" height="54" rx="6" fill="${awd?'#234769':'#172333'}" stroke="${awd?accent:'currentColor'}"/><text x="534" y="184" fill="currentColor" font-size="13" text-anchor="middle" font-family="inherit">Rear axle</text><rect x="298" y="227" width="142" height="48" rx="6" fill="${awd?'#234769':'#172333'}" stroke="${awd?accent:'currentColor'}"/><text x="369" y="257" fill="currentColor" font-size="13" text-anchor="middle" font-family="inherit">Front axle</text>${flowLine('M281 178H465',awd)}${flowLine('M350 178V227',awd)}${label(320,294,'Simplified power paths',undefined,12)}`);
+  }
+  if(id==='m-performance'){
+    const areas=[['Powertrain','Engine and output'],['Drivetrain','Drive to the wheels'],['Chassis','Suspension and setup'],['Brakes','Model-specific braking']];
+    return svgFrame('Areas to check in a BMW M model','BMW M models differ. The cards group areas documented for the linked F10 M5 and M3 CS examples; they are not a shared-parts checklist.',`${areas.map(([name,detail],i)=>{const x=38+i*151;return `<rect x="${x}" y="74" width="132" height="144" rx="7" fill="#172333" stroke="${i===0?accent:'currentColor'}"/><text x="${x+66}" y="119" fill="${i===0?accent:'currentColor'}" font-size="14" text-anchor="middle" font-family="inherit">${esc(name)}</text><text x="${x+66}" y="159" fill="currentColor" font-size="10" text-anchor="middle" font-family="inherit">${esc(detail)}</text>`;}).join('')}${label(320,264,'Examples vary by exact model and generation',undefined,12)}`);
+  }
   const reverse=step===3;
   return svgFrame('Generic electric propulsion and regeneration','A battery, inverter and motor connect to the wheels. Regeneration reverses the direction of electrical energy flow.',`<rect x="55" y="94" width="125" height="88" rx="6" fill="none" stroke="${step===0?accent:'currentColor'}" stroke-width="3"/>${[0,1,2,3].map(i=>`<rect x="${68+i*26}" y="108" width="18" height="50" fill="${accent}" opacity=".3"/>`).join('')}<rect x="260" y="99" width="115" height="78" rx="6" fill="none" stroke="${step===1?accent:'currentColor'}" stroke-width="3"/><path d="M277 138Q286 111 296 138T316 138T336 138T356 138" fill="none" stroke="${accent}" stroke-width="3"/><circle cx="500" cy="138" r="48" fill="none" stroke="${step===2?accent:'currentColor'}" stroke-width="3"/>${label(500,147,'M',accent,27)}${flowLine(reverse?'M260 138H180':'M180 138H260',step!==2)}${flowLine(reverse?'M452 138H375':'M375 138H452',step!==0)}${label(218,126,reverse?'←':'→',accent,24)}${label(415,126,reverse?'←':'→',accent,24)}${label(118,215,'Battery')}${label(317,215,'Inverter')}${label(500,215,'Motor / generator')}${label(320,268,reverse?'REGENERATION · energy toward battery':'PROPULSION · energy toward wheels',accent,13)}`);
 }
 
 export function mountAcademy(container, options={}) {
-  return mountLearningAcademy(container, options, {lessons:academyLessons, sources:SOURCES, levels, engineCodeEntries, timeline, scenarios, diagramFor});
+  return mountLearningAcademy(container, options, {lessons:academyLessons, sources:SOURCES, levels, engineCodeEntries, timeline, mTimeline, scenarios, diagramFor});
 }
-export const academyReferenceData = {sources:SOURCES,scenarios,timeline};
+export const academyReferenceData = {sources:SOURCES,scenarios,timeline,mTimeline};

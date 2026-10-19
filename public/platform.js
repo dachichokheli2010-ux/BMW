@@ -5,13 +5,16 @@ import {mountNavigation} from './navigation.js';
 import {workspaceRoutes} from './routes.js';
 import {account} from './account-sync.js';
 import {mountAccount,mountAccountButton} from './account.js';
+import {getLanguage} from './preferences.js';
 import {renderModelProfile} from './model-profile-ui.js';
 import {responsivePhotoAttributes,photoBlurStyle} from './responsive-photos.js';
+import './retention-translations.js';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pages={
   '/account':{id:'account',title:'Your account.',kicker:'YOUR BMW GARAGE',description:'Save your builds, keep your favorites, and continue learning wherever you sign in.',label:'A GARAGE THAT GOES WITH YOU'},
   '/learn':{id:'academy',title:'Learn & Play',kicker:'THE BMW LEARNING ACADEMY',description:'Build your knowledge, one discovery at a time. Short lessons, hands-on challenges, and a road that grows with you.',label:'YOUR NEXT CHAPTER'},
+  '/generation-guides':{id:'generation-guides',title:'Generation buyer guides',kicker:'BUY WITH CONTEXT',description:'Explore catalog-backed BMW generation pages, sourced pre-purchase checks, and import guidance for buyers in Georgia.',label:'CHASSIS-BY-CHASSIS RESEARCH'},
   '/engine-lab':{id:'engine-lab',title:'Inside the engine.',kicker:'VIRTUAL ENGINE LAB',description:'Meet the S63. Explore the systems of a twin-turbo V8, follow the flow, and see how the components connect.',label:'INTERACTIVE ENGINE EXPLORER'},
   '/tuning-garage':{id:'tuning-garage',title:'Build. Test. Understand.',kicker:'THE TUNING GARAGE',description:'Choose a BMW and explore how changes interact. Save your ideas and compare the tradeoffs behind a build.',label:'EDUCATIONAL SIMULATION'},
   '/compare':{id:'compare',title:'A closer comparison.',kicker:'THE DETAILS MAKE THE DIFFERENCE',description:'The same badge. A different character. Line up to three BMWs side by side and discover what sets them apart.',label:'YOUR SHORTLIST, SIDE BY SIDE'},
@@ -27,10 +30,10 @@ export function mountPlatform({catalog,getCurrent,selectModel,showCollection,ope
     analyticsScript.src='/_vercel/insights/script.js';
     document.head.append(analyticsScript);
   }
-  const abort=new AbortController(),instances={};
+  const abort=new AbortController(),instances={};let modelDefinitions=null;
   const path=location.pathname.replace(/\/+$/,'')||'/',page=pages[path];
   const nav=document.querySelector('.site-header nav');
-  nav.innerHTML='<a href="/models" id="collectionnav">Models</a><a href="/learn">Learn &amp; Play</a><a href="/compare" class="nav-compare">Compare <span class="nav-comparison-count" aria-label="Selected models"></span></a><a href="/engine-lab">Engine lab</a><a href="/tuning-garage">Tuning</a><a href="/parts">Inside BMW</a><a href="/my-garage" class="nav-garage">My garage</a>';
+  nav.innerHTML='<a href="/models" id="collectionnav">Models</a><a href="/learn">Learn &amp; Play</a><a href="/generation-guides">Buyer guides</a><a href="/compare" class="nav-compare">Compare <span class="nav-comparison-count" aria-label="Selected models"></span></a><a href="/engine-lab">Engine lab</a><a href="/tuning-garage">Tuning</a><a href="/parts">Inside BMW</a><a href="/my-garage" class="nav-garage">My garage</a>';
   function markNavigation(id){
     const href=id==='models'?'/models':workspaceRoutes[id]||'/'+id;
     for(const a of nav.querySelectorAll('a')){const selected=a.getAttribute('href')===href;a.classList.toggle('active',selected);if(selected)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');}
@@ -41,7 +44,7 @@ export function mountPlatform({catalog,getCurrent,selectModel,showCollection,ope
   document.querySelector('.header-tools').insertAdjacentHTML('afterbegin','<button class="icon-button global-search-trigger" data-global-search aria-label="Search everything (Control K)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg></button>');
   document.querySelector('.footer-brand').innerHTML='<a href="/" class="footer-wordmark">APEX<span>.</span></a><p>Independent BMW stories, specifications and engineering guides.</p><small>Not affiliated with BMW AG.</small>';
   const footerLinks=document.querySelector('.footer-links'),creditsButton=footerLinks.querySelector('#credits');
-  footerLinks.innerHTML='<div class="footer-group"><h2>Discover</h2><a href="/models">BMW models</a><a href="/electric">Electric BMWs</a><a href="/parts">Inside BMW</a><a href="/about">About APEX</a></div><div class="footer-group"><h2>Explore</h2><a href="/compare">Compare cars</a><a href="/learn">Learn &amp; Play</a><a href="/engine-lab">Engine lab</a><a href="/tuning-garage">Tuning garage</a><a href="/my-garage">My garage</a></div><div class="footer-group"><h2>Sources</h2><a href="/account">Account &amp; sync</a></div>';
+  footerLinks.innerHTML='<div class="footer-group"><h2>Discover</h2><a href="/models">BMW models</a><a href="/electric">Electric BMWs</a><a href="/parts">Inside BMW</a><a href="/about">About APEX</a></div><div class="footer-group"><h2>Explore</h2><a href="/compare">Compare cars</a><a href="/learn">Learn &amp; Play</a><a href="/generation-guides">Buyer guides</a><a href="/engine-lab">Engine lab</a><a href="/tuning-garage">Tuning garage</a><a href="/my-garage">My garage</a></div><div class="footer-group"><h2>Sources</h2><a href="/account">Account &amp; sync</a></div>';
   creditsButton.textContent='Photos & sources';footerLinks.querySelector('.footer-group:last-child').append(creditsButton);
   document.querySelector('.footer-end').innerHTML='<span>Guest data stays on this device. Sign in to sync your garage.</span><a href="#main-content">Back to top ↑</a>';
   document.querySelector('#modelsearch')?.setAttribute('placeholder','Find a BMW, chassis or engine code…');
@@ -87,6 +90,7 @@ export function mountPlatform({catalog,getCurrent,selectModel,showCollection,ope
       if(page.id==='engine-lab'){const {mountEngineLab}=await import('./engine-lab.js');panel.replaceChildren();instances[page.id]=await mountEngineLab(panel);}
       if(page.id==='tuning-garage'){const {mountGarage}=await import('./garage.js');panel.replaceChildren();instances[page.id]=await mountGarage(panel,{catalog});}
       if(page.id==='academy'){const {mountAcademy}=await import('./academy.js');panel.replaceChildren();instances[page.id]=await mountAcademy(panel,{catalog,onProgress:detail=>window.dispatchEvent(new CustomEvent('apex:progress',{detail}))});}
+      if(page.id==='generation-guides'){const {mountGenerationGuides}=await import('./generation-guides.js');panel.replaceChildren();instances[page.id]=mountGenerationGuides(panel,{catalog});}
       if(page.id==='compare'){panel.replaceChildren();instances[page.id]=mountComparison(panel);}
       if(page.id==='account'){panel.replaceChildren();instances[page.id]=mountAccount(panel,{accountController:account});}
       if(page.id==='my-garage'){
@@ -109,6 +113,7 @@ export function mountPlatform({catalog,getCurrent,selectModel,showCollection,ope
     location.href=target;
   }
   function updateDetail(){
+    modelDefinitions?.destroy();modelDefinitions=null;
     const m=getCurrent();document.querySelector('.expanded-factory-specs')?.remove();document.querySelector('.engineering-detail-actions')?.remove();
     if(!m)return;markNavigation('models');document.documentElement.dataset.route='model';if(destination)destination.hidden=true;document.title=m.name+' '+m.generation.split(' / ').at(-1).trim()+' · APEX';instances['tuning-garage']?.stop?.();
     const actions=document.createElement('div');actions.className='engineering-detail-actions';
@@ -118,10 +123,18 @@ export function mountPlatform({catalog,getCurrent,selectModel,showCollection,ope
     actions.querySelector('[data-open-garage]')?.addEventListener('click',()=>{location.href='/tuning-garage?garage='+encodeURIComponent(m.id);});
     const section=document.createElement('section');section.className='expanded-factory-specs';section.innerHTML=renderModelProfile(m);
     document.querySelector('.machine-bar').after(section);
+    // Load definitions only when someone opens a vehicle. Factory values stay
+    // verbatim; technical terms can be opened with touch or a keyboard.
+    Promise.all([import('./academy-glossary.js'),import('./academy-links.js')]).then(([glossary,links])=>{
+      if(!section.isConnected)return;
+      modelDefinitions=glossary.mountGlossaryDefinitions(section,{getLanguage,onLesson:id=>{location.href='/learn?lesson='+encodeURIComponent(id);}});
+      links.prepareGlossaryCopy(section,'.profile-value:not(.profile-missing)');links.localizeGlossaryCopy(section);
+    }).catch(()=>{/* Vehicle specifications remain usable if definitions cannot load. */});
   }
 
   window.addEventListener('apex:modelselected',updateDetail,{signal:abort.signal});
   window.addEventListener('apex:collection',()=>{
+    modelDefinitions?.destroy();modelDefinitions=null;
     instances['tuning-garage']?.stop?.();document.documentElement.dataset.route='models';markNavigation('models');document.title='The BMW collection · APEX';
     if(destination)destination.hidden=true;
     document.querySelectorAll('.home-feature').forEach(node=>node.hidden=true);
@@ -132,12 +145,14 @@ export function mountPlatform({catalog,getCurrent,selectModel,showCollection,ope
   const openPersonalGarage=()=>{location.href='/my-garage';};
   const navigation=mountNavigation({openSearch:()=>search.open(),openGarage:openPersonalGarage});
   const search=mountSmartSearch({catalog,parts:[...partCatalog,...systemComponents],onModel:openCatalogModel,onPart:index=>index<partCatalog.length?openPart(index):systems.open(systemComponents[index-partCatalog.length].id),onCompare:compareModels,onTopic:async id=>{
+    const academyTabs={glossary:'glossary','m-recognition':'models','academy-practice':'practice'};
+    if(academyTabs[id]){location.href='/learn?tab='+academyTabs[id];return;}
     if(workspaceRoutes[id])return openWorkspace(id);
     location.href='/learn?'+(['engine-codes','mechanic','history'].includes(id)?'tab='+encodeURIComponent(id==='engine-codes'?'codes':id):'lesson='+encodeURIComponent(id));
   }});
   function updateCount(){let count=0;try{const ids=JSON.parse(localStorage.getItem('apex-comparison')||'[]');if(Array.isArray(ids))count=new Set(ids.filter(id=>catalog.some(m=>m.id===id))).size;}catch{}const node=nav.querySelector('.nav-comparison-count');if(node)node.textContent=count?String(Math.min(3,count)):'';}
   updateCount();window.addEventListener('apex:localchange',updateCount,{signal:abort.signal});window.addEventListener('storage',updateCount,{signal:abort.signal});
   updateDetail();
-  window.addEventListener('apex:languagechange',()=>{const profile=document.querySelector('.model-profile');if(profile&&getCurrent()){const open=[...profile.querySelectorAll('.profile-data-group[open]')].map(node=>[...profile.querySelectorAll('.profile-data-group')].indexOf(node));const parent=profile.parentElement;parent.innerHTML=renderModelProfile(getCurrent());parent.querySelectorAll('.profile-data-group').forEach((node,index)=>node.open=open.includes(index));}},{signal:abort.signal});
-  return {openWorkspace,search,destroy(){abort.abort();unsubscribeAccount();accountUI?.destroy?.();navigation.destroy();search.destroy();Object.values(instances).forEach(i=>i?.destroy?.());}};
+  window.addEventListener('apex:languagechange',()=>{const profile=document.querySelector('.model-profile');if(profile&&getCurrent()){const open=[...profile.querySelectorAll('.profile-data-group[open]')].map(node=>[...profile.querySelectorAll('.profile-data-group')].indexOf(node));const parent=profile.parentElement;parent.innerHTML=renderModelProfile(getCurrent());parent.querySelectorAll('.profile-data-group').forEach((node,index)=>node.open=open.includes(index));}if(modelDefinitions)import('./academy-links.js').then(links=>{const section=document.querySelector('.expanded-factory-specs');if(section){links.prepareGlossaryCopy(section,'.profile-value:not(.profile-missing)');links.localizeGlossaryCopy(section);}}).catch(()=>{});},{signal:abort.signal});
+  return {openWorkspace,search,destroy(){modelDefinitions?.destroy();abort.abort();unsubscribeAccount();accountUI?.destroy?.();navigation.destroy();search.destroy();Object.values(instances).forEach(i=>i?.destroy?.());}};
 }

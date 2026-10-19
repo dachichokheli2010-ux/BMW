@@ -10,10 +10,15 @@ export const postgresSchemaStatements=[
  'CREATE INDEX IF NOT EXISTS sessions_expiry_idx ON apex.sessions(expires_at)',
  `CREATE TABLE IF NOT EXISTS apex.auth_limits (key TEXT PRIMARY KEY, attempts INTEGER NOT NULL, window_start DOUBLE PRECISION NOT NULL, expires_at DOUBLE PRECISION NOT NULL)`,
  'CREATE INDEX IF NOT EXISTS auth_limits_expiry_idx ON apex.auth_limits(expires_at)',
- `CREATE TABLE IF NOT EXISTS apex.user_garages (user_id TEXT PRIMARY KEY REFERENCES apex.users(id) ON DELETE CASCADE, state TEXT NOT NULL, revision INTEGER NOT NULL, updated_at DOUBLE PRECISION NOT NULL)`
+ `CREATE TABLE IF NOT EXISTS apex.user_garages (user_id TEXT PRIMARY KEY REFERENCES apex.users(id) ON DELETE CASCADE, state TEXT NOT NULL, revision INTEGER NOT NULL, updated_at DOUBLE PRECISION NOT NULL)`,
+ `CREATE TABLE IF NOT EXISTS apex.account_tokens (token_hash TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES apex.users(id) ON DELETE CASCADE, purpose TEXT NOT NULL CHECK (purpose IN ('reset','verify')), created_at DOUBLE PRECISION NOT NULL, expires_at DOUBLE PRECISION NOT NULL)`,
+ 'CREATE INDEX IF NOT EXISTS account_tokens_user_idx ON apex.account_tokens(user_id,purpose)',
+ 'CREATE INDEX IF NOT EXISTS account_tokens_expiry_idx ON apex.account_tokens(expires_at)',
+ `CREATE TABLE IF NOT EXISTS apex.user_verifications (user_id TEXT PRIMARY KEY REFERENCES apex.users(id) ON DELETE CASCADE, verified_at DOUBLE PRECISION NOT NULL)`,
+ `CREATE TABLE IF NOT EXISTS apex.user_preferences (user_id TEXT PRIMARY KEY REFERENCES apex.users(id) ON DELETE CASCADE, language TEXT NOT NULL CHECK (language IN ('en','ka','ru')))`
 ];
-const tableNames=new Set(['users','sessions','auth_limits','user_garages']);
-const required={users:['id','provider','email','name','password_hash','created_at','updated_at'],sessions:['token_hash','user_id','csrf_token','created_at','expires_at'],auth_limits:['key','attempts','window_start','expires_at'],user_garages:['user_id','state','revision','updated_at']};
+const tableNames=new Set(['users','sessions','auth_limits','user_garages','account_tokens','user_verifications','user_preferences']);
+const required={users:['id','provider','email','name','password_hash','created_at','updated_at'],sessions:['token_hash','user_id','csrf_token','created_at','expires_at'],auth_limits:['key','attempts','window_start','expires_at'],user_garages:['user_id','state','revision','updated_at'],account_tokens:['token_hash','user_id','purpose','created_at','expires_at'],user_verifications:['user_id','verified_at'],user_preferences:['user_id','language']};
 const numericTypes=new Set(['integer','bigint','double precision','real','numeric']);
 const clients=new Map();
 
@@ -52,16 +57,23 @@ export function postgresSQL(sql){
  }
  return result;
 }
-export function createPostgresAdapter(query){
- const prepare=(sql,values=[])=>({
+export function createPostgresAdapter(query,transaction){
+ const statements=new WeakMap();
+ const prepare=(sql,values=[])=>{
+ const prepared={
   bind(...next){return prepare(sql,next);},
   async first(column){const result=await query(postgresSQL(sql),values);const row=result.rows[0]||null;return column&&row?row[column]:row;},
   async all(){const result=await query(postgresSQL(sql),values);return {results:result.rows,success:true};},
   async run(){const result=await query(postgresSQL(sql),values);return {results:result.rows,success:true,meta:{changes:Number(result.rowCount??result.affectedRows??0)}};}
- });
- return {prepare,close:async()=>{}};
+ };
+ statements.set(prepared,[postgresSQL(sql),values]);return prepared;
+ };
+ return {prepare,async batch(batch){
+  if(!transaction)throw new Error('Atomic account operations require a database transaction.');
+  return transaction(batch.map(prepared=>{const entry=statements.get(prepared);if(!entry)throw new Error('Batch statements must belong to this database.');return entry;}));
+ },close:async()=>{}};
 }
-const columnsQuery="SELECT table_name,column_name,data_type FROM information_schema.columns WHERE table_schema = $1 AND table_name IN ('users','sessions','auth_limits','user_garages')";
+const columnsQuery="SELECT table_name,column_name,data_type FROM information_schema.columns WHERE table_schema = $1 AND table_name IN ('users','sessions','auth_limits','user_garages','account_tokens','user_verifications','user_preferences')";
 export async function inspectPostgres(query){
  const result=await query(columnsQuery,['apex']);
  return Object.fromEntries(Object.keys(required).map(table=>[table,{columns:result.rows.filter(row=>row.table_name===table).map(row=>row.column_name),missing:required[table].filter(column=>!result.rows.some(row=>row.table_name===table&&row.column_name===column))}]));
@@ -96,5 +108,5 @@ export async function createPostgresDatabase(connectionString,{initialize=true}=
   if(!client.ready)client.ready=initializePostgres(client.query,client.transaction).catch(error=>{client.ready=null;throw error;});
   await client.ready;
  }
- return {...createPostgresAdapter(client.query),inspect:()=>inspectPostgres(client.query),initialize:()=>initializePostgres(client.query,client.transaction)};
+ return {...createPostgresAdapter(client.query,client.transaction),inspect:()=>inspectPostgres(client.query),initialize:()=>initializePostgres(client.query,client.transaction)};
 }

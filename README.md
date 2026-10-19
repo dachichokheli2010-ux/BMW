@@ -27,6 +27,7 @@ The homepage is a short discovery page with the retained **More to discover** ed
 
 - `/models` — the model finder, filters and vehicle details (`?model=f10-m5`).
 - `/learn` — Learn & Play, learning road, lessons and progress.
+- `/learn?tab=glossary` — searchable automotive definitions in English, Georgian and Russian.
 - `/compare` — a comparison workspace for up to three BMWs, with search, grouped specifications, differences, unit selection and share links.
 - `/engine-lab` — interactive S63 engine explorer.
 - `/tuning-garage` — tuning scenarios and saved builds.
@@ -73,4 +74,6 @@ Primary expanded specification sources:
 
 `app.js` retains model routing, galleries, creator recordings and the original parts dialogs. `catalog.js` assembles the retained data and applies additive `verified-specs.js` enrichment. `platform.js` mounts dedicated pages and lazily loads `engine-lab.js`, `garage.js`, `academy.js` and `personal-garage.js`. `smart-search.js` has a pure search index and accessible search dialog. `dropdowns.js` enhances native selects, and `navigation.js` owns the mobile menu. `system-guide.js` contains sourced component explanations and original diagrams. Each workspace has scoped CSS; `platform.css` and `refinements.css` apply the shared blue/black visual upgrade.
 
-The server uses the Neon driver for PostgreSQL. PGlite is a development-only PostgreSQL regression-test dependency. Three.js and OrbitControls use the project's existing local vendor files and license. New lessons and workspace copy are English; existing translated catalog behavior is preserved.
+The server uses the Neon driver for PostgreSQL. PGlite is a development-only PostgreSQL regression-test dependency. Three.js and OrbitControls use the project's existing local vendor files and license. Academy teaching copy, questions, diagrams and progress support English, Georgian and Russian. Other specialist workspaces retain their existing translation coverage.
+
+The Academy foundation now includes an 18-term glossary, objectives, optional advanced explanations, related vehicles, account-scoped quiz recovery, configurable rewards and dated achievements. Server saves use a private reward receipt ledger in existing garage JSON; these remain personal learning records rather than verified competitive exam results. See [UPGRADE-ROADMAP.md](UPGRADE-ROADMAP.md) for the six-stage roadmap, deliberate scope choices, files and verification steps.

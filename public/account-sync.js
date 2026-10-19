@@ -31,6 +31,12 @@ export function mergeGuestGarage(current,guest) {
     academy={...copy(b),...copy(a),xp:Math.max(Number(a.xp)||0,Number(b.xp)||0),credits:Math.max(Number(a.credits)||0,Number(b.credits)||0),completed:{...b.completed,...a.completed},attempts:{...b.attempts,...a.attempts},review:{...b.review,...a.review}};
     for(const key of ['days','awards','unlocked'])academy[key]=[...new Set([...(a[key]||[]),...(b[key]||[])])];
     academy.activity=[...new Map([...(b.activity||[]),...(a.activity||[])].map(item=>[JSON.stringify(item),item])).values()].slice(-500);
+    academy.selectedPath=a.selectedPath||b.selectedPath||'basics';
+    academy.achievements={...copy(b.achievements||{}),...copy(a.achievements||{})};
+    for(const id of Object.keys(academy.achievements)){
+      const dates=[a.achievements?.[id]?.day,b.achievements?.[id]?.day].filter(day=>typeof day==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(day)).sort();
+      academy.achievements[id]={day:dates[0]||null};
+    }
     for(const [id,attempt] of Object.entries(b.attempts||{}))if(a.attempts?.[id])academy.attempts[id]={...a.attempts[id],right:Math.max(Number(a.attempts[id].right)||0,Number(attempt.right)||0),total:Math.max(Number(a.attempts[id].total)||0,Number(attempt.total)||0)};
   }
   const builds=[...new Map([...current.builds,...guest.builds].map(build=>[build.id,build])).values()].slice(0,20);
@@ -41,7 +47,7 @@ export function mergeGuestGarage(current,guest) {
 
 export function createAccountController({fetchImpl=(...args)=>fetch(...args),storage,eventTarget=globalThis.window,timeout=15000}={}) {
   if(storage===undefined){try{storage=globalThis.localStorage;}catch{storage=null;}}
-  let user=null,provider='password',signInUrl='',signOutUrl='',csrfToken=null,status='loading',message='Checking your account…',revision=0,updatedAt=null,conflict=null;
+  let user=null,provider='password',signInUrl='',signOutUrl='',csrfToken=null,status='loading',message='Checking your account…',revision=0,updatedAt=null,conflict=null,capabilities={};
   let started=false,ready=false,starting=null,writing=false,authenticating=false,applying=false,dirty=false,debounce,retryTimer,stopped=false,identity=0,storageOK=true;
   let current=empty(),base=empty(),listeners=new Set();
   function get(key){try{return storage?.getItem(key)??null;}catch{storageOK=false;return null;}}
@@ -49,7 +55,7 @@ export function createAccountController({fetchImpl=(...args)=>fetch(...args),sto
   function parsed(key){try{return JSON.parse(get(key)||'null');}catch{return null;}}
   function localState(){const result={};for(const [field,key]of Object.entries(ACCOUNT_KEYS))result[field]=parsed(key);return cleanState(result);}
   function guestState(){return cleanState(parsed(GUEST_KEY)||empty());}
-  function snapshot(){return {user:user?{...user}:null,provider,signInUrl,signOutUrl,status,message,revision,updatedAt,dirty,storageAvailable:storageOK,conflict:!!conflict,summary:summarizeGarage(user?current:localState()),guestSummary:summarizeGarage(user?guestState():localState()),ready};}
+  function snapshot(){return {user:user?{...user}:null,provider,signInUrl,signOutUrl,capabilities:{...capabilities},status,message,revision,updatedAt,dirty,storageAvailable:storageOK,conflict:!!conflict,summary:summarizeGarage(user?current:localState()),guestSummary:summarizeGarage(user?guestState():localState()),ready};}
   function announce(){const detail=snapshot();for(const fn of listeners)fn(detail);eventTarget?.dispatchEvent(new CustomEvent('apex:accountchange',{detail}));}
   function setStatus(next,text){status=next;message=text;announce();}
   function cache(){if(user)put(CACHE_KEY,{userId:String(user.id),revision,state:current,base,dirty,updatedAt});}
@@ -76,7 +82,7 @@ export function createAccountController({fetchImpl=(...args)=>fetch(...args),sto
     }catch(error){if(error.name==='AbortError')throw new Error('The account service took too long to respond. Please try again.');throw error;}
     finally{clearTimeout(timer);}
   }
-  function normalizeSession(data){provider=data.provider||'password';signInUrl=data.signInUrl||'';signOutUrl=data.signOutUrl||'';csrfToken=data.csrfToken||null;}
+  function normalizeSession(data){provider=data.provider||'password';signInUrl=data.signInUrl||'';signOutUrl=data.signOutUrl||'';csrfToken=data.csrfToken||null;capabilities=data.capabilities||capabilities;}
   function requireGuest(reason,{preserveCache=false,notify=true}={}){
     const hadUser=!!user;identity++;user=null;csrfToken=null;dirty=false;conflict=null;current=empty();base=empty();revision=0;updatedAt=null;
     clearTimeout(debounce);clearTimeout(retryTimer);
@@ -149,7 +155,18 @@ export function createAccountController({fetchImpl=(...args)=>fetch(...args),sto
     if(authenticating)throw new Error('Please wait for the current request.');
     if(provider==='chatgpt')throw new Error('Use Sign in with ChatGPT to continue.');
     authenticating=true;
-    try{persistGuest();const data=await request('/api/auth/'+(mode==='signup'?'signup':'login'),{method:'POST',body:fields});await openSession(data);return snapshot();}
+    try{
+      persistGuest();const data=await request('/api/auth/'+(mode==='signup'?'signup':'login'),{method:'POST',body:fields});
+      if(mode==='signup'&&!data.user){normalizeSession(data);ready=true;setStatus('guest',data.message||'If this address can be registered, your account is ready. Sign in to continue.');return snapshot();}
+      await openSession(data);
+      // Favorites are a shortlist, so merge them at sign-in. Importing builds
+      // and learning rewards remains an explicit, independently validated action.
+      const guestFavorites=guestState().favorites;
+      if(user&&!conflict&&guestFavorites.some(id=>!current.favorites.includes(id))){
+        current={...current,favorites:[...new Set([...current.favorites,...guestFavorites])]};dirty=true;project(current,'favorites-merged');cache();await flush();
+      }
+      return snapshot();
+    }
     finally{authenticating=false;}
   }
   async function logout(){
@@ -170,6 +187,11 @@ export function createAccountController({fetchImpl=(...args)=>fetch(...args),sto
     else throw new Error('Choose the account version or this device’s version.');
   }
   async function updateName(name){const result=await request('/api/account/profile',{method:'PUT',body:{name}});user=result.user;announce();return snapshot();}
+  async function updateLanguage(language){const result=await request('/api/account/profile',{method:'PUT',body:{language}});user=result.user;announce();return snapshot();}
+  async function forgotPassword(email,language){return request('/api/auth/forgot-password',{method:'POST',body:{email,language}});}
+  async function resetPassword(token,password){const result=await request('/api/auth/reset-password',{method:'POST',body:{token,password}});requireGuest('password-reset');setStatus('guest',result.message||'Your password has been reset. Sign in with your new password.');return result;}
+  async function verifyEmail(token){const result=await request('/api/auth/verify-email',{method:'POST',body:{token}});if(user)await retry();return result;}
+  async function resendVerification(language){return request('/api/auth/resend-verification',{method:'POST',body:{language}});}
   function handleStorage(event){
     if(applying||!ready)return;
     if(event.key===OWNER_KEY||event.key===CACHE_KEY){
@@ -190,6 +212,6 @@ export function createAccountController({fetchImpl=(...args)=>fetch(...args),sto
     starting=(async()=>{try{const data=await request('/api/auth/session');await openSession(data,{initial:true});}catch(error){requireGuest('account-unavailable',{preserveCache:true,notify:false});ready=true;setStatus('offline',error.message||'Account service unavailable. Exploring as a guest; your guest data stays in this browser.');}return snapshot();})();
     return starting;
   }
-  return {start,retry,login:fields=>authenticate('login',fields),signup:fields=>authenticate('signup',fields),logout,importGuest,resolveConflict,updateName,flush,getSnapshot:snapshot,subscribe(fn){listeners.add(fn);fn(snapshot());return()=>listeners.delete(fn);},destroy(){stopped=true;identity++;clearTimeout(debounce);clearTimeout(retryTimer);localEvents.forEach(event=>eventTarget?.removeEventListener(event,changed));eventTarget?.removeEventListener('storage',handleStorage);eventTarget?.removeEventListener('online',online);globalThis.document?.removeEventListener('visibilitychange',pageHidden);listeners.clear();}};
+  return {start,retry,login:fields=>authenticate('login',fields),signup:fields=>authenticate('signup',fields),logout,importGuest,resolveConflict,updateName,updateLanguage,forgotPassword,resetPassword,verifyEmail,resendVerification,flush,getSnapshot:snapshot,subscribe(fn){listeners.add(fn);fn(snapshot());return()=>listeners.delete(fn);},destroy(){stopped=true;identity++;clearTimeout(debounce);clearTimeout(retryTimer);localEvents.forEach(event=>eventTarget?.removeEventListener(event,changed));eventTarget?.removeEventListener('storage',handleStorage);eventTarget?.removeEventListener('online',online);globalThis.document?.removeEventListener('visibilitychange',pageHidden);listeners.clear();}};
 }
 export const account = createAccountController();

@@ -1,4 +1,5 @@
 import './page-entry.js';
+import {mountIcons} from './icons.js';
 import {account} from './account-sync.js';
 import {allModels,allElectricModels,officialCredits} from './catalog.js';
 import {mountBuyingLinks} from './marketplaces.js';
@@ -18,8 +19,11 @@ import {additionalModels,electricModels,newCredits} from './new-models.js';
 import {galleries} from './galleries.js';import {exactViews,exactCredits} from './exact-views.js';
 import {threeModels} from './three-models.js';
 import {recordingFamilies,recordingModels} from './recordings.js';
+import './retention-translations.js';
 
 const electric=document.body.dataset.page==='electric';
+const iconUI=mountIcons(document);window.addEventListener('pagehide',event=>{if(!event.persisted)iconUI.destroy();});
+document.querySelectorAll('[data-model-total],[data-m-total]').forEach(node=>{node.classList.add('count-skeleton');node.setAttribute('aria-busy','true');});
 
 const featured=['g81-m3-touring','g82-m4-csl','g87-m2','g80','g99-m5-touring','f92-m8','e46-m3-csl','g90-m5','g60-i5','e30-m3','g15-m850i','g29-z4'];
 const models=[...(electric?allElectricModels:allModels)].sort((a,b)=>(featured.includes(a.id)?featured.indexOf(a.id):100)-(featured.includes(b.id)?featured.indexOf(b.id):100));
@@ -27,6 +31,15 @@ const $=s=>document.querySelector(s),esc=x=>String(x??'').replace(/[&<>"']/g,c=>
 let current=null,view='car',angle=0,recording=0,zoom=1,pan={x:0,y:0},drag=null,toastTimer,photoRequest=0,collectionScroll=0;
 let routeReady=false,fromHistory=false;
 const photoCreditLine=document.createElement('p');photoCreditLine.className='active-photo-credit';document.querySelector('.gallery-caption').after(photoCreditLine);
+const specSourceLine=document.createElement('p'),specSourceLink=document.createElement('a');
+specSourceLine.className='spec-source-line';specSourceLine.hidden=true;
+specSourceLink.target='_blank';specSourceLink.rel='noopener noreferrer';specSourceLine.append(specSourceLink);
+document.querySelector('.machine-bar').after(specSourceLine);
+window.addEventListener('apex:modelselected',()=>{
+ const source=current?.source;
+ specSourceLine.hidden=typeof source!=='string'||!/^https:\/\//i.test(source);
+ if(!specSourceLine.hidden){specSourceLink.href=source;specSourceLink.dataset.i18n='Factory specification source';specSourceLink.textContent='Factory specification source';}
+});
 function toast(text){$('#toast').textContent=text;$('#toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),3500);}
 function dialog(html){$('#dialog').classList.remove('part-dialog','photo-dialog');$('#dialogbody').innerHTML=html;$('#dialog').setAttribute('aria-label',$('#dialogbody h2')?.textContent||'BMW details');$('#dialog').showModal();}
 $('#close').onclick=()=>$('#dialog').close();$('#dialog').onclick=e=>{if(e.target===$('#dialog'))$('#dialog').close();};

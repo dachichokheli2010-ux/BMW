@@ -3,7 +3,10 @@ import {academyLessons,academyReferenceData} from './academy.js';
 import {createCurriculum} from './academy-content.js';
 import {emptyProgress,restoreProgress,levelProgress} from './academy-state.js';
 import {partCatalog} from './parts.js';
-import {account,accountStorageMessage} from './account-sync.js';
+import {account,accountStorageMessage,mergeGuestGarage} from './account-sync.js';
+import {validateBuildImport} from './garage.js';
+import {t} from './preferences.js';
+import './retention-translations.js';
 
 const KEYS = Object.freeze({favorites:'apex-favorites', recent:'apex-recent', builds:'apex-garage-builds-v1', progress:'bmw-academy-progress-v1', academy:'bmw-academy-state-v2'});
 const LEVELS = ['beginner', 'intermediate', 'advanced'];
@@ -16,6 +19,8 @@ export const PERSONAL_GARAGE_LESSONS = Object.freeze([
   ['suspension','The contact patch matters','Chassis'],
   ['electronics','Sense. Decide. Respond.','Control systems'],
   ['electrification','Energy takes another route','Electric powertrains'],
+  ['drivetrain-layouts','Which wheels drive the car?','Drivetrain'],
+  ['m-performance','BMW M and M Performance','BMW knowledge'],
 ].map(([id,title,category]) => Object.freeze({id,title,category})));
 const CONFIG = {
   ecu:['0','1','2'], turbo:['0','1','2'], intercooler:['0','1'], intake:['0','1'], exhaust:['0','1','2'],
@@ -23,6 +28,7 @@ const CONFIG = {
 };
 const CONFIG_LABELS = {ecu:'ECU',turbo:'Turbo',intercooler:'Charge cooling',intake:'Intake',exhaust:'Exhaust',suspension:'Suspension',wheels:'Wheel finish',brakes:'Brakes',transmission:'Transmission'};
 const isRecord = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+const MAX_BACKUP_BYTES = 512 * 1024;
 const cleanConfig = input => Object.fromEntries(Object.entries(CONFIG).map(([key,values]) => {
   const raw = isRecord(input) ? input[key] : undefined;
   const value = typeof raw === 'string' || typeof raw === 'number' ? String(raw) : '';
@@ -30,6 +36,50 @@ const cleanConfig = input => Object.fromEntries(Object.entries(CONFIG).map(([key
 }));
 let instanceNumber = 0;
 const curriculumCache = new WeakMap();
+
+export function createPersonalGarageBackup(state) {
+  return {
+    schema:'apex.personal-backup',
+    version:3,
+    exportedAt:new Date().toISOString(),
+    favorites:[...(state.favorites || [])],
+    recent:[...(state.recent || [])],
+    builds:(state.builds || []).map(build => ({...build,config:{...build.config}})),
+    progress:{...(state.progress || {})},
+    academy:{...(state.academy || {})}
+  };
+}
+
+export function validatePersonalGarageBackup(input, catalog) {
+  if (!isRecord(input) || input.schema !== 'apex.personal-backup' || ![2,3].includes(input.version)) throw new Error('Unsupported backup format.');
+  if (!Array.isArray(input.favorites) || !isRecord(input.progress) || !isRecord(input.academy) || input.academy.version !== 2) throw new Error('The backup is missing saved models or learning progress.');
+  if (input.version === 3 && (!Array.isArray(input.recent) || !Array.isArray(input.builds))) throw new Error('The backup is missing garage data.');
+  const known = new Set(catalog.map(model => model.id));
+  const favorites = [...new Set(input.favorites.filter(id => typeof id === 'string' && known.has(id)))];
+  const recent = [...new Set((input.recent || []).filter(id => typeof id === 'string' && known.has(id)))].slice(0,8);
+  const progress = {};
+  for (const lesson of PERSONAL_GARAGE_LESSONS) for (const level of LEVELS) {
+    const key = `${lesson.id}:${level}`;
+    if (input.progress[key] === true) progress[key] = true;
+  }
+  let builds = [];
+  if (input.version === 3) {
+    if (input.builds.length > 20) throw new Error('The backup contains more than 20 saved builds.');
+    if (input.builds.length) {
+      const validated = validateBuildImport(input.builds, catalog);
+      const ids = new Set();
+      builds = validated.map((build, index) => {
+        const id = input.builds[index]?.id;
+        if (typeof id !== 'string' || !/^[a-zA-Z0-9_-]{1,80}$/.test(id) || ['__proto__','constructor','prototype'].includes(id) || ids.has(id)) throw new Error('A saved build has an invalid or duplicate identifier.');
+        if(/[\u0000-\u001f\u007f]/.test(build.name))throw new Error('A saved build has an invalid name.');
+        ids.add(id);
+        return {...build,id};
+      });
+    }
+  }
+  return {favorites,recent,builds,progress,legacyProgress:progress,academy:restoreProgress(input.academy)};
+}
+
 function curriculumFor(catalog) {
   if (!curriculumCache.has(catalog)) {
     // The curriculum includes three documented model lessons even when this hub
@@ -96,7 +146,7 @@ export function mountPersonalGarage({catalog = [], onModel, onBuild, onLesson, o
   }
   const uid = `pg-${++instanceNumber}`, events = new AbortController(), known = new Map(catalog.map(model => [model.id,model]));
   const modal = document.createElement(container ? 'section' : 'dialog'); modal.className = 'personal-garage'+(container ? ' pg-inline' : ''); modal.setAttribute('aria-label','My garage');
-  modal.innerHTML = `<div class="pg-shell"><header class="pg-header"><div><span class="pg-eyebrow">YOUR CORNER OF APEX</span><h2>My garage<span>.</span></h2><p>The cars you keep. The ideas you build. What you learn next.</p></div><button type="button" class="pg-close" data-pg-action="close" aria-label="Close My garage">×</button></header><div class="pg-overview" aria-label="Your garage summary"></div><div class="pg-tabs" role="tablist" aria-label="My garage sections"><button type="button" role="tab" id="${uid}-tab-models" aria-controls="${uid}-models" aria-selected="true" tabindex="0" data-pg-tab="models">Saved models <span data-pg-count="models"></span></button><button type="button" role="tab" id="${uid}-tab-builds" aria-controls="${uid}-builds" aria-selected="false" tabindex="-1" data-pg-tab="builds">Saved builds <span data-pg-count="builds"></span></button><button type="button" role="tab" id="${uid}-tab-learning" aria-controls="${uid}-learning" aria-selected="false" tabindex="-1" data-pg-tab="learning">Learning <span data-pg-count="learning"></span></button></div><div class="pg-content"><p class="pg-storage-note" hidden></p><section id="${uid}-models" role="tabpanel" aria-labelledby="${uid}-tab-models" data-pg-panel="models"></section><section id="${uid}-builds" role="tabpanel" aria-labelledby="${uid}-tab-builds" data-pg-panel="builds" hidden></section><section id="${uid}-learning" role="tabpanel" aria-labelledby="${uid}-tab-learning" data-pg-panel="learning" hidden></section><p class="pg-status" role="status" aria-live="polite"></p></div><footer class="pg-footer"><div><span class="pg-local-dot" aria-hidden="true"></span><p data-pg-account-storage></p><a href="/account" data-pg-account-link>Sign in to sync ?</a></div><button type="button" data-pg-action="export">Export favorites & progress <span aria-hidden="true">↗</span></button></footer></div>`;
+  modal.innerHTML = `<div class="pg-shell"><header class="pg-header"><div><span class="pg-eyebrow">YOUR CORNER OF APEX</span><h2>My garage<span>.</span></h2><p>The cars you keep. The ideas you build. What you learn next.</p></div><button type="button" class="pg-close" data-pg-action="close" aria-label="Close My garage">×</button></header><div class="pg-overview" aria-label="Your garage summary"></div><div class="pg-tabs" role="tablist" aria-label="My garage sections"><button type="button" role="tab" id="${uid}-tab-models" aria-controls="${uid}-models" aria-selected="true" tabindex="0" data-pg-tab="models">Saved models <span data-pg-count="models"></span></button><button type="button" role="tab" id="${uid}-tab-builds" aria-controls="${uid}-builds" aria-selected="false" tabindex="-1" data-pg-tab="builds">Saved builds <span data-pg-count="builds"></span></button><button type="button" role="tab" id="${uid}-tab-learning" aria-controls="${uid}-learning" aria-selected="false" tabindex="-1" data-pg-tab="learning">Learning <span data-pg-count="learning"></span></button></div><div class="pg-content"><p class="pg-storage-note" hidden></p><section id="${uid}-models" role="tabpanel" aria-labelledby="${uid}-tab-models" data-pg-panel="models"></section><section id="${uid}-builds" role="tabpanel" aria-labelledby="${uid}-tab-builds" data-pg-panel="builds" hidden></section><section id="${uid}-learning" role="tabpanel" aria-labelledby="${uid}-tab-learning" data-pg-panel="learning" hidden></section><p class="pg-status" role="status" aria-live="polite"></p></div><footer class="pg-footer"><div><span class="pg-local-dot" aria-hidden="true"></span><p data-pg-account-storage></p><a href="/account" data-pg-account-link>Sign in to sync ?</a></div><div class="pg-backup-actions"><button type="button" data-pg-action="export">${t('Download garage backup')} <span aria-hidden="true">↗</span></button><button type="button" data-pg-action="import">${t('Import garage backup')}</button><input type="file" accept="application/json,.json" data-pg-import-file hidden></div></footer></div>`;
   (container || document.body).append(modal);
   const $ = selector => modal.querySelector(selector);
   let active = 'models', snapshot = readPersonalGarage(catalog), destroyed = false, refreshQueued = false, returnFocus = null;
@@ -207,7 +257,7 @@ export function mountPersonalGarage({catalog = [], onModel, onBuild, onLesson, o
     for (const [value,label] of [[snapshot.favorites.length,'saved models'],[snapshot.builds.length,'saved builds'],[`${snapshot.academy.completed}/${snapshot.academy.total}`,`lessons complete · ${snapshot.academy.xp.toLocaleString()} XP`]]) {const item = el('div'); item.append(el('strong','',value),el('span','',label)); overview.append(item);}
     $('[data-pg-count="models"]').textContent = snapshot.favorites.length; $('[data-pg-count="builds"]').textContent = snapshot.builds.length; $('[data-pg-count="learning"]').textContent = `${snapshot.academy.completed}/${snapshot.academy.total}`;
     const note = $('.pg-storage-note'); note.hidden = !snapshot.errors.length; note.textContent = 'Some browser data could not be read. Your stored data has not been changed.';
-    $('[data-pg-action="export"]').disabled = snapshot.errors.some(key => [KEYS.favorites,KEYS.progress,KEYS.academy].includes(key));
+    $('[data-pg-action="export"]').disabled = snapshot.errors.some(key => [KEYS.favorites,KEYS.recent,KEYS.builds,KEYS.progress,KEYS.academy].includes(key));
     renderModels(); renderBuilds(); renderLearning(); selectTab(active);
   }
   function open(tab) {
@@ -240,17 +290,74 @@ export function mountPersonalGarage({catalog = [], onModel, onBuild, onLesson, o
     } catch {if (!destroyed) {open(tab); status('This item could not be opened. Please try again.');}}
   }
   function exportBackup() {
-    refresh(); if ($('[data-pg-action="export"]').disabled) {status('Saved models or learning progress could not be read, so a backup was not created.'); return;}
+    refresh(); if ($('[data-pg-action="export"]').disabled) {status(t('Some current garage data could not be read. A backup was not created.')); return;}
     let url, anchor;
     try {
-      const payload = {schema:'apex.personal-backup',version:2,exportedAt:new Date().toISOString(),favorites:[...snapshot.favorites],progress:{...snapshot.progress},academy:snapshot.academy.state};
-      url = URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'})); anchor = el('a'); anchor.href = url; anchor.download = 'apex-favorites-and-learning.json'; document.body.append(anchor); anchor.click();
+      const payload = createPersonalGarageBackup({...snapshot,academy:snapshot.academy.state});
+      url = URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'})); anchor = el('a'); anchor.href = url; anchor.download = 'apex-garage-backup.json'; document.body.append(anchor); anchor.click();
       downloads.set(url,setTimeout(() => {URL.revokeObjectURL(url); downloads.delete(url);},1000));
-      status('Backup downloaded: saved model IDs, academy state and earlier lesson progress. Export individual builds from the tuning garage.');
+      status(t('A backup was downloaded with saved models, builds and learning progress.'));
     } catch {
       if (url) URL.revokeObjectURL(url);
-      status('The backup could not be downloaded. Your browser data has not been changed.');
+      status(t('The backup could not be downloaded. Your browser data has not been changed.'));
     } finally {anchor?.remove();}
+  }
+  async function importBackupFile(file) {
+    const input = $('[data-pg-import-file]');
+    if (!file) {status(t('Choose a JSON backup file to import.')); return;}
+    if (file.size > MAX_BACKUP_BYTES) {status(t('This file is larger than 512 KB. Nothing was changed.')); input.value = ''; return;}
+    if (snapshot.errors.some(key => [KEYS.favorites,KEYS.recent,KEYS.builds,KEYS.progress,KEYS.academy].includes(key))) {
+      status(t('Some current garage data could not be read. Import was cancelled to protect it.'));
+      input.value = '';
+      return;
+    }
+    let text;
+    try {text = await file.text();}
+    catch {status(t('The file could not be read. Your garage has not been changed.')); input.value = ''; return;}
+    try {
+      if (new TextEncoder().encode(text).byteLength > MAX_BACKUP_BYTES) throw new Error('The backup is too large.');
+      const incoming = validatePersonalGarageBackup(JSON.parse(text.replace(/^\uFEFF/,'')),catalog);
+      const current = {favorites:snapshot.favorites,builds:snapshot.builds,academy:snapshot.academy.state,legacyProgress:snapshot.progress};
+      const uniqueBuilds = new Map([...current.builds,...incoming.builds].map(build => [build.id,build]));
+      if (uniqueBuilds.size > 20) {status(t('The backup would exceed the 20 saved-build limit. Nothing was changed.')); return;}
+      const merged = mergeGuestGarage(current,incoming);
+      const recent = [...new Set([...incoming.recent,...snapshot.recent])].slice(0,8);
+      const updates = new Map([
+        [KEYS.favorites,merged.favorites],
+        [KEYS.recent,recent],
+        [KEYS.builds,merged.builds],
+        [KEYS.progress,merged.legacyProgress],
+        [KEYS.academy,merged.academy]
+      ]);
+      const storage = globalThis.localStorage, previous = new Map(), written = [];
+      try {
+        for (const [key,value] of updates) {
+          previous.set(key,storage.getItem(key));
+          storage.setItem(key,JSON.stringify(value));
+          written.push(key);
+        }
+      } catch {
+        let rollbackFailed = false;
+        for (const key of written.reverse()) {
+          try {
+            const value = previous.get(key);
+            if (value === null) storage.removeItem(key);
+            else storage.setItem(key,value);
+          } catch {rollbackFailed = true;}
+        }
+        status(t(rollbackFailed
+          ? 'The backup could not be saved, and rollback was incomplete. Check your garage data before continuing.'
+          : 'The backup could not be saved safely. Existing data has been preserved where storage allowed.'));
+        return;
+      }
+      window.dispatchEvent(new CustomEvent('apex:localchange',{detail:{keys:[...updates.keys()],source:uid}}));
+      refresh();
+      status(t('Garage backup imported. Existing data was merged, not replaced.'));
+    } catch (error) {
+      status(t(error?.message === 'The backup is too large.'
+        ? 'This file is larger than 512 KB. Nothing was changed.'
+        : 'This is not a supported APEX garage backup. Nothing was changed.'));
+    } finally {input.value = '';}
   }
   modal.addEventListener('click',event => {
     const tab = event.target.closest('[data-pg-tab]'); if (tab) {selectTab(tab.dataset.pgTab,true); return;}
@@ -263,10 +370,12 @@ export function mountPersonalGarage({catalog = [], onModel, onBuild, onLesson, o
     if (action === 'lesson') void navigate(onLesson,[id,target.dataset.pgLevel],'/learn?lesson='+encodeURIComponent(id));
     if (action === 'compare' && compared.size >= 2 && compared.size <= 3) void navigate(onCompare,[[...compared]]);
     if (action === 'export') exportBackup();
+    if (action === 'import') $('[data-pg-import-file]').click();
     if (event.target.closest('[data-pg-navigate]')) if (!container) modal.close();
     if (event.target === modal) {const rect = modal.getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) if (!container) modal.close();}
   },{signal:events.signal});
   modal.addEventListener('change',event => {
+    if (event.target.matches('[data-pg-import-file]')) {void importBackupFile(event.target.files?.[0]); return;}
     const id = event.target.dataset.pgCompare; if (!id || !snapshot.favorites.includes(id)) return;
     if (event.target.checked) {if (compared.size >= 3) {event.target.checked = false; status('Choose up to three saved models for one comparison.'); return;} compared.add(id);} else compared.delete(id);
     const bar = $('.pg-compare-bar'); if (bar) bar.replaceWith(compareBar()); status(`${compared.size} model${compared.size===1?'':'s'} selected for comparison.`);

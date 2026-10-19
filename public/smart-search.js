@@ -16,6 +16,9 @@ const aliases = {
   tutorials:'lesson', lessons:'lesson', histories:'history', historic:'history',
 };
 const topics = [
+  ['glossary', 'Automotive glossary', 'Glossary definitions terminology VANOS Valvetronic xDrive DCT torque horsepower ტერმინები ლექსიკონი словарь термины', 'academy'],
+  ['m-recognition', 'BMW M photo challenges', 'BMW M recognition identify photo quiz M2 M3 M4 M5 M6 M8 generation chassis თამაში ფოტო викторина', 'academy'],
+  ['academy-practice', 'Automotive puzzles', 'Puzzles matching sequence components quick practice quiz თავსატეხები задачи практика', 'academy'],
   ['combustion', 'How a combustion engine works', 'Pistons crankshaft valves four stroke cycle fuel ignition internal combustion ICE engine fundamentals', 'academy'],
   ['turbocharging', 'How turbochargers work', 'Single twin twin-scroll variable geometry VGT turbo boost intercooler B58 N54 N55 turbo lag forced induction', 'academy'],
   ['transmission', 'Transmissions and gear ratios', 'Gearbox automatic manual DCT dual clutch drivetrain torque converter gears', 'academy'],

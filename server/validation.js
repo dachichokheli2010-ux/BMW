@@ -29,18 +29,24 @@ function validBuild(build){
 }
 function validAward(value){
   if(typeof value!=='string'||value.length>120)return false;
+  if(value==='milestone:first-lesson')return true;
   const split=value.indexOf(':'),kind=value.slice(0,split),id=value.slice(split+1);
   return kind==='lesson'?lessons.has(id):kind==='unit'?catalogMeta.units.includes(id):['daily','review'].includes(kind)&&date(id);
 }
 function boundedEntries(value,max,validator){return record(value)&&Object.keys(value).length<=max&&Object.entries(value).every(([key,item])=>safeId(key)&&validator(key,item));}
 export function validateAcademy(value){
   if(value===null)return null;
-  if(!exact(value,['version','xp','credits','completed','attempts','review','days','awards','unlocked','activity','name'])||value.version!==2||!integer(value.xp,100000000)||!integer(value.credits)||!validName(value.name))return false;
+  if(!exact(value,['version','xp','credits','completed','attempts','review','days','awards','unlocked','activity','name','selectedPath','achievements'])||value.version!==2||!integer(value.xp,100000000)||!integer(value.credits)||!validName(value.name))return false;
+  if(Object.hasOwn(value,'selectedPath')&&!catalogMeta.units.includes(value.selectedPath))return false;
+  const badgeIds=['first-ignition','parts-rookie','engine-enthusiast','perfect-mechanic','bmw-collector','seven-day-driver','turbo-master','diagnostic-specialist'];
+  if(Object.hasOwn(value,'achievements')&&!boundedEntries(value.achievements,badgeIds.length,(id,item)=>badgeIds.includes(id)&&exact(item,['day'])&&Object.keys(item).length===1&&(item.day===null||date(item.day))))return false;
   if(!boundedEntries(value.completed,200,(id,item)=>lessons.has(id)&&exact(item,['day','accuracy','topic','migrated'])&&(date(item.day)||(item.day===null&&item.migrated===true))&&(accuracy(item.accuracy)||(item.accuracy===null&&item.migrated===true))&&item.topic===lessons.get(id)&&(!Object.hasOwn(item,'migrated')||typeof item.migrated==='boolean')))return false;
   if(!boundedEntries(value.attempts,600,(id,item)=>questions.has(id)&&exact(item,['right','total','topic','lastDay'])&&integer(item.right)&&integer(item.total)&&item.right<=item.total&&item.topic===questions.get(id)&&date(item.lastDay)))return false;
   if(!boundedEntries(value.review,600,(id,item)=>questions.has(id)&&exact(item,['topic','stage','due'])&&item.topic===questions.get(id)&&integer(item.stage,4)&&date(item.due)))return false;
   if(!uniqueArray(value.days,10000,date)||!uniqueArray(value.awards,20000,validAward)||!uniqueArray(value.unlocked,100,id=>modelMap.has(id)))return false;
-  if(!Array.isArray(value.activity)||value.activity.length>500||!value.activity.every(item=>exact(item,['day','xp','lessonId','kind','accuracy'])&&date(item.day)&&integer(item.xp,1000)&&accuracy(item.accuracy)&&['lesson','daily','review'].includes(item.kind)&&(lessons.has(item.lessonId)||item.kind==='daily'&&item.lessonId==='daily-'+item.day||item.kind==='review'&&item.lessonId==='review-'+item.day)))return false;
+  // A daily/review round can start before midnight and finish after it. Its ID
+  // describes the published round; its activity day records actual completion.
+  if(!Array.isArray(value.activity)||value.activity.length>500||!value.activity.every(item=>exact(item,['day','xp','lessonId','kind','accuracy'])&&date(item.day)&&integer(item.xp,1000)&&accuracy(item.accuracy)&&['lesson','daily','review'].includes(item.kind)&&(item.kind==='lesson'?lessons.has(item.lessonId):typeof item.lessonId==='string'&&item.lessonId.startsWith(item.kind+'-')&&date(item.lessonId.slice(item.kind.length+1)))))return false;
   return JSON.parse(JSON.stringify(value));
 }
 export function emptyGarage(){return {favorites:[],builds:[],academy:null,legacyProgress:{}};}

@@ -497,17 +497,156 @@ const copy = [
   ['Interactive simulated engine', 'ძრავის ინტერაქტიული სიმულაცია', 'Интерактивная симуляция двигателя'],
   ['Original creator recordings contain real car audio; model and exhaust differences are noted above. They do not follow the throttle. Interactive engine sound is simulated, with no licensed RPM recording bank installed.', 'ავტორების ორიგინალი ჩანაწერები შეიცავს ავტომობილის ნამდვილ ხმას; მოდელისა და გამონაბოლქვის სისტემის განსხვავებები აღნიშნულია ზემოთ. ჩანაწერები აქსელერატორს არ მიჰყვება. ინტერაქტიული ძრავის ხმა სიმულირებულია და ლიცენზირებული ბრუნვის ჩანაწერების ბიბლიოთეკას არ იყენებს.', 'Оригинальные авторские записи содержат настоящий звук автомобиля; различия моделей и выхлопных систем указаны выше. Записи не реагируют на акселератор. Интерактивный звук двигателя симулируется без установленной библиотеки лицензированных записей по оборотам.'],
   ['Start → idle → hold REV → release → idle.', 'გაშვება → უქმი სვლა → ბრუნვის ღილაკის დაჭერა → ხელის გაშვება → უქმი სვლა.', 'Запуск → холостой ход → удерживайте ГАЗ → отпустите → холостой ход.'],
+  ['Open navigation', 'ნავიგაციის გახსნა', 'Открыть навигацию'],
+  ['Home', 'მთავარი', 'Главная'],
+  ['Learn & Play', 'ისწავლე და ითამაშე', 'Учись и играй'],
+  ['Automotive glossary', 'ავტომობილის ტერმინების ლექსიკონი', 'Словарь автомобильных терминов'],
+  ['BMW M photo challenges', 'BMW M-ის ფოტოგამოწვევები', 'Фотозадания о BMW M'],
+  ['Automotive puzzles', 'ავტომობილის თავსატეხები', 'Автомобильные задачи'],
+  ['Save name', 'სახელის შენახვა', 'Сохранить имя'],
+  ['Close navigation', 'ნავიგაციის დახურვა', 'Закрыть навигацию'],
+  ['DRIVEN BY CURIOSITY', 'ცნობისმოყვარეობის ძალით', 'НА ЭНЕРГИИ ЛЮБОПЫТСТВА'],
+  ['Start your next discovery', 'დაიწყე ახალი აღმოჩენა', 'Начните новое открытие'],
+  ['Lessons, puzzles & M challenges', 'გაკვეთილები, თავსატეხები და M გამოწვევები', 'Уроки, задачи и задания о M'],
+  ['Get into the details', 'შეისწავლე დეტალები', 'Разберитесь в деталях'],
+  ['Explore deeper', 'აღმოაჩინე უფრო მეტი', 'Изучайте глубже'],
+  ['Understand what drives it', 'გაიგე, რა ამოძრავებს მას', 'Узнайте, что приводит его в движение'],
+  ['Build your next idea', 'ააწყვე შენი ახალი იდეა', 'Воплотите следующую идею'],
+  ['Meet the components', 'გაიცანი კომპონენტები', 'Познакомьтесь с компонентами'],
+  ['Explore a different energy', 'აღმოაჩინე სხვა ენერგია', 'Откройте другую энергию'],
+  ['Search cars, parts & lessons', 'მოძებნე მანქანები, ნაწილები და გაკვეთილები', 'Поиск автомобилей, компонентов и уроков'],
+  ['Your cars & saved builds', 'შენი მანქანები და შენახული აწყობები', 'Ваши автомобили и сохранённые сборки'],
+  ['Your account', 'შენი ანგარიში', 'Ваш аккаунт'],
+  ['Profile, sign-in & sync', 'პროფილი, შესვლა და სინქრონიზაცია', 'Профиль, вход и синхронизация'],
+  ['Appearance', 'გარეგნობა', 'Оформление'],
+  ['About APEX ↗', 'APEX-ის შესახებ ↗', 'Об APEX ↗'],
+  ['Independent BMW exploration.', 'BMW-ის დამოუკიდებელი გზამკვლევი.', 'Независимый путеводитель по BMW.'],
+  ['Account & sync', 'ანგარიში და სინქრონიზაცია', 'Аккаунт и синхронизация'],
+  ['Your guest garage, on this device.', 'შენი სტუმრის ავტოფარეხი ამ მოწყობილობაზე.', 'Ваш гостевой гараж на этом устройстве.'],
+  ['Guest data stays on this device. Sign in to sync your garage.', 'სტუმრის მონაცემები ამ მოწყობილობაზე რჩება. ავტოფარეხის სინქრონიზაციისთვის შედი ანგარიშში.', 'Данные гостя остаются на этом устройстве. Войдите, чтобы синхронизировать гараж.'],
+  ['Buyer guides', 'მყიდველის გზამკვლევები', 'Руководства покупателю'],
+  ['Power-to-weight', 'სიმძლავრისა და მასის შეფარდება', 'Отношение мощности к массе'],
+  ['Best in comparison', 'შედარებაში საუკეთესო', 'Лучший результат в сравнении'],
+  ['Research a BMW generation before you buy', 'შეისწავლეთ BMW-ის თაობა შეძენამდე', 'Изучите поколение BMW перед покупкой'],
+  ['Generation buyer guides', 'თაობების გზამკვლევები მყიდველებისთვის', 'Руководства по поколениям BMW'],
+  ['BUY WITH CONTEXT', 'შეიძინეთ სრული ინფორმაციით', 'Покупайте с полной информацией'],
+  ['Explore catalog-backed BMW generation pages, sourced pre-purchase checks, and import guidance for buyers in Georgia.', 'აღმოაჩინეთ BMW-ის თაობების გვერდები, წყაროებით გამყარებული წინასაყიდი შემოწმებები და საქართველოში მყიდველებისთვის იმპორტის გზამკვლევი.', 'Изучите страницы поколений BMW, проверенные источниками рекомендации перед покупкой и руководство по импорту для покупателей в Грузии.'],
+  ['CHASSIS-BY-CHASSIS RESEARCH', 'კვლევა შასის კოდების მიხედვით', 'Исследование по кодам шасси'],
+  ['Opening generation buyer guides…', 'იხსნება თაობების გზამკვლევები…', 'Открываются руководства по поколениям…'],
+  ['APEX collection examples are not a complete production or market list. Engine and model details link to their factory sources.', 'APEX-ის კოლექციის მაგალითები არ წარმოადგენს წარმოების ან ბაზრის სრულ ჩამონათვალს. ძრავისა და მოდელის მონაცემები ქარხნულ წყაროებზეა მიბმული.', 'Примеры из коллекции APEX не являются полным списком всех выпущенных моделей или рыночных версий. Сведения о двигателях и моделях сопровождаются заводскими источниками.'],
+  ['Search chassis, model or engine', 'მოძებნეთ შასის კოდით, მოდელით ან ძრავით', 'Поиск по шасси, модели или двигателю'],
+  ['Try E46, M3 or S54', 'სცადეთ E46, M3 ან S54', 'Например: E46, M3 или S54'],
+  ['Showing {count} generations', 'ნაჩვენებია {count} თაობა', 'Показано поколений: {count}'],
+  ['No matching generations. Try a chassis or engine code.', 'შესაბამისი თაობა ვერ მოიძებნა. სცადეთ შასის ან ძრავის კოდი.', 'Поколения не найдены. Попробуйте код шасси или двигателя.'],
+  ['BMW GENERATION', 'BMW-ის თაობა', 'ПОКОЛЕНИЕ BMW'],
+  ['{count} catalog examples', 'კატალოგის მაგალითი: {count}', 'Примеров в каталоге: {count}'],
+  ['All buyer guides', 'ყველა გზამკვლევი', 'Все руководства'],
+  ['BMW GENERATION BUYER GUIDE', 'BMW-ის თაობის გზამკვლევი მყიდველისთვის', 'РУКОВОДСТВО ПО ПОКОЛЕНИЮ BMW'],
+  ['A source-linked starting point for researching this generation.', 'წყაროებით გამყარებული დასაწყისი ამ თაობის შესასწავლად.', 'Начальная точка для изучения поколения со ссылками на источники.'],
+  ['OVERVIEW', 'მიმოხილვა', 'ОБЗОР'],
+  ['ENGINES', 'ძრავები', 'ДВИГАТЕЛИ'],
+  ['RESEARCH STATUS', 'კვლევის სტატუსი', 'СТАТУС ИССЛЕДОВАНИЯ'],
+  ['BEFORE YOU BUY', 'შეძენამდე', 'ПЕРЕД ПОКУПКОЙ'],
+  ['MAINTENANCE', 'მოვლა', 'ОБСЛУЖИВАНИЕ'],
+  ['GEORGIA BUYER NOTES', 'შენიშვნები ქართველი მყიდველებისთვის', 'ПОКУПАТЕЛЯМ В ГРУЗИИ'],
+  ['Catalog overview', 'კატალოგის მიმოხილვა', 'Обзор каталога'],
+  ['This page groups the models currently represented in APEX under this chassis code. It does not claim to list every engine, trim, year or market variant.', 'ეს გვერდი აერთიანებს APEX-ში ამ შასის კოდით წარმოდგენილ მოდელებს. ის არ ამტკიცებს, რომ მოიცავს ძრავის, კომპლექტაციის, წლის ან ბაზრის ყველა ვერსიას.', 'На этой странице собраны модели с данным кодом шасси, представленные в APEX. Это не полный перечень двигателей, комплектаций, годов выпуска или рынков.'],
+  ['Engines represented in this catalog', 'ამ კატალოგში წარმოდგენილი ძრავები', 'Двигатели, представленные в каталоге'],
+  ['These engine codes are only the sourced examples linked above, not a complete list of engines offered for this generation.', 'ეს ძრავის კოდები მხოლოდ ზემოთ წყაროებით გამყარებული მაგალითებია და ამ თაობისთვის შეთავაზებული ძრავების სრულ ჩამონათვალს არ წარმოადგენს.', 'Эти коды двигателей — только подтверждённые источниками примеры выше, а не полный список двигателей этого поколения.'],
+  ['Known issues', 'ცნობილი პრობლემები', 'Известные проблемы'],
+  ['Not available: no generation-specific issue claims are included without a verified source.', 'ხელმისაწვდომი არ არის: გადამოწმებული წყაროს გარეშე თაობისთვის დამახასიათებელი პრობლემები არ არის მითითებული.', 'Нет данных: проблемы, характерные для поколения, не указаны без проверенного источника.'],
+  ['Pre-purchase checks', 'შეძენამდე შესამოწმებელი', 'Что проверить перед покупкой'],
+  ['Typical maintenance items', 'ტიპური ტექნიკური მომსახურება', 'Типичные работы по обслуживанию'],
+  ['Not available: consult the service schedule for the exact vehicle, market and VIN.', 'ხელმისაწვდომი არ არის: მიმართეთ ზუსტად ამ ავტომობილის, ბაზრისა და VIN-ის მომსახურების გრაფიკს.', 'Нет данных: сверьтесь с графиком обслуживания для конкретного автомобиля, рынка и VIN.'],
+  ['If you are buying in Georgia', 'თუ საქართველოში ყიდულობთ', 'Если вы покупаете в Грузии'],
+  ['Cars imported from the US', 'აშშ-დან იმპორტირებული ავტომობილები', 'Автомобили, импортированные из США'],
+  ['Cars imported from Europe', 'ევროპიდან იმპორტირებული ავტომობილები', 'Автомобили, импортированные из Европы'],
+  ['Clearance and inspection in Georgia', 'განბაჟება და ტექნიკური ინსპექტირება საქართველოში', 'Таможенное оформление и техосмотр в Грузии'],
+  ['Other generation guides', 'სხვა თაობების გზამკვლევები', 'Руководства по другим поколениям'],
+  ['Explore another chassis', 'სხვა შასის კოდის ნახვა', 'Выбрать другое шасси'],
+  ['Browse all', 'ყველას ნახვა', 'Все поколения'],
+  ['Source for: {claim}', 'წყარო: {claim}', 'Источник: {claim}'],
+  ['Factory source', 'ქარხნული წყარო', 'Заводской источник'],
+  ['Factory source for {model}', '{model}-ის ქარხნული წყარო', 'Заводской источник для {model}'],
+  ['BMW {chassis} buyer guide · APEX', 'BMW {chassis}-ის გზამკვლევი მყიდველისთვის · APEX', 'Руководство покупателю BMW {chassis} · APEX'],
+  ['No catalog generation matches {chassis}.', 'კატალოგში {chassis} თაობა ვერ მოიძებნა.', 'В каталоге не найдено поколение {chassis}.'],
+  ['Arrange an independent physical pre-purchase inspection; a vehicle-history report is only one part of due diligence.', 'შეძენამდე ჩაატარეთ დამოუკიდებელი ფიზიკური ინსპექტირება; ავტომობილის ისტორიის ანგარიში შემოწმების მხოლოდ ერთი ნაწილია.', 'Перед покупкой закажите независимый осмотр автомобиля; отчёт об истории — лишь часть проверки.'],
+  ['Use NHTSA’s VIN decoder for US-market vehicle attributes. Missing decoded values mean NHTSA has no data for that variable—not that the feature is absent.', 'აშშ-ის ბაზრის მონაცემების შესამოწმებლად გამოიყენეთ NHTSA-ის VIN დეკოდერი. გაშიფრულ შედეგში მნიშვნელობის არქონა ნიშნავს, რომ NHTSA-ს ამ ცვლადზე მონაცემი არ აქვს და არა იმას, რომ მახასიათებელი არ არსებობს.', 'Для проверки характеристик автомобиля рынка США используйте декодер VIN NHTSA. Отсутствующее значение означает, что у NHTSA нет данных по этому параметру, а не то, что соответствующая функция отсутствует.'],
+  ['US title, brand, most recent odometer and some theft history may appear in an NMVTIS report from an approved provider.', 'აშშ-ის დამტკიცებული პროვაიდერის NMVTIS ანგარიშში შეიძლება ჩანდეს საკუთრების დოკუმენტის სტატუსი, ბრენდის ნიშნები, ოდომეტრის ბოლო მაჩვენებელი და მოპარვის ისტორიის ზოგი ჩანაწერი.', 'Отчёт NMVTIS от одобренного поставщика может содержать сведения о титуле, статусные отметки, последнее показание одометра и некоторые данные об угонах в США.'],
+  ['A clean NICB VINCheck result does not prove the vehicle has never been damaged; the service covers only certain records from participating insurers.', 'NICB VINCheck-ის სუფთა შედეგი არ ადასტურებს, რომ ავტომობილი არასდროს დაზიანებულა: სერვისი მოიცავს მხოლოდ მონაწილე მზღვეველთა ზოგიერთ ჩანაწერს.', 'Чистый результат NICB VINCheck не доказывает, что автомобиль никогда не был повреждён: сервис содержит лишь некоторые записи участвующих страховщиков.'],
+  ['Check open safety recalls for the vehicle by VIN through NHTSA’s recall lookup.', 'NHTSA-ის VIN სერვისით შეამოწმეთ ავტომობილის უსაფრთხოების ღია გაწვევები.', 'Проверьте открытые отзывные кампании автомобиля по VIN через сервис NHTSA.'],
+  ['For a UK-imported car, GOV.UK can show MOT pass/fail, recorded mileage, next due date and available advisories; this does not cover all European countries.', 'დიდი ბრიტანეთიდან იმპორტირებულ ავტომობილზე GOV.UK აჩვენებს MOT-ის გავლას/ვერ გავლას, დაფიქსირებულ გარბენს, შემდეგ ვადასა და ხელმისაწვდომ შენიშვნებს; ეს სერვისი ევროპის ყველა ქვეყანას არ მოიცავს.', 'Для автомобиля из Великобритании GOV.UK показывает результат MOT, зафиксированный пробег, дату следующего теста и доступные замечания; сервис не охватывает все страны Европы.'],
+  ['EU roadworthiness inspection certificates follow minimum requirements in Directive 2014/45/EU; confirm records and rules with the vehicle’s specific country.', 'ევროკავშირის ტექნიკური გამართულობის სერტიფიკატები შეესაბამება 2014/45/EU დირექტივის მინიმალურ მოთხოვნებს; ჩანაწერები და წესები გადაამოწმეთ კონკრეტული ქვეყნის მიხედვით.', 'Сертификаты техосмотра в ЕС соответствуют минимальным требованиям Директивы 2014/45/EU; уточняйте записи и правила в конкретной стране.'],
+  ['EU vehicle-registration procedures and related taxes vary by country; check the relevant national authority for the vehicle’s country.', 'ევროკავშირში ავტომობილის რეგისტრაციის პროცედურები და მასთან დაკავშირებული გადასახადები ქვეყნების მიხედვით განსხვავდება; მიმართეთ შესაბამისი ქვეყნის უწყებას.', 'Процедуры регистрации автомобилей и связанные налоги в ЕС различаются по странам; уточняйте их в компетентном органе страны автомобиля.'],
+  ['Use Georgia Revenue Service’s vehicle-clearance calculator for applicable import clearance costs; confirm requirements for your vehicle.', 'იმპორტის განბაჟების შესაბამისი ხარჯების გასაგებად გამოიყენეთ საქართველოს შემოსავლების სამსახურის ავტომობილის განბაჟების კალკულატორი და გადაამოწმეთ მოთხოვნები თქვენი ავტომობილისთვის.', 'Для оценки применимых расходов на таможенное оформление используйте калькулятор Службы доходов Грузии и уточните требования для вашего автомобиля.'],
+  ['Confirm local registration steps with the Georgian MIA Service Agency; its portal is not verified here as a VIN-based history lookup.', 'ადგილობრივი რეგისტრაციის ნაბიჯები გადაამოწმეთ საქართველოს შსს მომსახურების სააგენტოსთან; მისი პორტალი აქ VIN-ით ისტორიის ძიების სერვისად არ არის დადასტურებული.', 'Уточните порядок местной регистрации в Агентстве обслуживания МВД Грузии; здесь не подтверждено, что его портал позволяет искать историю по VIN.'],
+  ['Georgia’s periodic technical inspection checks include identity, brakes, steering, tyres, chassis, visibility, lights and emissions for vehicle categories subject to inspection; it does not replace pre-purchase inspection or history checks.', 'საქართველოში პერიოდული ტექნიკური ინსპექტირებისას, შემოწმებას დაქვემდებარებულ ავტომობილებზე მოწმდება იდენტიფიკაცია, მუხრუჭები, საჭე, საბურავები, შასი, ხილვადობა, განათება და გამონაბოლქვი; ის ვერ ჩაანაცვლებს შეძენამდელ ინსპექტირებას ან ისტორიის შემოწმებას.', 'При периодическом техосмотре в Грузии для подлежащих проверке категорий оцениваются идентификация, тормоза, рулевое управление, шины, шасси, обзорность, световые приборы и выбросы; техосмотр не заменяет осмотр перед покупкой и проверку истории.'],
 ];
 const translations = new Map(copy.map(([en, ka, ru]) => [en, { en, ka, ru }]));
 const originalCopy = new Map(copy.flatMap(([en, ka, ru]) => [[ka, en], [ru, en]]));
+const translatedTemplates = new Map();
 const interpolate = (text, vars = {}) => text.replace(/\{(\w+)\}/g, (match, key) => vars[key] == null ? match : String(vars[key]));
 
-function originalText(value) {
+function compileTemplate(value) {
+  const names = [], fragments = value.split(/(\{\w+\})/g);
+  if (!value.replace(/\{\w+\}/g, '').trim()) return null;
+  const source = fragments.map(fragment => {
+    if (/^\{\w+\}$/.test(fragment)) { names.push(fragment.slice(1, -1)); return '(.+?)'; }
+    return fragment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }).join('');
+  return {expression: new RegExp('^' + source + '$'), names};
+}
+
+// Feature dictionaries register when that feature loads, keeping the initial page
+// small. Registration changes copy only; it never rebuilds controls or quiz data.
+export function registerTranslations(rows) {
+  for (const row of rows) {
+    if (!Array.isArray(row) || row.length !== 3 || row.some(value => typeof value !== 'string' || !value.trim())) throw new TypeError('Translations require English, Georgian and Russian strings.');
+    const [en, ka, ru] = row;
+    const prior = translations.get(en);
+    if (prior?.ka === ka && prior?.ru === ru) continue;
+    translations.set(en, {en, ka, ru});
+    originalCopy.set(ka, en); originalCopy.set(ru, en);
+    if (/\{\w+\}/.test(en)) {
+      const forward = compileTemplate(en);
+      if (forward) translatedTemplates.set(en, {...forward, reverse: [compileTemplate(ka), compileTemplate(ru)].filter(Boolean)});
+    }
+  }
+}
+
+export function hasTranslation(value, locale = language) {
+  if (!languages.includes(locale)) return false;
+  const key = String(value ?? '').trim().replace(/\s+/g, ' ');
+  if (translations.get(key)?.[locale] !== undefined) return true;
+  return [...translatedTemplates.values()].some(({expression}) => expression.test(key));
+}
+
+function translateTemplate(value) {
+  for (const [key, {expression, names}] of translatedTemplates) {
+    const match = value.match(expression);
+    if (!match) continue;
+    const vars = Object.fromEntries(names.map((name, index) => [name, translateText(match[index + 1])]));
+    return interpolate(translations.get(key)[language], vars);
+  }
+}
+
+export function originalText(value) {
   const trimmed = value.trim();
   const clean = trimmed.replace(/\s+/g, ' ');
   if (translations.has(clean)) return value;
   const original = originalCopy.get(clean);
-  return original === undefined ? value : value.replace(trimmed, original);
+  if (original !== undefined) return value.replace(trimmed, original);
+  // Some components render t(template, variables) directly. Recover their
+  // English source too, including templates whose locale changes word order.
+  for (const [key, {reverse}] of translatedTemplates) {
+    for (const {expression, names} of reverse) {
+      const match = clean.match(expression);
+      if (!match) continue;
+      const vars = Object.fromEntries(names.map((name, index) => [name, originalText(match[index + 1])]));
+      return value.replace(trimmed, interpolate(key, vars));
+    }
+  }
+  return value;
 }
 
 export function t(key, vars = {}) {
@@ -520,7 +659,7 @@ export function translateText(value) {
   // Live rev counters and numerical gauges never require a dictionary lookup.
   if (/^[\d\s.,:;+\-/·–—%°×]+$/.test(trimmed)) return value;
   const clean = trimmed.replace(/\s+/g, ' ');
-  let output = translations.get(clean)?.[language];
+  let output = translations.get(clean)?.[language] ?? translateTemplate(clean);
   if (output === undefined) {
     let match;
     if ((match = clean.match(/^(\d+) MODELS$/))) output = language === 'ka' ? `${match[1]} მოდელი` : `${match[1]} МОДЕЛИ`;
@@ -546,9 +685,17 @@ export function translateText(value) {
 const textSources = new WeakMap();
 const attributeSources = new WeakMap();
 const attributes = ['aria-label', 'title', 'placeholder'];
-const excluded = 'script,style,code,pre,kbd,svg,[data-no-i18n],[translate="no"],textarea';
 let observer;
 let initialized = false;
+
+function isExcluded(node) {
+  const parent = node.nodeType === 1 ? node : node.parentElement;
+  if (!parent) return true;
+  if (parent.closest('script,style,code,pre,kbd,[data-no-i18n],[translate="no"],textarea')) return true;
+  // Icons remain untouched. Educational SVGs opt in explicitly so their labels
+  // and accessible descriptions can share the same authored translations.
+  return !!parent.closest('svg') && !parent.closest('[data-ac-diagram]');
+}
 
 function sourceTranslation(node, value, sourceMap) {
   const previous = sourceMap.get(node);
@@ -560,12 +707,12 @@ function sourceTranslation(node, value, sourceMap) {
 
 function translateNode(node) {
   if (node.nodeType === 3) {
-    if (!node.textContent.trim() || node.parentElement?.closest(excluded)) return;
+    if (!node.textContent.trim() || isExcluded(node)) return;
     const translated = sourceTranslation(node, node.textContent, textSources);
     if (node.textContent !== translated) node.textContent = translated;
     return;
   }
-  if (node.nodeType !== 1 || node.closest(excluded)) return;
+  if (node.nodeType !== 1 || isExcluded(node)) return;
   if (node.hasAttribute('data-i18n') && node.childElementCount === 0) {
     const source = node.dataset.i18n;
     const translated = t(source);
@@ -609,8 +756,8 @@ export function setLanguage(value, persist = true) {
   if (!languages.includes(value)) return;
   language = value;
   if (persist) writePreference(LANGUAGE_KEY, language);
-  translatePage();
-  window.dispatchEvent(new CustomEvent('apex:languagechange', { detail: { language } }));
+  if (typeof document !== 'undefined') translatePage();
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('apex:languagechange', { detail: { language } }));
 }
 
 function updateThemeButton() {

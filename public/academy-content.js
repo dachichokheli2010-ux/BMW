@@ -51,7 +51,7 @@ export function createCurriculum(legacy,sources,parts,catalog,scenarios){
     choice('finale-1','Which stream drives a conventional turbocharger turbine?',['Engine coolant','Fresh intake air','Exhaust gas'],2,'Exhaust transfers energy to the turbine; a shared shaft drives the compressor.'),
     order('finale-2','Follow energy through the simplified engine.',['Fuel energy','Combustion pressure','Piston and connecting rod motion','Crankshaft rotation'],'The conversion has heat and friction losses; not all fuel energy becomes mechanical output.')
   ]});
-  for(const id of ['transmission','turbocharging','cooling','combustion'])lessons.find(l=>l.id===id).topic='basics';
+  for(const id of ['transmission','turbocharging','cooling','combustion','drivetrain-layouts','m-performance'])lessons.find(l=>l.id===id).topic='basics';
   const partIds=parts.map((part,i)=>add({id:'part-'+part.id,title:part.name,topic:'parts',intro:part.summary,detail:[part.location,part.how,part.symptoms],photo:part.photo,connections:part.connections,visual:'connections',sources:part.sources,questions:[
     {...choice('part-'+part.id+'-photo','Identify the component in the photograph.',parts.slice(i,i+3).concat(parts.slice(0,Math.max(0,3-(parts.length-i)))).map(p=>p.name),0,part.purpose),photo:part.photo},
     choice('part-'+part.id+'-function','Which statement describes its function?',[part.purpose,parts[(i+2)%parts.length].purpose,parts[(i+4)%parts.length].purpose],0,part.how),
@@ -94,10 +94,11 @@ export function createCurriculum(legacy,sources,parts,catalog,scenarios){
   }
   const units=[
     {id:'basics',title:'Automotive basics',subtitle:'Your first mile under the hood.',tag:'START HERE',lessons:[...basicIds,'basics-checkpoint','turbocharging','cooling','charging','differential','combustion','basics-finale']},
+    {id:'powertrains',title:'Engines & drivetrains',subtitle:'Learn how BMWs make and use motion.',tag:'POWERTRAIN BASICS',lessons:['engine-codes','drivetrain-layouts','m-performance','electrification']},
     {id:'parts',title:'Parts academy',subtitle:'Real components. Connected ideas.',tag:'LOOK CLOSER',lessons:partIds},
     {id:'models',title:'BMW M recognition',subtitle:'See the car. Name the M. Learn the generation.',tag:'REAL PHOTOS / M CARS',lessons:[...mChallenges.map(l=>l.id),...modelLessons]},
-    {id:'engines',title:'BMW engine academy',subtitle:'Know the family. Check the variant.',tag:'FOUR DOCUMENTED FAMILIES',lessons:['engine-codes',...engineIds]},
-    {id:'systems',title:'Mechanical systems',subtitle:'Understand the whole control loop.',tag:'GO DEEPER',lessons:['suspension','electronics','electrification']},
+    {id:'engines',title:'BMW engine academy',subtitle:'Know the family. Check the variant.',tag:'FOUR DOCUMENTED FAMILIES',lessons:engineIds},
+    {id:'systems',title:'Mechanical systems',subtitle:'Understand the whole control loop.',tag:'GO DEEPER',lessons:['suspension','electronics']},
     {id:'mechanic',title:'Mechanic challenges',subtitle:'Follow evidence before conclusions.',tag:'EDUCATIONAL SIMULATIONS',lessons:diagnosticIds}
   ];
   lessons.find(l=>l.id==='engine-codes').topic='engines';

@@ -78,4 +78,8 @@ try{
 const academy=(xp,id)=>({version:2,xp,credits:5,completed:{[id]:{day:'2026-10-18',accuracy:100}},attempts:{},review:{},days:['2026-10-18'],awards:['lesson:'+id],unlocked:[],activity:[]});
 const merged=mergeGuestGarage({...blank(),academy:academy(50,'a')},{...blank(),academy:academy(40,'b')});
 check(merged.academy.xp,50);check(Object.keys(merged.academy.completed),['b','a']);check(mergeGuestGarage(merged,{...blank(),academy:academy(40,'b')}).academy.xp,50);
+const progressMerge=mergeGuestGarage({...blank(),academy:{...academy(50,'a'),selectedPath:'engines',achievements:{'first-ignition':{day:null},'seven-day-driver':{day:'2026-10-17'}}}},{...blank(),academy:{...academy(40,'b'),selectedPath:'models',achievements:{'first-ignition':{day:'2026-10-15'},'seven-day-driver':{day:'2026-10-18'}}}});
+check(progressMerge.academy.selectedPath,'engines');
+check(progressMerge.academy.achievements,{'first-ignition':{day:'2026-10-15'},'seven-day-driver':{day:'2026-10-17'}});
+check(mergeGuestGarage(progressMerge,{...blank(),academy:progressMerge.academy}).academy.achievements,progressMerge.academy.achievements);
 console.log(`Account synchronization: ${checks} checks passed.`);

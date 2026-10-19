@@ -1,5 +1,6 @@
 import * as T from './vendor/three.module.min.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
+import {registerEngineLabTranslations} from './engine-lab-translations.js';
 
 // Original procedural geometry. This is a teaching schematic, not BMW CAD.
 export const ENGINE_LAB_PARTS = [
@@ -21,6 +22,17 @@ export const ENGINE_LAB_PARTS = [
   { id: 'flywheel', name: 'Output flywheel', area: 'At the rear of the crankshaft, facing the transmission', text: 'The engine’s rotating output passes to the transmission through its coupling assembly.', detail: 'The rear disc marks the engine-to-transmission interface. Its geometry is symbolic and does not reproduce an M DCT clutch or flywheel assembly.', connects: ['crankshaft'], color: '#889eb2', tags: 'flywheel transmission gearbox dct clutch output' },
 ];
 
+export const ENGINE_LAB_HOTSPOTS = Object.freeze(['turbos','block','valves','crankshaft','intake']);
+export const ENGINE_LAB_MODEL_DETAILS = Object.freeze({
+  turbos:'BMW documents two exhaust-driven turbines, each with two separated exhaust passages.',
+  block:'BMW identifies the F10 M5 engine as a 90-degree V8.',
+  chargecoolers:'BMW documents air-to-liquid charge cooling for the F10 M5.',
+  camshafts:'BMW documents variable cam timing for the F10 M5 engine.',
+});
+export function engineLabModelNote(partId){
+  return ENGINE_LAB_MODEL_DETAILS[partId]||'Not available for this component.';
+}
+const ENGINE_LAB_SOURCE='https://www.press.bmwgroup.com/usa/article/detail/T0114798EN_US/introducing-the-all-new-5th-generation-bmw-m5';
 const FLOW = {
   intake: { color: '#6bbaff', text: 'Air: filter → compressor → air-to-liquid charge cooler → outer intake ports.' },
   exhaust: { color: '#ff976a', text: 'Exhaust: inner exhaust ports → cross-bank manifold → twin-scroll turbines → exhaust outlet.' },
@@ -33,6 +45,9 @@ let sequence = 0;
 /** Mount an independent, accessible S63 teaching explorer. Call destroy() on unmount. */
 export function mountEngineLab(container, options = {}) {
   if (!(container instanceof Element)) throw new TypeError('mountEngineLab requires a DOM element.');
+  registerEngineLabTranslations();
+  const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let reduceMotion = motionQuery.matches, requestRender = () => {};
   if (!document.querySelector('link[data-engine-lab-styles], link[href$="engine-lab.css"]')) {
     const sheet = document.createElement('link');
     sheet.rel = 'stylesheet'; sheet.href = new URL('./engine-lab.css', import.meta.url).href;
@@ -45,11 +60,13 @@ export function mountEngineLab(container, options = {}) {
     <div class="el-intro"><div><span class="el-eyebrow">ENGINEERING, REVEALED</span><h2>Inside the <em>S63 V8.</em></h2><p>F10 M5 · 90° V8 · hot-V twin turbo</p></div><span class="el-model-tag">EDUCATIONAL 3D MODEL</span></div>
     <p class="el-disclosure">An original, simplified representation of the F10 M5 S63Tü architecture. Geometry, locations, fluid routes and motion are illustrative; this is not factory CAD or a repair guide.</p>
     <div class="el-toolbar" role="group" aria-label="Engine view controls">
-      <button type="button" data-action="explode" aria-pressed="false">Explode view</button><button type="button" data-action="xray" aria-pressed="true">X-ray</button><button type="button" data-action="animate" aria-pressed="false">Animate internals</button><button type="button" data-action="reset">Reset view</button>
+      <button type="button" data-action="explode" aria-pressed="false">Explode view</button><button type="button" data-action="xray" aria-pressed="true">X-ray</button><button type="button" data-action="animate" aria-pressed="false">Animate internals</button><button type="button" data-action="cycle" aria-pressed="false">Four-stroke cycle</button><button type="button" data-action="reset">Reset view</button>
+      <div class="el-camera-controls" role="group" aria-label="Camera controls"><button type="button" data-camera="left" aria-label="Rotate view left" title="Rotate view left">←</button><button type="button" data-camera="right" aria-label="Rotate view right" title="Rotate view right">→</button><button type="button" data-camera="up" aria-label="Rotate view up" title="Rotate view up">↑</button><button type="button" data-camera="down" aria-label="Rotate view down" title="Rotate view down">↓</button><button type="button" data-camera="zoom-in" aria-label="Zoom in" title="Zoom in">+</button><button type="button" data-camera="zoom-out" aria-label="Zoom out" title="Zoom out">−</button><button type="button" data-camera="reset" aria-label="Reset camera" title="Reset camera">⌂</button></div>
       <label class="el-speed" for="${uid}-speed">Motion speed <input id="${uid}-speed" type="range" min="0.2" max="1" value="0.45" step="0.05" aria-label="Slowed educational animation speed"></label>
     </div>
-    <div class="el-workspace"><div class="el-stage"><div class="el-viewport" tabindex="0" role="img" aria-label="Interactive engine schematic. Drag to orbit, pinch or scroll to zoom. Keyboard: arrow keys orbit, plus and minus zoom, zero resets. Use the component buttons to explore every part."></div><div class="el-view-label"><span class="el-live-dot"></span><span>90° V8 / 8 CYLINDERS</span><span class="el-render-status">STARTING VIEWER</span></div><div class="el-viewport-note">Drag to orbit · scroll or pinch to zoom<br>Click to inspect · keyboard: arrows / + / −</div><p class="el-fallback" hidden>3D rendering is unavailable on this device. Explore every component and its connections using the list and details below.</p></div>
-    <aside class="el-inspector" aria-label="Component information"><span class="el-eyebrow">COMPONENT INSPECTOR</span><h3 class="el-part-name"></h3><p class="el-location"></p><p class="el-description"></p><details class="el-technical"><summary>Engineering notes</summary><p></p></details><div class="el-connections"><span>CONNECTED TO</span><div></div></div><button type="button" class="el-focus" data-action="focus">Zoom to component ↗</button><p class="el-select-status" role="status" aria-live="polite"></p></aside></div>
+    <p class="el-cycle-status" role="status" aria-live="polite" aria-atomic="true">Cycle: ready. Press the button to start.</p>
+    <div class="el-workspace"><div class="el-stage"><div class="el-viewport" tabindex="0" role="img" aria-label="Interactive engine schematic. Drag or use camera buttons to orbit; use zoom buttons or plus and minus keys to zoom. Press zero to reset. Use the component buttons to explore every part."></div><div class="el-hotspots" role="group" aria-label="Engine component hotspots"></div><div class="el-view-label"><span class="el-live-dot"></span><span>90° V8 / 8 CYLINDERS</span><span class="el-render-status">STARTING VIEWER</span></div><div class="el-viewport-note">Drag or use camera buttons to orbit · zoom buttons or + / − to zoom<br>Click to inspect · press 0 to reset</div><p class="el-fallback" hidden>3D rendering is unavailable on this device. Explore every component and its connections using the list and details below.</p></div>
+    <aside class="el-inspector" aria-label="Component information"><span class="el-eyebrow">COMPONENT INSPECTOR</span><h3 class="el-part-name"></h3><p class="el-location"></p><p class="el-description"></p><section class="el-model-specific"><span>Model-specific details · F10 M5 / S63Tü</span><p></p><a href="${ENGINE_LAB_SOURCE}" target="_blank" rel="noopener noreferrer">BMW PressClub source<span aria-hidden="true">↗</span></a></section><details class="el-technical"><summary>Engineering notes</summary><p></p></details><div class="el-connections"><span>CONNECTED TO</span><div></div></div><button type="button" class="el-focus" data-action="focus">Zoom to component ↗</button><p class="el-select-status" role="status" aria-live="polite"></p></aside></div>
     <div class="el-flow-controls"><label for="${uid}-flow">Trace a system</label><select id="${uid}-flow" aria-label="Show an educational fluid flow path"><option value="none">No flow overlay</option><option value="intake">Intake air</option><option value="exhaust">Exhaust gas</option><option value="cooling">Cooling circuit</option><option value="oil">Lubrication circuit</option><option value="fuel">Fuel injection</option></select><p class="el-flow-note" role="status">Select a flow to follow its path. All routes are conceptual.</p></div>
     <div class="el-parts-heading"><label for="${uid}-search">Find a component</label><input id="${uid}-search" type="search" placeholder="Try “turbo”, “valves” or “oil”…" autocomplete="off"><span class="el-search-count" role="status"></span></div><div class="el-parts" role="group" aria-label="Engine components"></div><p class="el-no-parts" hidden>No matching component. Try a part name or system.</p>
     <footer class="el-footer"><span>Slowed motion · illustrative valve timing and firing sequence</span><a href="https://www.press.bmwgroup.com/usa/article/detail/T0114798EN_US/introducing-the-all-new-5th-generation-bmw-m5" target="_blank" rel="noopener noreferrer">Architecture source: BMW PressClub ↗</a></footer>`;
@@ -57,7 +74,7 @@ export function mountEngineLab(container, options = {}) {
   const $ = selector => root.querySelector(selector);
   const listeners = [];
   function listen(el, event, fn, opts) { el.addEventListener(event, fn, opts); listeners.push(() => el.removeEventListener(event, fn, opts)); }
-  const state = { selected: 'turbos', explode: false, xray: true, running: false, speed: .45, flow: 'none' };
+  const state = { selected: 'turbos', explode: false, xray: true, running: false, cycle: false, speed: .45, flow: 'none' };
   const partMap = new Map(ENGINE_LAB_PARTS.map(part => [part.id, part]));
   const partButtons = new Map();
   for (const part of ENGINE_LAB_PARTS) {
@@ -65,24 +82,53 @@ export function mountEngineLab(container, options = {}) {
     button.textContent = part.name; button.style.setProperty('--part-color', part.color); button.setAttribute('aria-pressed', 'false');
     $('.el-parts').append(button); partButtons.set(part.id, button);
   }
+  const hotspotButtons = new Map();
+  ENGINE_LAB_HOTSPOTS.forEach((id,index)=>{
+    const part=partMap.get(id),button=document.createElement('button');
+    button.type='button';button.className='el-hotspot';button.dataset.part=id;button.textContent=String(index+1).padStart(2,'0');
+    button.setAttribute('aria-label',`Inspect ${part.name}`);button.title=part.name;
+    $('.el-hotspots').append(button);hotspotButtons.set(id,button);
+  });
   let renderer, scene, camera, controls, groups = {}, pickable = [], connectionLines;
   let destroyed = false, contextLost = false, visible = true, frameId = 0, lastTime = 0, phase = 0, flowTime = 0, resizing, visibilityObserver;
   let cameraGoal = null, targetGoal = null;
   const internals = { pistons: [], rods: [], cams: [], valves: [], wheels: [] }, flows = [], allocatedMaterials = new Set(), allocatedGeometry = new Set();
   const viewport = $('.el-viewport'), stage = $('.el-stage');
 
+  function orbitCamera(direction) {
+    if (!camera || !controls) return;
+    if (direction === 'reset') {
+      cameraGoal = targetGoal = null;
+      camera.position.set(5.8, 4.5, -6); controls.target.set(0, 1, 0);
+    } else {
+      const offset = camera.position.clone().sub(controls.target), spherical = new T.Spherical().setFromVector3(offset);
+      if (direction === 'left') spherical.theta -= .16;
+      if (direction === 'right') spherical.theta += .16;
+      if (direction === 'up') spherical.phi = Math.max(.1, spherical.phi - .12);
+      if (direction === 'down') spherical.phi = Math.min(Math.PI * .85, spherical.phi + .12);
+      if (direction === 'zoom-in') spherical.radius = Math.max(2, spherical.radius * .9);
+      if (direction === 'zoom-out') spherical.radius = Math.min(15, spherical.radius * 1.1);
+      camera.position.copy(controls.target).add(new T.Vector3().setFromSpherical(spherical));
+    }
+    controls.update(); requestRender();
+  }
+
   function selectPart(id, focus = true) {
     const part = partMap.get(id); if (!part || destroyed) return false;
     state.selected = id;
     $('.el-part-name').textContent = part.name; $('.el-location').textContent = part.area;
     $('.el-description').textContent = part.text; $('.el-technical p').textContent = part.detail;
+    const modelDetail=engineLabModelNote(id);
+    $('.el-model-specific p').textContent=modelDetail;
+    $('.el-model-specific a').hidden=!ENGINE_LAB_MODEL_DETAILS[id];
     const connections = $('.el-connections > div'); connections.replaceChildren();
     for (const connected of part.connects) {
       const button = document.createElement('button'); button.type = 'button'; button.dataset.part = connected; button.textContent = partMap.get(connected).name; connections.append(button);
     }
     for (const [key, button] of partButtons) { button.setAttribute('aria-pressed', String(key === id)); button.classList.toggle('is-selected', key === id); }
+    for (const [key, button] of hotspotButtons) button.setAttribute('aria-pressed', String(key === id));
     $('.el-select-status').textContent = `${part.name} selected. ${part.connects.length} connected components.`;
-    updateMaterials(); updateConnectionLines(); if (focus) focusPart();
+    updateMaterials(); updateConnectionLines(); if (focus) focusPart(); requestRender();
     options.onSelect?.(part); return true;
   }
   function updateMaterials() {
@@ -100,13 +146,16 @@ export function mountEngineLab(container, options = {}) {
     cameraGoal = targetGoal.clone().addScaledVector(direction, state.selected === 'block' ? 5.1 : 3.5);
   }
   function reset() {
-    state.explode = false; state.xray = true; state.running = false; state.flow = 'none'; state.speed = .45;
+    state.explode = false; state.xray = true; state.running = false; state.cycle = false; state.flow = 'none'; state.speed = .45; phase = 0;
     for (const key of ['explode', 'xray', 'animate']) $(`[data-action="${key}"]`).setAttribute('aria-pressed', String(key === 'xray'));
     $('[data-action="animate"]').textContent = 'Animate internals'; $(`#${uid}-flow`).value = 'none'; $(`#${uid}-speed`).value = '.45';
+    $('[data-action="cycle"]').setAttribute('aria-pressed','false');$('[data-action="cycle"]').textContent='Four-stroke cycle';
+    $('.el-cycle-status').textContent='Cycle: ready. Press the button to start.';
     $('.el-flow-note').textContent = 'Select a flow to follow its path. All routes are conceptual.';
     $(`#${uid}-search`).value = ''; filterParts('');
     if (camera) { cameraGoal = new T.Vector3(5.8, 4.5, -6); targetGoal = new T.Vector3(0, 1, 0); }
     selectPart('turbos', false);
+    requestRender();
   }
   function filterParts(query) {
     const words = query.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean); let count = 0, first = null;
@@ -119,12 +168,28 @@ export function mountEngineLab(container, options = {}) {
   }
   listen(root, 'click', event => {
     const partButton = event.target.closest('button[data-part]'); if (partButton && root.contains(partButton)) { selectPart(partButton.dataset.part); return; }
+    const cameraControl = event.target.closest('[data-camera]'); if (cameraControl) { orbitCamera(cameraControl.dataset.camera); return; }
     const action = event.target.closest('[data-action]')?.dataset.action;
-    if (action === 'reset') { reset(); return; } if (action === 'focus') { focusPart(); return; }
+    if (action === 'reset') { reset(); return; } if (action === 'focus') { focusPart(); requestRender(); return; }
+    if(action==='cycle'){
+      const button=$('[data-action="cycle"]');
+      if(state.cycle){
+        state.cycle=false;state.running=false;button.setAttribute('aria-pressed','false');button.textContent='Four-stroke cycle';
+        $('.el-cycle-status').textContent='Cycle paused. Press the button to start again.';
+      }else{
+        state.cycle=true;state.running=true;phase=0;lastCycleStep=-1;button.setAttribute('aria-pressed','true');button.textContent='Pause four-stroke cycle';
+        updateCycleStatus();
+      }
+      requestRender();
+      return;
+    }
     const key = action === 'animate' ? 'running' : action;
     if (['explode', 'xray', 'running'].includes(key)) {
       state[key] = !state[key]; $(`[data-action="${action}"]`).setAttribute('aria-pressed', String(state[key]));
-      if (key === 'running') $('[data-action="animate"]').textContent = state.running ? 'Pause internals' : 'Animate internals';
+      if (key === 'running') {
+        if(state.cycle){state.cycle=false;$('[data-action="cycle"]').setAttribute('aria-pressed','false');$('[data-action="cycle"]').textContent='Four-stroke cycle';$('.el-cycle-status').textContent='Cycle paused. Press the button to start again.';}
+        $('[data-action="animate"]').textContent = state.running ? 'Pause internals' : 'Animate internals';
+      }
       if (key === 'explode') {
         if (state.explode && state.flow !== 'none') {
           state.flow = 'none'; $(`#${uid}-flow`).value = 'none';
@@ -132,7 +197,7 @@ export function mountEngineLab(container, options = {}) {
         }
         if (camera) { cameraGoal = state.explode ? new T.Vector3(7, 5.5, -7) : new T.Vector3(5.8, 4.5, -6); targetGoal = new T.Vector3(0, 1, 0); }
       }
-      updateMaterials();
+      updateMaterials(); requestRender();
     }
   });
   listen($(`#${uid}-search`), 'input', event => filterParts(event.target.value));
@@ -145,11 +210,13 @@ export function mountEngineLab(container, options = {}) {
       if (camera) { cameraGoal = new T.Vector3(5.8, 4.5, -6); targetGoal = new T.Vector3(0, 1, 0); }
     }
     $('.el-flow-note').textContent = FLOW[state.flow]?.text || 'Select a flow to follow its path. All routes are conceptual.';
+    requestRender();
   });
 
   function unavailable(message) {
     root.classList.add('el-no-webgl'); $('.el-fallback').hidden = false; $('.el-render-status').textContent = message;
-    for (const action of ['explode', 'xray', 'animate', 'focus']) { const button = $(`[data-action="${action}"]`); button.disabled = true; button.setAttribute('aria-pressed', 'false'); }
+    for (const action of ['explode', 'xray', 'animate', 'cycle', 'focus']) { const button = $(`[data-action="${action}"]`); button.disabled = true; button.setAttribute('aria-pressed', 'false'); }
+    for (const button of root.querySelectorAll('[data-camera]')) button.disabled = true;
     $(`#${uid}-speed`).disabled = true;
   }
   try {
@@ -158,7 +225,7 @@ export function mountEngineLab(container, options = {}) {
     renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.5;
     renderer.domElement.setAttribute('aria-hidden', 'true'); renderer.domElement.style.touchAction = 'none'; viewport.append(renderer.domElement);
     scene = new T.Scene(); camera = new T.PerspectiveCamera(38, 1, .05, 70); camera.position.set(5.8, 4.5, -6);
-    controls = new OrbitControls(camera, renderer.domElement); controls.target.set(0, 1, 0); controls.enableDamping = true;
+    controls = new OrbitControls(camera, renderer.domElement); controls.target.set(0, 1, 0); controls.enableDamping = !reduceMotion;
     controls.dampingFactor = .09; controls.minDistance = 2; controls.maxDistance = 15; controls.maxPolarAngle = Math.PI * .85; controls.enablePan = true;
     listen(controls, 'start', () => { cameraGoal = targetGoal = null; });
     scene.add(new T.HemisphereLight(0xb7d9ff, 0x152135, 2.4));
@@ -312,14 +379,12 @@ export function mountEngineLab(container, options = {}) {
     });
     listen(viewport, 'keydown', event => {
       if (event.target !== viewport || !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '+', '=', '-', '0'].includes(event.key)) return;
-      event.preventDefault(); cameraGoal = targetGoal = null;
-      const offset = camera.position.clone().sub(controls.target), spherical = new T.Spherical().setFromVector3(offset);
-      if (event.key === 'ArrowLeft') spherical.theta -= .12; if (event.key === 'ArrowRight') spherical.theta += .12;
-      if (event.key === 'ArrowUp') spherical.phi = Math.max(.1, spherical.phi - .12); if (event.key === 'ArrowDown') spherical.phi = Math.min(Math.PI * .85, spherical.phi + .12);
-      if (event.key === '+' || event.key === '=') spherical.radius = Math.max(2, spherical.radius * .9); if (event.key === '-') spherical.radius = Math.min(15, spherical.radius * 1.1);
-      camera.position.copy(controls.target).add(new T.Vector3().setFromSpherical(spherical)); if (event.key === '0') reset(); controls.update();
+      event.preventDefault();
+      if (event.key === '0') { reset(); return; }
+      const directions = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', '+': 'zoom-in', '=': 'zoom-in', '-': 'zoom-out' };
+      orbitCamera(directions[event.key]);
     });
-    function resize() { const width = viewport.clientWidth, height = viewport.clientHeight; if (width && height) { renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); } }
+    function resize() { const width = viewport.clientWidth, height = viewport.clientHeight; if (width && height) { renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix(); requestRender(); } }
     resizing = new ResizeObserver(resize); resizing.observe(viewport); resize();
     listen(renderer.domElement, 'webglcontextlost', event => { event.preventDefault(); contextLost = true; cancelAnimationFrame(frameId); frameId = 0; unavailable('3D CONTEXT LOST'); });
     $('.el-render-status').textContent = 'LIVE 3D'; updateMaterials();
@@ -328,14 +393,29 @@ export function mountEngineLab(container, options = {}) {
     }
     listen(document, 'visibilitychange', () => { if (!document.hidden && visible) startFrame(); else { cancelAnimationFrame(frameId); frameId = 0; } });
     function startFrame() { if (!frameId && !destroyed && !contextLost) { lastTime = performance.now(); frameId = requestAnimationFrame(frame); } }
+    requestRender = startFrame;
+    if (reduceMotion) listen(controls, 'change', startFrame);
+    listen(motionQuery, 'change', () => {
+      reduceMotion = motionQuery.matches; controls.enableDamping = !reduceMotion;
+      cancelAnimationFrame(frameId); frameId = 0; requestRender();
+    });
     function frame(now) {
       frameId = 0; if (destroyed || contextLost || !visible || document.hidden) return;
       // rAF samples its timestamp before callbacks run; it can precede the
       // performance.now() captured while mounting or resuming this viewer.
       const dt = Math.max(0, Math.min((now - lastTime) / 1000, .05)); lastTime = now;
       if (state.running) phase += dt * state.speed * Math.PI * 3;
-      flowTime += dt * .24;
-      for (const group of Object.values(groups)) group.position.lerp(state.explode ? group.userData.explode : new T.Vector3(), 1 - Math.exp(-dt * 7));
+      if(state.cycle&&phase>=Math.PI*4){
+        phase=Math.PI*4;state.running=false;state.cycle=false;lastCycleStep=-1;
+        $('[data-action="cycle"]').setAttribute('aria-pressed','false');$('[data-action="cycle"]').textContent='Four-stroke cycle';
+        $('.el-cycle-status').textContent='Cycle complete: two crankshaft revolutions.';
+      }else if(state.cycle)updateCycleStatus();
+      if (!reduceMotion) flowTime += dt * .24;
+      for (const group of Object.values(groups)) {
+        const destination = state.explode ? group.userData.explode : new T.Vector3();
+        if (reduceMotion) group.position.copy(destination);
+        else group.position.lerp(destination, 1 - Math.exp(-dt * 7));
+      }
       crankRotator.rotation.z = phase;
       for (let i = 0; i < internals.pistons.length; i++) {
         const piston = internals.pistons[i], a = phase + journalPhases[piston.index], axis = new T.Vector3(piston.side * Math.SQRT1_2, Math.SQRT1_2, 0);
@@ -355,8 +435,12 @@ export function mountEngineLab(container, options = {}) {
           flow.dots[i].position.copy(flow.curve.getPoint(progress));
         }
       }
-      if (cameraGoal) { const amount = 1 - Math.exp(-dt * 5); camera.position.lerp(cameraGoal, amount); controls.target.lerp(targetGoal, amount); if (camera.position.distanceTo(cameraGoal) < .008) cameraGoal = targetGoal = null; }
-      controls.update(); updateConnectionLines(); renderer.render(scene, camera); frameId = requestAnimationFrame(frame);
+      if (cameraGoal) {
+        if (reduceMotion) { camera.position.copy(cameraGoal); controls.target.copy(targetGoal); cameraGoal = targetGoal = null; }
+        else { const amount = 1 - Math.exp(-dt * 5); camera.position.lerp(cameraGoal, amount); controls.target.lerp(targetGoal, amount); if (camera.position.distanceTo(cameraGoal) < .008) cameraGoal = targetGoal = null; }
+      }
+      controls.update(); updateConnectionLines(); positionHotspots(); renderer.render(scene, camera);
+      if (!reduceMotion || state.running) frameId = requestAnimationFrame(frame);
     }
     startFrame();
   } catch (error) {
@@ -370,6 +454,23 @@ export function mountEngineLab(container, options = {}) {
     for (const id of partMap.get(state.selected).connects) { const group = groups[id]; if (group) { points.push(...start.toArray(), ...group.position.clone().add(group.userData.anchor).toArray()); } }
     const positions = connectionLines.geometry.getAttribute('position'); positions.array.set(points); positions.needsUpdate = true;
     connectionLines.geometry.setDrawRange(0, points.length / 3); connectionLines.geometry.computeBoundingSphere();
+  }
+  const cycleStrokes=['Intake stroke','Compression stroke','Power stroke','Exhaust stroke'];
+  let lastCycleStep=-1;
+  function updateCycleStatus(){
+    const current=Math.floor((phase%(Math.PI*4))/Math.PI);
+    if(current!==lastCycleStep){lastCycleStep=current;$('.el-cycle-status').textContent=cycleStrokes[current];}
+  }
+  function positionHotspots(){
+    if(!camera||!scene)return;
+    scene.updateMatrixWorld(true);camera.updateMatrixWorld();
+    for(const [id,button] of hotspotButtons){
+      const group=groups[id];if(!group)continue;
+      const position=group.localToWorld(group.userData.anchor.clone()).project(camera);
+      const visible=position.z>=-1&&position.z<=1&&Math.abs(position.x)<.94&&Math.abs(position.y)<.94;
+      button.hidden=!visible;
+      if(visible){button.style.left=((position.x*.5+.5)*viewport.clientWidth)+'px';button.style.top=((-position.y*.5+.5)*viewport.clientHeight)+'px';}
+    }
   }
   filterParts(''); selectPart('turbos', false);
   return {

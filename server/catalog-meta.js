@@ -542,6 +542,24 @@ export const catalogMeta = {
       ]
     },
     {
+      "id": "drivetrain-layouts",
+      "topic": "basics",
+      "questions": [
+        "drivetrain-layouts-0",
+        "drivetrain-layouts-1",
+        "drivetrain-layouts-2"
+      ]
+    },
+    {
+      "id": "m-performance",
+      "topic": "basics",
+      "questions": [
+        "m-performance-0",
+        "m-performance-1",
+        "m-performance-2"
+      ]
+    },
+    {
       "id": "first-engine",
       "topic": "basics",
       "questions": [
@@ -846,12 +864,68 @@ export const catalogMeta = {
   ],
   "units": [
     "basics",
+    "powertrains",
     "parts",
     "models",
     "engines",
     "systems",
     "mechanic"
   ],
+  "unitMembers": {
+    "basics": [
+      "first-engine",
+      "transmission",
+      "horsepower",
+      "torque",
+      "rpm",
+      "basics-checkpoint",
+      "turbocharging",
+      "cooling",
+      "charging",
+      "differential",
+      "combustion",
+      "basics-finale"
+    ],
+    "powertrains": [
+      "engine-codes",
+      "drivetrain-layouts",
+      "m-performance",
+      "electrification"
+    ],
+    "parts": [
+      "part-turbocharger",
+      "part-air-filter",
+      "part-spark-plug",
+      "part-ignition-coil",
+      "part-fuel-injector",
+      "part-alternator",
+      "part-throttle-body",
+      "part-brake-caliper"
+    ],
+    "models": [
+      "m-models",
+      "m-generations",
+      "m-mixed",
+      "model-f80",
+      "model-g80",
+      "model-f10-m5"
+    ],
+    "engines": [
+      "engine-n54",
+      "engine-n55",
+      "engine-b58",
+      "engine-s63"
+    ],
+    "systems": [
+      "suspension",
+      "electronics"
+    ],
+    "mechanic": [
+      "diagnosis-cooling-flow",
+      "diagnosis-boost-path",
+      "diagnosis-signal-plausibility"
+    ]
+  },
   "legacy": [
     "combustion",
     "turbocharging",
@@ -860,6 +934,8 @@ export const catalogMeta = {
     "cooling",
     "suspension",
     "electronics",
-    "electrification"
+    "electrification",
+    "drivetrain-layouts",
+    "m-performance"
   ]
 };

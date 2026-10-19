@@ -6,12 +6,14 @@ import {createLocalDatabase} from '../server/local-db.mjs';
 import {handleApi} from '../server/api.js';
 import {emptyGarage,validateGarage} from '../server/validation.js';
 import {catalogMeta} from '../server/catalog-meta.js';
+import {academyRewardMetadata,validateAcademyTransition} from '../server/academy-policy.js';
 import {allModels} from '../public/catalog.js';
 import {academyLessons,academyReferenceData} from '../public/academy.js';
 import {partCatalog} from '../public/parts.js';
 import {createCurriculum} from '../public/academy-content.js';
 import {emptyProgress,beginSession,recordAnswer,finishSession} from '../public/academy-state.js';
 import {garageDefaults} from '../public/garage.js';
+import {mergeGuestGarage} from '../public/account-sync.js';
 import vercelApi from '../api/[...path].js';
 
 const directory=await fs.mkdtemp(path.join(os.tmpdir(),'bmw-backend-'));
@@ -31,8 +33,13 @@ const password='Three rivers and a BMW!';
 const signup=(email,name='Test driver',options={})=>call('/api/auth/signup',{method:'POST',body:{email,password,name},...options});
 try{
   const curriculum=createCurriculum(academyLessons,academyReferenceData.sources,partCatalog,allModels,academyReferenceData.scenarios);
-  const projection={models:allModels.map(model=>({id:model.id,combustion:!(/electric|hybrid/i.test((model.powertrain||'')+' '+(model.hybridNote||'')))&&Number(model.cylinders)>0,turbo:Number(model.turbos)>0})),lessons:curriculum.lessons.map(lesson=>({id:lesson.id,topic:lesson.topic,questions:lesson.questions.map(question=>question.id)})),units:curriculum.units.map(unit=>unit.id),legacy:academyLessons.map(lesson=>lesson.id)};
+  const projection={models:allModels.map(model=>({id:model.id,combustion:!(/electric|hybrid/i.test((model.powertrain||'')+' '+(model.hybridNote||'')))&&Number(model.cylinders)>0,turbo:Number(model.turbos)>0})),lessons:curriculum.lessons.map(lesson=>({id:lesson.id,topic:lesson.topic,questions:lesson.questions.map(question=>question.id)})),units:curriculum.units.map(unit=>unit.id),unitMembers:Object.fromEntries(curriculum.units.map(unit=>[unit.id,unit.lessons])),legacy:academyLessons.map(lesson=>lesson.id)};
   assert.deepEqual(catalogMeta,projection,'Backend ID metadata must track the public catalog and curriculum.');checks++;
+  assert.deepEqual({...academyRewardMetadata,unitMembers:Object.fromEntries(Object.entries(academyRewardMetadata.unitMembers).map(([id,ids])=>[id,[...ids].sort()]))},{
+    checkpointIds:curriculum.lessons.filter(lesson=>lesson.boss).map(lesson=>lesson.id),
+    advancedIds:curriculum.lessons.filter(lesson=>lesson.advanced).map(lesson=>lesson.id),
+    unitMembers:Object.fromEntries(curriculum.units.map(unit=>[unit.id,[...unit.lessons].sort()]))
+  },'Reward bounds must follow the actual lesson types and unit membership.');checks++;
   assert.deepEqual((await call('/api/auth/session')).data.user,null);checks++;
   check((await call('/api/garage')).status===401,'Anonymous garages must be private.');
   check(await handleApi(new Request(origin+'/api/state'),env)===null,'Legacy platform garage remains separately handled.');
@@ -80,6 +87,51 @@ try{
   check((await call('/api/garage',account)).data.state.academy.completed['m-generations'].accuracy===100,'New M recognition progress survives a server save and read.');
   const bobGarage=await call('/api/garage',{cookie:bob.cookie});
   check(bobGarage.data.revision===0&&bobGarage.data.state.builds.length===0,'Accounts never see another garage.');
+  const bobAccount={cookie:bob.cookie,csrf:bob.data.csrfToken};
+  const forged=emptyGarage();forged.academy=emptyProgress();forged.academy.xp=99999999;
+  check((await call('/api/garage',{...bobAccount,method:'PUT',body:{state:forged,revision:0}})).status===400,'A real authenticated PUT rejects invented XP with no reward records.');
+  forged.academy.xp=0;forged.academy.credits=999999;
+  check((await call('/api/garage',{...bobAccount,method:'PUT',body:{state:forged,revision:0}})).status===400,'Credits need qualifying reward records.');
+  check((await call('/api/garage',bobAccount)).data.revision===0,'Rejected rewards leave the saved garage unchanged.');
+  const extraXP=structuredClone(state);extraXP.academy.xp++;
+  check((await call('/api/garage',{...account,method:'PUT',body:{state:extraXP,revision:1}})).status===400,'Identical completion records cannot increment XP on each save.');
+  const badBadge=structuredClone(state);badBadge.academy.achievements['seven-day-driver']={day:'2026-10-18'};
+  check((await call('/api/garage',{...account,method:'PUT',body:{state:badBadge,revision:1}})).status===400,'An unearned achievement cannot be set by the client.');
+  const answerFor=question=>question.type==='match'?Object.fromEntries(question.pairs.map((_,i)=>[i,i])):question.correct;
+  function completeLocal(progress,activity,kind='lesson'){
+    const round=beginSession(activity,{kind,day:'2026-10-18'});
+    for(const question of activity.questions)recordAnswer(progress,round,question,answerFor(question),'2026-10-18');
+    return finishSession(progress,round,activity,curriculum.units,'2026-10-18');
+  }
+  // This fixture represents an existing save from before the new policy and
+  // private receipt ledger. Upgrading must not recalculate the old 25 XP.
+  const legacy=emptyGarage();legacy.academy=emptyProgress();completeLocal(legacy.academy,lesson);
+  legacy.academy.xp=25;legacy.academy.activity[0].xp=25;legacy.academy.awards=legacy.academy.awards.filter(key=>key!=='milestone:first-lesson');
+  await DB.prepare('INSERT INTO user_garages (user_id,state,revision,updated_at) VALUES (?,?,1,?)').bind(bob.data.user.id,JSON.stringify(legacy),Date.now()).run();
+  let policySave=await call('/api/garage',{...bobAccount,method:'PUT',body:{state:legacy,revision:1}});
+  check(policySave.status===200&&policySave.data.state.academy.xp===25,'A prior-policy personal record keeps its exact XP baseline.');
+  const replay=structuredClone(legacy);check(completeLocal(replay.academy,lesson).xp===0,'A completed old-policy lesson remains practice-only.');
+  policySave=await call('/api/garage',{...bobAccount,method:'PUT',body:{state:replay,revision:2}});
+  check(policySave.status===200&&policySave.data.state.academy.xp===25,'Replay attempts and activity still save without awarding points.');
+  const removed=structuredClone(replay);removed.academy.awards=[];removed.academy.completed={};removed.academy.achievements={};
+  policySave=await call('/api/garage',{...bobAccount,method:'PUT',body:{state:removed,revision:3}});
+  check(policySave.status===200,'An older device snapshot can replace the personal record without losing server receipt history.');
+  const readded=structuredClone(replay);readded.academy.xp=50;
+  check((await call('/api/garage',{...bobAccount,method:'PUT',body:{state:readded,revision:4}})).status===400,'Removing and re-adding a completion cannot make its reward payable again.');
+  const guest=emptyGarage();guest.academy=emptyProgress();completeLocal(guest.academy,curriculum.lessons.find(item=>item.id==='torque'));
+  const imported=mergeGuestGarage(replay,guest);
+  policySave=await call('/api/garage',{...bobAccount,method:'PUT',body:{state:imported,revision:4}});
+  check(policySave.status===200&&policySave.data.state.academy.xp===65,'Explicit guest merging preserves disjoint progress and the conservative XP maximum.');
+  check(!Object.hasOwn(policySave.data.state,'_academyReceipts')&&!Object.hasOwn((await call('/api/garage',bobAccount)).data.state,'_academyReceipts'),'Private reward receipt history is never returned to the browser.');
+  const storedGarage=JSON.parse((await DB.prepare('SELECT state FROM user_garages WHERE user_id = ?').bind(bob.data.user.id).first()).state);
+  check(storedGarage._academyReceipts.seen.includes('lesson:first-engine'),'The receipt ledger survives snapshot replacement in the existing JSON column.');
+  policySave=await call('/api/garage',{...bobAccount,method:'PUT',body:{state:{...emptyGarage(),academy:emptyProgress()},revision:5}});
+  check(policySave.status===200&&policySave.data.state.academy.xp===0,'A full Academy reset remains supported.');
+  const oldDaily=emptyGarage();oldDaily.academy=emptyProgress();completeLocal(oldDaily.academy,{...lesson,id:'daily-2026-10-18'},'daily');oldDaily.academy.xp=30;oldDaily.academy.activity[0].xp=30;
+  policySave=await call('/api/garage',{...bobAccount,method:'PUT',body:{state:oldDaily,revision:6}});
+  check(policySave.status===200&&policySave.data.state.academy.xp===30,'An imported daily challenge retains the previous 30-XP policy.');
+  check(validateAcademyTransition({...oldDaily.academy,xp:4000},{...oldDaily.academy,xp:4000}).ok,'Already saved historical XP is a preserved baseline rather than silently recalculated.');
+  check(!validateAcademyTransition({...oldDaily.academy,xp:4001},{...oldDaily.academy,xp:4000}).ok,'Preserving historical points does not allow an unsupported new increment.');
   const conflict=await call('/api/garage',{...account,method:'PUT',body:{state:emptyGarage(),revision:0}});
   check(conflict.status===409&&conflict.data.revision===1&&conflict.data.state.favorites[0]==='f80','Revision conflicts return the current snapshot without overwriting it.');
   const invalid=structuredClone(state);invalid.builds[0].config.ecu='999';

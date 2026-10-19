@@ -49,5 +49,8 @@ fs.writeFileSync(path.join(server,'assets.js'),chunks.map((filename,index)=>`imp
 fs.writeFileSync(path.join(server,'index.js'),fs.readFileSync('worker/index.js','utf8').replace("'../server/api.js'","'./backend/api.js'"));
 fs.copyFileSync('public/routes.js',path.join(server,'routes.js'));
 fs.mkdirSync(path.join(server,'backend'),{recursive:true});
-for(const filename of ['api.js','passwords.js','validation.js','catalog-meta.js'])fs.copyFileSync(path.join('server',filename),path.join(server,'backend',filename));
+for(const filename of ['api.js','passwords.js','validation.js','catalog-meta.js','academy-policy.js'])fs.copyFileSync(path.join('server',filename),path.join(server,'backend',filename));
+// Shared reward definitions stay identical in browser, Node and Worker runtimes.
+fs.mkdirSync(path.join(server,'public'),{recursive:true});
+for(const filename of ['academy-rewards.js','academy-achievements.js'])fs.copyFileSync(path.join('public',filename),path.join(server,'public',filename));
 console.log(`Built ${Object.keys(assets).length} locally served assets in ${chunks.length} modules with the authenticated garage API.`);

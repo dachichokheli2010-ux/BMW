@@ -4,15 +4,27 @@ import {academyLessons,academyReferenceData} from '../public/academy.js';
 import {allModels} from '../public/catalog.js';
 import {partCatalog} from '../public/parts.js';
 import {createCurriculum} from '../public/academy-content.js';
+import {lessonTeaching} from '../public/academy-teaching.js';
 import {createMChallenges,mRecognitionModels,shuffled} from '../public/academy-recognition.js';
-import {emptyProgress,restoreProgress,localDay,beginSession,recordAnswer,finishSession,currentStreak,mastery,dueQuestions,daySeed,levelProgress,validateAnswer} from '../public/academy-state.js';
+import {emptyProgress,restoreProgress,localDay,beginSession,restoreSession,recordAnswer,finishSession,currentStreak,mastery,dueQuestions,daySeed,levelProgress,validateAnswer} from '../public/academy-state.js';
+import {REWARD_POLICY,lessonReward,rewardPreview} from '../public/academy-rewards.js';
+import {achievementProgress,reconcileAchievements} from '../public/academy-achievements.js';
+import {validateAcademy} from '../server/validation.js';
 
 const {lessons,units}=createCurriculum(academyLessons,academyReferenceData.sources,partCatalog,allModels,academyReferenceData.scenarios);
 const answerFor=q=>q.type==='order'?[...q.correct]:q.type==='match'?Object.fromEntries(q.pairs.map((_,i)=>[i,i])):q.correct;
 const complete=(state,lesson,day,kind='lesson')=>{const session=beginSession(lesson,{day,kind});for(const q of lesson.questions)assert.equal(recordAnswer(state,session,q,answerFor(q),day).correct,true);return {session,result:finishSession(state,session,lesson,units,day)};};
 
-assert.equal(academyLessons.length,8,'Legacy learning/search exports remain intact');
+assert.equal(academyLessons.length,10,'Legacy lessons and the two new beginner lessons are present');
 assert.equal(units[0].lessons.length,12,'Complete beginner course plus two checkpoints');
+assert.ok(units.find(unit=>unit.id==='powertrains').lessons.includes('engine-codes'));
+assert.ok(units.find(unit=>unit.id==='powertrains').lessons.includes('drivetrain-layouts'));
+assert.ok(units.find(unit=>unit.id==='powertrains').lessons.includes('m-performance'));
+for(const id of ['drivetrain-layouts','m-performance']){
+  const teaching=lessonTeaching(lessons.find(lesson=>lesson.id===id),allModels);
+  assert.deepEqual(teaching.examples.map(model=>model.id),['f10-m5','g80-m3-cs']);
+  assert.ok(teaching.terms.length);
+}
 assert.equal(new Set(lessons.map(l=>l.id)).size,lessons.length);
 const questionIds=new Set();
 for(const lesson of lessons){
@@ -53,7 +65,8 @@ assert.equal(recordAnswer(state,session,first,first.correct,day).correct,true);
 assert.equal(recordAnswer(state,session,first,first.correct,day),null,'Resolved answers cannot be resubmitted');
 for(const q of lesson.questions.slice(1))recordAnswer(state,session,q,answerFor(q),day);
 const result=finishSession(state,session,lesson,units,day);
-assert.equal(result.xp,15);assert.equal(result.accuracy,67);assert.equal(result.streak,1);
+assert.equal(result.xp,50);assert.equal(result.firstBonus,30);assert.equal(result.accuracy,67);assert.equal(result.streak,1);
+assert.deepEqual(state.achievements['first-ignition'],{day},'The first badge stores the actual completion date');
 assert.equal(mastery(state,'basics'),67,'Correcting a mistake cannot rewrite first-attempt accuracy');
 assert.equal(finishSession(state,session,lesson,units,day),null);
 assert.equal(complete(state,lesson,day).result.xp,0,'Replaying cannot farm rewards');
@@ -66,6 +79,9 @@ const roundtrip=restoreProgress(JSON.parse(JSON.stringify(state)));
 assert.deepEqual(roundtrip,state,'Guest XP, attempts, queue and history survive persistence');
 assert.equal(restoreProgress({version:2,xp:-5,credits:NaN,days:['bad']}).xp,0);
 assert.equal(restoreProgress(null).xp,0);
+assert.deepEqual(restoreProgress({version:2,days:['2026-02-31']}).days,[],'Impossible calendar dates cannot become streak evidence');
+state.selectedPath='engines';assert.equal(restoreProgress(state).selectedPath,'engines');
+assert.equal(restoreProgress({...state,selectedPath:'invented'}).selectedPath,'basics');
 assert.equal(currentStreak({...emptyProgress(),days:['2026-10-16','2026-10-17','2026-10-18']},day),3);
 assert.equal(currentStreak({...emptyProgress(),days:['2026-10-17']},day),1,'Yesterday remains active before today’s completion');
 assert.equal(currentStreak({...emptyProgress(),days:['2026-10-16']},day),0,'A missing calendar day resets the current streak');
@@ -76,11 +92,43 @@ assert.equal(daySeed(day),daySeed(day));assert.notEqual(daySeed(day),daySeed('20
 assert.equal(levelProgress(0).level,1);assert.equal(levelProgress(75).level,2);
 
 const rewardState=emptyProgress(),daily={...lesson,id:'daily-'+day};
-assert.equal(complete(rewardState,daily,day,'daily').result.xp,30);
+assert.equal(complete(rewardState,daily,day,'daily').result.xp,25);
 assert.equal(complete(rewardState,daily,day,'daily').result.xp,0,'Daily completion rewards once per local day');
 const unitState=emptyProgress(),firstUnit=units[0];
 for(const id of firstUnit.lessons){const l=lessons.find(v=>v.id===id);complete(unitState,l,day);}
 assert.ok(unitState.awards.includes('unit:basics'));
-assert.equal(unitState.activity.at(-1).xp,160,'Final perfect checkpoint includes the single 100 XP unit bonus');
+assert.equal(unitState.activity.at(-1).xp,165,'Final perfect checkpoint includes the single 100 XP unit bonus');
 assert.equal(complete(unitState,lesson,day).result.xp,0,'Unit completion bonus cannot be farmed');
-console.log(`PASS Academy: ${lessons.length} sourced lessons, ${questionIds.size} validated questions; rewards, retries, persistence, streaks and review scheduling.`);
+
+assert.ok(Object.isFrozen(REWARD_POLICY));
+assert.equal(lessonReward(lesson),20);assert.equal(rewardPreview(lesson,{perfect:true,firstLesson:true}),65);
+assert.equal(complete(emptyProgress(),lesson,day).result.xp,65,'The first perfect lesson earns each configured reward once');
+const historical=restoreProgress({...emptyProgress(),xp:25,completed:{'first-engine':{day:'2026-10-15',accuracy:100,topic:'basics'}},awards:['lesson:first-engine']});
+assert.equal(historical.xp,25,'Restoring progress never reprices historical rewards');
+assert.equal(complete(historical,lesson,day).result.xp,0,'Old-policy lesson rewards cannot be earned again');
+assert.equal(complete(historical,lessons.find(item=>item.id==='torque'),day).result.firstBonus,0,'Existing learners cannot earn a new first-lesson bonus');
+assert.deepEqual(historical.achievements['first-ignition'],{day:'2026-10-15'});
+const migrated=restoreProgress({...emptyProgress(),completed:{combustion:{day:null,accuracy:null,topic:'basics',migrated:true}}});
+assert.deepEqual(migrated.achievements['first-ignition'],{day:null},'Unknown historical badge dates remain unknown');
+reconcileAchievements(migrated,{day});assert.deepEqual(migrated.achievements['first-ignition'],{day:null},'Reconciliation does not invent an unlock date');
+const badges={...emptyProgress(),days:['2026-10-10','2026-10-11','2026-10-12','2026-10-13','2026-10-14','2026-10-15','2026-10-16','2026-10-18']};
+reconcileAchievements(badges);assert.deepEqual(badges.achievements['seven-day-driver'],{day:'2026-10-16'},'The streak badge preserves the first seven-day milestone');
+assert.equal(achievementProgress(badges).find(badge=>badge.id==='seven-day-driver').earned,true);
+
+const resumed=beginSession(lesson,{day});recordAnswer(emptyProgress(),resumed,first,first.correct,day);
+assert.deepEqual(restoreSession(JSON.parse(JSON.stringify(resumed)),lesson,{day}),resumed,'First attempts and resolved questions survive a quiz refresh');
+assert.equal(restoreSession({...resumed,questionIds:[...resumed.questionIds].reverse()},lesson,{day}),null,'A changed published question set cannot resume stale answers');
+assert.equal(restoreSession({...resumed,resolved:[first.id,first.id]},lesson,{day}),null);
+assert.equal(restoreSession({...resumed,first:{[first.id]:'true'}},lesson,{day}),null);
+const midnight=emptyProgress(),lateSession=beginSession(daily,{kind:'daily',day});
+for(const question of daily.questions)recordAnswer(midnight,lateSession,question,answerFor(question),'2026-10-19');
+assert.equal(finishSession(midnight,lateSession,daily,units,'2026-10-19').xp,25);
+assert.ok(midnight.awards.includes('daily:'+day),'A midnight crossing rewards the original daily challenge once');
+assert.equal(midnight.activity.at(-1).day,'2026-10-19');
+assert.ok(validateAcademy(midnight),'A daily round completed after midnight remains safe to sync');
+assert.equal(validateAcademy({...midnight,selectedPath:'unknown'}),false);
+assert.equal(validateAcademy({...midnight,achievements:{'invented-badge':{day}}}),false);
+assert.equal(validateAcademy({...midnight,achievements:{'first-ignition':{day:'2026-02-31'}}}),false);
+const oldSnapshot=structuredClone(historical);delete oldSnapshot.selectedPath;delete oldSnapshot.achievements;
+assert.ok(validateAcademy(oldSnapshot),'Existing version-2 account snapshots remain supported');
+console.log(`PASS Academy: ${lessons.length} sourced lessons, ${questionIds.size} validated questions; configured rewards, historical compatibility, achievements, resume validation, midnight completion, streaks and review scheduling.`);

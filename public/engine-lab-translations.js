@@ -1,0 +1,46 @@
+import {registerTranslations} from './preferences.js';
+
+export const engineLabTranslations=[
+  ['Camera controls','კამერის მართვა','Управление камерой'],
+  ['Rotate view left','ხედის მარცხნივ შემობრუნება','Повернуть вид влево'],
+  ['Rotate view right','ხედის მარჯვნივ შემობრუნება','Повернуть вид вправо'],
+  ['Rotate view up','ხედის ზემოთ შემობრუნება','Повернуть вид вверх'],
+  ['Rotate view down','ხედის ქვემოთ შემობრუნება','Повернуть вид вниз'],
+  ['Zoom in','მოახლოება','Приблизить'],
+  ['Zoom out','დაშორება','Отдалить'],
+  ['Reset camera','კამერის საწყის პოზიციაზე დაბრუნება','Сбросить положение камеры'],
+  ['Drag or use camera buttons to orbit · zoom buttons or + / − to zoom','მოსაბრუნებლად გადაათრიე ან გამოიყენე კამერის ღილაკები · მასშტაბისთვის გამოიყენე მასშტაბის ღილაკები ან + / −','Перетаскивайте или используйте кнопки камеры для вращения · кнопки масштаба или + / − для приближения'],
+  ['Click to inspect · press 0 to reset','დასათვალიერებლად დააწკაპუნე · საწყისზე დასაბრუნებლად დააჭირე 0-ს','Нажмите, чтобы изучить · 0 — сброс'],
+  ['Engine component hotspots','ძრავის კომპონენტების წერტილები','Точки компонентов двигателя'],
+  ['Four-stroke cycle','ოთხტაქტიანი ციკლი','Четырёхтактный цикл'],
+  ['Pause four-stroke cycle','ოთხტაქტიანი ციკლის შეჩერება','Приостановить четырёхтактный цикл'],
+  ['Cycle: ready. Press the button to start.','ციკლი მზადაა. დასაწყებად დააჭირე ღილაკს.','Цикл готов. Нажмите кнопку, чтобы начать.'],
+  ['Intake stroke','შეწოვის სვლა','Такт впуска'],
+  ['Compression stroke','შეკუმშვის სვლა','Такт сжатия'],
+  ['Power stroke','სამუშაო სვლა','Рабочий ход'],
+  ['Exhaust stroke','გამოშვების სვლა','Такт выпуска'],
+  ['Cycle complete: two crankshaft revolutions.','ციკლი დასრულდა: მუხლა ლილვის ორი ბრუნი.','Цикл завершён: два оборота коленвала.'],
+  ['Cycle paused. Press the button to start again.','ციკლი შეჩერდა. თავიდან დასაწყებად დააჭირე ღილაკს.','Цикл приостановлен. Нажмите кнопку, чтобы начать заново.'],
+  ['Inspect Twin-scroll turbochargers','დაათვალიერე ორმაგი არხის ტურბოები','Осмотреть турбокомпрессоры Twin-scroll'],
+  ['Inspect V8 cylinder block','დაათვალიერე V8 ცილინდრების ბლოკი','Осмотреть блок цилиндров V8'],
+  ['Inspect Valves & VALVETRONIC','დაათვალიერე სარქველები და VALVETRONIC','Осмотреть клапаны и VALVETRONIC'],
+  ['Inspect Crankshaft','დაათვალიერე მუხლა ლილვი','Осмотреть коленвал'],
+  ['Inspect Air intake & charge pipes','დაათვალიერე ჰაერის შემშვები და წნევიანი მილები','Осмотреть впуск и патрубки наддува'],
+  ['Twin-scroll turbochargers','ორმაგი არხის ტურბოები','Турбокомпрессоры Twin-scroll'],
+  ['V8 cylinder block','V8 ცილინდრების ბლოკი','Блок цилиндров V8'],
+  ['Valves & VALVETRONIC','სარქველები და VALVETRONIC','Клапаны и VALVETRONIC'],
+  ['Crankshaft','მუხლა ლილვი','Коленчатый вал'],
+  ['Air intake & charge pipes','ჰაერის შემშვები და წნევიანი მილები','Впуск и патрубки наддува'],
+  ['Model-specific details · F10 M5 / S63Tü','კონკრეტული მოდელის მონაცემები · F10 M5 / S63Tü','Данные модели · F10 M5 / S63Tü'],
+  ['Not available.','მონაცემი მიუწვდომელია.','Нет данных.'],
+  ['BMW documents two exhaust-driven turbines, each with two separated exhaust passages.','BMW-ის დოკუმენტაციით, გამონაბოლქვი ორ ტურბინას ამოძრავებს; თითოეულს გამონაბოლქვის ორი განცალკევებული არხი აქვს.','По данным BMW, выхлоп приводит в движение две турбины, каждая с двумя раздельными каналами выхлопа.'],
+  ['BMW identifies the F10 M5 engine as a 90-degree V8.','BMW F10 M5-ის ძრავად 90-გრადუსიან V8-ს უთითებს.','BMW указывает для F10 M5 двигатель V8 с углом развала 90 градусов.'],
+  ['BMW documents air-to-liquid charge cooling for the F10 M5.','BMW F10 M5-ისთვის ჰაერ-სითხის დამტენ ჰაერის გაგრილებას აღწერს.','BMW описывает для F10 M5 жидкостное охлаждение наддувочного воздуха.'],
+  ['BMW documents variable cam timing for the F10 M5 engine.','BMW F10 M5-ის ძრავისთვის გამანაწილებელი ლილვის ფაზების ცვლას აღწერს.','BMW указывает для двигателя F10 M5 изменение фаз газораспределения.'],
+  ['Not available for this component.','ამ კომპონენტისთვის მონაცემი მიუწვდომელია.','Для этого компонента данных нет.'],
+  ['BMW PressClub source','BMW PressClub-ის წყარო','Источник BMW PressClub'],
+];
+
+export function registerEngineLabTranslations(){
+  registerTranslations(engineLabTranslations);
+}

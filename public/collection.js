@@ -155,8 +155,8 @@ export function mountCollection({models, catalog=models, getCurrent=()=>null, se
   const shared=(params.get('compare')||'').split(',').filter(id=>catalog.some(m=>m.id===id)).slice(0,3);
   if(shared.length){setComparison(shared);if(location.pathname!=='/compare')requestAnimationFrame(openComparison);}
   if(initial&&location.pathname==='/models')requestAnimationFrame(()=>$('#collection').scrollIntoView({block:'start'}));
-  document.querySelectorAll('[data-model-total]').forEach(el=>el.textContent=models.length);
-  document.querySelectorAll('[data-m-total]').forEach(el=>el.textContent=models.filter(isM).length);
+  document.querySelectorAll('[data-model-total]').forEach(el=>{el.textContent=models.length;el.classList.remove('count-skeleton');el.removeAttribute('aria-busy');});
+  document.querySelectorAll('[data-m-total]').forEach(el=>{el.textContent=models.filter(isM).length;el.classList.remove('count-skeleton');el.removeAttribute('aria-busy');});
   $('#clear-recent')?.addEventListener('click',()=>{try{localStorage.removeItem('apex-recent');}catch{}renderRecent();});
   $('#detail-save').onclick=()=>{const m=getCurrent();if(!m)return;favorites.has(m.id)?favorites.delete(m.id):favorites.add(m.id);save('apex-favorites',favorites);render();};
   $('#detail-compare').onclick=()=>{const m=getCurrent();if(!m)return;if(!comparison.has(m.id)){if(comparison.size>=3){toast(t('Select up to 3 models to compare.'));return;}setComparison([...comparison,m.id]);}openComparison();};

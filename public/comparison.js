@@ -34,6 +34,26 @@ export function convertedTorque(model, units = 'metric') {
   const nm = torqueInNm(model.torque, model.torqueUnit);
   return nm === null ? null : {value:nm / (units === 'imperial' ? 1.3558179483314004 : 1), unit:units === 'imperial' ? 'lb-ft' : 'Nm', nm};
 }
+export function powerToWeightKwPerTonne(model) {
+  const kw=powerInKW(model.power,model.powerUnit),kg=positive(model.weightKg);
+  return kw===null||kg===null?null:kw/(kg/1000);
+}
+export function comparisonWinner(values,direction='higher') {
+  const comparable=values.filter(value=>Number.isFinite(value)&&value>0);
+  if(comparable.length<2)return null;
+  return direction==='lower'?Math.min(...comparable):Math.max(...comparable);
+}
+export function comparisonBarPercent(value,best,direction='higher') {
+  if(!Number.isFinite(value)||!Number.isFinite(best)||value<=0||best<=0)return 0;
+  return Math.max(1,Math.min(100,direction==='lower'?best/value*100:value/best*100));
+}
+export function comparisonShareURL(origin,ids,units='metric',differencesOnly=false) {
+  const url=new URL('/compare',origin),selected=[...new Set(Array.isArray(ids)?ids:[])].filter(id=>typeof id==='string'&&id).slice(0,3);
+  if(selected.length)url.searchParams.set('compare',selected.join(','));
+  url.searchParams.set('units',units==='imperial'?'imperial':'metric');
+  if(differencesOnly)url.searchParams.set('differences','1');
+  return url.href;
+}
 
 export function createComparisonController({catalog, getSelected, onSelectionChange, dialog, toast = () => {}}) {
   const abort = new AbortController(), byId = new Map(catalog.map(model => [model.id, model]));
@@ -74,11 +94,15 @@ export function createComparisonController({catalog, getSelected, onSelectionCha
     const kg = positive(model.weightKg);
     return kg === null ? missing : `${number(units === 'imperial' ? positive(model.verified?.weightUSLb) ?? kg * 2.2046226218 : kg)} ${units === 'imperial' ? 'lb' : 'kg'}`;
   }
+  function massValue(model) {
+    const kg=positive(model.weightKg);
+    return kg===null?null:units==='imperial'?positive(model.verified?.weightUSLb)??kg*2.2046226218:kg;
+  }
   function rows(models) {
     const groups = [
       {id:'powertrain', name:'Power & powertrain', rows:[
-        {name:'Power', metric:'power', value:model => convertedPower(model, units)?.value ?? null},
-        {name:'Torque', metric:'torque', value:model => convertedTorque(model, units)?.value ?? null},
+        {name:'Power', metric:'power', direction:'higher', value:model => convertedPower(model, units)?.value ?? null, format:model => {const result=convertedPower(model,units);return result?{value:number(Math.round(result.value)),unit:result.unit,secondary:`${number(Math.round(result.kw))} kW`}:null;}},
+        {name:'Torque', metric:'torque', direction:'higher', value:model => convertedTorque(model, units)?.value ?? null, format:model => {const result=convertedTorque(model,units);return result?{value:number(Math.round(result.value)),unit:result.unit}:null;}},
         {name:'Powertrain', value:model => t(model.powertrain || model.fuel || (electric(model) ? 'Electric' : missing))},
         {name:'Engine / motor', value:model => [model.code, model.layout].filter(Boolean).join(' / ') || missing},
         {name:'Drive layout', value:model => t(model.drivetrain || (electric(model) ? model.layout : '') || missing)},
@@ -87,15 +111,16 @@ export function createComparisonController({catalog, getSelected, onSelectionCha
         {name:'Battery energy', optional:true, value:battery}
       ]},
       {id:'performance', name:'Performance', rows:[
+        {name:'Power-to-weight', metric:'powerToWeight', direction:'higher', value:powerToWeightKwPerTonne, format:(model,value)=>({value:number(value,1),unit:'kW/t'})},
         // These different acceleration targets cannot be converted into each other.
-        {name:'0–100 km/h', value:model => positive(model.acceleration100) === null ? missing : `${number(model.acceleration100, 1)} s`},
+        {name:'0–100 km/h', metric:'acceleration', direction:'lower', value:model => positive(model.acceleration100), format:(model,value)=>({value:number(value,1),unit:'s'})},
         {name:'0–60 mph', optional:true, value:model => positive(model.verified?.acceleration60Mph) === null ? missing : `${number(model.verified.acceleration60Mph, 1)} s`},
         {name:'Top speed', value:speed},
         {name:'Speed limitation / options', optional:true, detail:true, value:model => model.verified?.topSpeedNote || missing}
       ]},
       {id:'dimensions', name:'Size & body', rows:[
         {name:'Body style', value:model => model.body ? t(model.body === 'Coupés' ? 'Coupes' : model.body) : missing},
-        {name:'Mass', value:mass},
+        {name:'Mass', metric:'mass', direction:'lower', value:massValue, format:model=>{const value=massValue(model);return value===null?null:{value:number(value),unit:units==='imperial'?'lb':'kg'};}},
         {name:'Mass convention', detail:true, value:model => model.weightConvention || missing},
         {name:'Length / width / height', value:dimensions},
         {name:'Wheelbase', value:wheelbase}
@@ -111,17 +136,16 @@ export function createComparisonController({catalog, getSelected, onSelectionCha
       ]}
     ];
     return groups.map(group => ({...group, rows:group.rows.map(row => {
-      const values = models.map(row.value).map(display);
-      const differs = models.length > 1 && new Set(values.map(value => typeof value === 'number' ? Math.round(value) : String(value))).size > 1;
-      return {...row, differs, values};
+      const rawValues = models.map(row.value),values=rawValues.map(display);
+      const differs = models.length > 1 && new Set(rawValues.map(value => typeof value === 'number' ? Math.round(value*1000) : String(display(value)))).size > 1;
+      return {...row, differs, values, rawValues};
     }).filter(row => !(!row.metric && row.values.every(value => value === missing)) && (!differencesOnly || models.length < 2 || row.differs))}));
   }
-  function metricCell(model, row, models) {
-    const result = row.metric === 'power' ? convertedPower(model, units) : convertedTorque(model, units);
-    if (!result) return `<span class="cmp-missing" aria-label="${esc(t('Not documented'))}">${missing}</span>`;
-    const values = models.map(row.value).filter(value => value !== null), highest = Math.max(...values);
-    const best = values.length > 1 && new Set(values.map(Math.round)).size > 1 && Math.round(result.value) === Math.round(highest);
-    return `<div class="cmp-metric${best ? ' is-highest' : ''}"><strong>${esc(number(Math.round(result.value)))}<small>${esc(result.unit)}</small></strong>${best ? `<span class="cmp-best" title="${esc(t('Highest listed figure'))}">↑<span class="sr-only"> ${esc(t('Highest listed figure'))}</span></span>` : ''}${row.metric === 'power' ? `<span class="cmp-secondary">${esc(number(Math.round(result.kw)))} kW</span>` : ''}<span class="cmp-bar" aria-hidden="true"><i style="width:${Math.max(1, Math.min(100, result.value / highest * 100)).toFixed(2)}%"></i></span></div>`;
+  function metricCell(model, row, index) {
+    const value=row.rawValues[index];
+    if(value===null)return `<span class="cmp-missing" aria-label="${esc(t('Not documented'))}">${missing}</span>`;
+    const bestValue=comparisonWinner(row.rawValues,row.direction),best=bestValue!==null&&value===bestValue,formatted=row.format(model,value);
+    return `<div class="cmp-metric${best ? ' is-best' : ''}"><strong>${esc(formatted.value)}<small>${esc(formatted.unit)}</small></strong>${best ? `<span class="cmp-best" title="${esc(t('Best in comparison'))}">✓<span class="sr-only"> ${esc(t('Best in comparison'))}</span></span>` : ''}${formatted.secondary ? `<span class="cmp-secondary">${esc(formatted.secondary)}</span>` : ''}<span class="cmp-bar" aria-hidden="true"><i style="width:${comparisonBarPercent(value,bestValue||value,row.direction).toFixed(2)}%"></i></span></div>`;
   }
   function slot(model, index) {
     if (!model) return `<button type="button" class="cmp-slot cmp-slot-empty" data-cmp-pick="${index}" aria-label="${esc(t('Add a BMW'))}, ${index + 1}"><span class="cmp-slot-index">0${index + 1}</span><span class="cmp-slot-plus">${svg('plus')}</span><strong>${esc(t('Add a BMW'))}</strong><span>${esc(t('Model, chassis or engine'))}</span></button>`;
@@ -149,15 +173,11 @@ export function createComparisonController({catalog, getSelected, onSelectionCha
     return `<section class="cmp-suggestions"><div class="cmp-section-heading"><h3>${esc(t('Start with a good rivalry.'))}</h3><span>${esc(t('CURATED COMPARISONS'))}</span></div><div class="cmp-suggestion-grid">${presets.map(preset => `<button type="button" class="cmp-suggestion" data-cmp-preset="${preset.ids.join(',')}"><div class="cmp-suggestion-photos">${preset.ids.slice(0,2).map(id => `<img src="${esc(byId.get(id).car)}" alt="${esc(byId.get(id).name)} ${esc(generation(byId.get(id)))}" loading="lazy">`).join('')}<span>VS</span></div><span class="cmp-suggestion-copy"><strong>${esc(t(preset.title))}</strong><small>${esc(t(preset.subtitle))}</small>${svg('arrow')}</span></button>`).join('')}</div></section>`;
   }
   function shareUrl() {
-    const url = new URL('/compare', location.origin);
-    if (selectedId().length) url.searchParams.set('compare', selectedId().join(','));
-    url.searchParams.set('units', units);
-    if (differencesOnly) url.searchParams.set('differences', '1');
-    return url.href;
+    return comparisonShareURL(location.origin,selectedId(),units,differencesOnly);
   }
   function syncAddress() { if (mountedHost && /^\/compare\/?$/.test(location.pathname)) history.replaceState(history.state, '', shareUrl()); }
   function table(models, groups) {
-    return `<div class="cmp-spec-heading"><h3>${esc(t('The details that make the difference.'))}</h3><span class="cmp-swipe">↔ ${esc(t('Swipe to compare'))}</span></div><div class="cmp-scroll" role="region" tabindex="0" aria-label="${esc(t('Model specification comparison'))}"><table class="cmp-table"><caption class="sr-only">${esc(t('Factory specifications for your selected BMWs'))}</caption><colgroup><col class="cmp-label-col">${models.map(() => '<col>').join('')}</colgroup><thead><tr><th class="cmp-corner" scope="col">${esc(t('Specification'))}<small>${esc(t('Factory figures'))}</small></th>${models.map(model => `<th scope="col"><span class="cmp-table-generation">${esc(generation(model))}</span><strong>${esc(model.name.replace(/^BMW /, ''))}</strong></th>`).join('')}</tr></thead>${groups.filter(group => group.rows.length).map(group => `<tbody id="cmp-group-${group.id}"><tr class="cmp-group"><th scope="rowgroup" colspan="${models.length + 1}">${esc(t(group.name))}</th></tr>${group.rows.map(row => `<tr class="${row.metric ? 'cmp-metric-row ' : ''}${row.detail ? 'cmp-detail-row ' : ''}${row.differs ? 'cmp-is-different' : ''}"><th scope="row">${esc(t(row.name))}</th>${models.map((model, index) => `<td>${row.metric ? metricCell(model, row, models) : `<span${row.values[index] === missing ? ` class="cmp-missing" aria-label="${esc(t('Not documented'))}"` : ''}>${esc(row.values[index])}</span>`}</td>`).join('')}</tr>`).join('')}</tbody>`).join('')}<tfoot><tr><th scope="row">${esc(t('Explore further'))}</th>${models.map(model => `<td><div class="cmp-car-links"><a href="/models?model=${encodeURIComponent(model.id)}">${esc(t('Explore model'))} ${svg('arrow')}</a>${safeLink(model.source) ? `<a href="${safeLink(model.source)}" target="_blank" rel="noopener">${esc(t('Read BMW source'))}<span aria-hidden="true">↗</span></a>` : ''}</div></td>`).join('')}</tr></tfoot></table></div>`;
+    return `<div class="cmp-spec-heading"><h3>${esc(t('The details that make the difference.'))}</h3><span class="cmp-swipe">↔ ${esc(t('Swipe to compare'))}</span></div><div class="cmp-scroll" role="region" tabindex="0" aria-label="${esc(t('Model specification comparison'))}"><table class="cmp-table"><caption class="sr-only">${esc(t('Factory specifications for your selected BMWs'))}</caption><colgroup><col class="cmp-label-col">${models.map(() => '<col>').join('')}</colgroup><thead><tr><th class="cmp-corner" scope="col">${esc(t('Specification'))}<small>${esc(t('Factory figures'))}</small></th>${models.map(model => `<th scope="col"><span class="cmp-table-generation">${esc(generation(model))}</span><strong>${esc(model.name.replace(/^BMW /, ''))}</strong></th>`).join('')}</tr></thead>${groups.filter(group => group.rows.length).map(group => `<tbody id="cmp-group-${group.id}"><tr class="cmp-group"><th scope="rowgroup" colspan="${models.length + 1}">${esc(t(group.name))}</th></tr>${group.rows.map(row => `<tr class="${row.metric ? 'cmp-metric-row ' : ''}${row.detail ? 'cmp-detail-row ' : ''}${row.differs ? 'cmp-is-different' : ''}"><th scope="row">${esc(t(row.name))}</th>${models.map((model, index) => `<td>${row.metric ? metricCell(model, row, index) : `<span${row.values[index] === missing ? ` class="cmp-missing" aria-label="${esc(t('Not documented'))}"` : ''}>${esc(row.values[index])}</span>`}</td>`).join('')}</tr>`).join('')}</tbody>`).join('')}<tfoot><tr><th scope="row">${esc(t('Explore further'))}</th>${models.map(model => `<td><div class="cmp-car-links"><a href="/models?model=${encodeURIComponent(model.id)}">${esc(t('Explore model'))} ${svg('arrow')}</a>${safeLink(model.source) ? `<a href="${safeLink(model.source)}" target="_blank" rel="noopener">${esc(t('Read BMW source'))}<span aria-hidden="true">↗</span></a>` : ''}</div></td>`).join('')}</tr></tfoot></table></div>`;
   }
   function content() {
     const models = chosen(), groups = rows(models), heading = mountedHost ? 'h1' : 'h2';

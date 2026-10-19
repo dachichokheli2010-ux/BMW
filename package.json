@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node scripts/check.mjs && node scripts/check-academy.mjs && node scripts/check-backend.mjs && node scripts/check-account-sync.mjs && node scripts/check-postgres.mjs && npm run check:translations && npm run check:profiles",
+    "check": "node scripts/check.mjs && node scripts/check-academy.mjs && node scripts/check-academy-session.mjs && node scripts/check-academy-translations.mjs && node scripts/check-backend.mjs && node scripts/check-account-sync.mjs && node scripts/check-postgres.mjs && npm run check:translations && npm run check:profiles && npm run check:icons",
     "build": "node scripts/build.mjs",
     "db:generate": "drizzle-kit generate",
     "start": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/preview-local.mjs",
@@ -17,7 +17,8 @@
     "audit:models": "node scripts/audit-models.mjs --write",
     "audit:models:strict": "node scripts/audit-models.mjs --strict",
     "photos:prepare": "node scripts/prepare-model-photos.mjs",
-    "prebuild": "npm run check:translations && npm run check:profiles"
+    "prebuild": "npm run check:translations && npm run check:profiles",
+    "check:icons": "node scripts/check-icons.mjs"
   },
   "engines": {
     "node": ">=24.0.0"
@@ -30,6 +31,7 @@
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.10",
     "drizzle-kit": "0.31.5",
+    "linkedom": "^0.18.13",
     "sharp": "^0.35.5"
   }
 }

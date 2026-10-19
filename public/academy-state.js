@@ -1,16 +1,23 @@
+import {REWARD_POLICY,FIRST_LESSON_AWARD,rewardPreview} from './academy-rewards.js';
+import {reconcileAchievements} from './academy-achievements.js';
 // Guest progress is local to this browser. Rewards are issued only by a completed session.
 export const localDay = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
 const dayNumber = day => Date.parse(day+'T12:00:00Z') / 86400000;
-export function emptyProgress(){return {version:2,xp:0,credits:0,completed:{},attempts:{},review:{},days:[],awards:[],unlocked:[],activity:[],name:'Guest driver'};}
+const validDay=day=>typeof day==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(day)&&Number.isFinite(dayNumber(day))&&new Date(day+'T12:00:00Z').toISOString().slice(0,10)===day;
+export const LEARNING_PATHS=Object.freeze(['basics','parts','models','engines','systems','mechanic']);
+export function emptyProgress(){return {version:2,xp:0,credits:0,completed:{},attempts:{},review:{},days:[],awards:[],unlocked:[],activity:[],name:'Guest driver',selectedPath:'basics',achievements:{}};}
 export function restoreProgress(value){
   const clean=emptyProgress();
   if(!value || typeof value!=='object' || value.version!==2)return clean;
   for(const key of ['xp','credits'])clean[key]=Number.isFinite(value[key])&&value[key]>=0?Math.floor(value[key]):0;
   for(const key of ['completed','attempts','review'])if(value[key]&&typeof value[key]==='object'&&!Array.isArray(value[key]))clean[key]={...value[key]};
   for(const key of ['days','awards','unlocked'])if(Array.isArray(value[key]))clean[key]=[...new Set(value[key].filter(v=>typeof v==='string'))];
-  clean.days=clean.days.filter(day=>/^\d{4}-\d{2}-\d{2}$/.test(day)&&Number.isFinite(dayNumber(day))).sort();
+  clean.days=clean.days.filter(validDay).sort();
   clean.activity=Array.isArray(value.activity)?value.activity.filter(v=>v&&typeof v.day==='string'&&Number.isFinite(v.xp)).slice(-500):[];
   clean.name=typeof value.name==='string'?value.name.trim().slice(0,32)||clean.name:clean.name;
+  if(LEARNING_PATHS.includes(value.selectedPath))clean.selectedPath=value.selectedPath;
+  if(value.achievements&&typeof value.achievements==='object'&&!Array.isArray(value.achievements))clean.achievements=value.achievements;
+  reconcileAchievements(clean);
   return clean;
 }
 export function validateAnswer(question, answer){
@@ -21,6 +28,17 @@ export function validateAnswer(question, answer){
 }
 export function beginSession(lesson,{kind='lesson',day=localDay()}={}){
   return {lessonId:lesson.id,topic:lesson.topic,kind,day,questionIds:lesson.questions.map(q=>q.id),first:{},resolved:[],completed:false};
+}
+// Resume only the exact published question set. No answers, question content or
+// reward amounts from browser storage become part of the lesson definition.
+export function restoreSession(value,lesson,{day=localDay()}={}){
+  if(!value||typeof value!=='object'||!lesson||value.completed!==false||value.lessonId!==lesson.id||value.topic!==lesson.topic||!['lesson','daily','review'].includes(value.kind)||!validDay(value.day)||value.day>day)return null;
+  const ids=lesson.questions.map(question=>question.id);
+  if(!Array.isArray(value.questionIds)||value.questionIds.length!==ids.length||!value.questionIds.every((id,index)=>id===ids[index]))return null;
+  if(!value.first||typeof value.first!=='object'||Array.isArray(value.first)||!Object.entries(value.first).every(([id,correct])=>ids.includes(id)&&typeof correct==='boolean'))return null;
+  if(!Array.isArray(value.resolved)||new Set(value.resolved).size!==value.resolved.length||!value.resolved.every(id=>ids.includes(id)&&Object.hasOwn(value.first,id)))return null;
+  if(value.kind!=='lesson'&&value.lessonId!==value.kind+'-'+value.day)return null;
+  return {lessonId:lesson.id,topic:lesson.topic,kind:value.kind,day:value.day,questionIds:ids,first:{...value.first},resolved:[...value.resolved],completed:false};
 }
 export function recordAnswer(state,session,question,answer,day=localDay()){
   if(session.completed||!session.questionIds.includes(question.id)||session.resolved.includes(question.id))return null;
@@ -41,7 +59,7 @@ export function levelProgress(xp){
   const threshold=level=>Math.round(75*Math.pow(level-1,1.5));
   let level=1;while(level<100&&xp>=threshold(level+1))level++;
   const current=threshold(level),next=threshold(level+1);
-  const names=[[100,'Garage Master'],[75,'BMW Legend'],[50,'Automotive Engineer'],[40,'Master Technician'],[30,'BMW Specialist'],[20,'Engine Technician'],[15,'Junior Mechanic'],[10,'Parts Specialist'],[5,'Garage Apprentice'],[1,'Rookie']];
+  const names=[[100,'Academy Legend'],[75,'BMW Scholar'],[50,'Automotive Master'],[35,'Performance Expert'],[20,'Engine Specialist'],[10,'Automotive Learner'],[5,'Car Enthusiast'],[1,'Beginner']];
   return {level,title:names.find(([minimum])=>level>=minimum)[1],current,next,percent:level===100?100:Math.min(100,Math.round((xp-current)/(next-current)*100))};
 }
 export function currentStreak(state,day=localDay()){
@@ -54,21 +72,25 @@ export function longestStreak(state){
   for(let i=0;i<days.length;i++){current=i>0&&dayNumber(days[i])-dayNumber(days[i-1])===1?current+1:1;best=Math.max(best,current);}return best;
 }
 export function finishSession(state,session,lesson,units=[],day=localDay()){
-  if(session.completed||session.lessonId!==lesson.id||session.questionIds.length!==lesson.questions.length||!session.questionIds.every(id=>session.resolved.includes(id)))return null;
+  if(!restoreSession(session,lesson,{day})||!session.questionIds.length||Object.keys(session.first).length!==session.questionIds.length||!session.questionIds.every(id=>session.resolved.includes(id)))return null;
   session.completed=true;
   const correct=Object.values(session.first).filter(Boolean).length,accuracy=Math.round(correct/session.questionIds.length*100),awardKey=session.kind==='daily'?'daily:'+session.day:session.kind==='review'?'review:'+day:'lesson:'+lesson.id;
-  let xp=0,credits=0,unitBonus=0;
+  let xp=0,credits=0,unitBonus=0,firstBonus=0;
   const already=state.awards.includes(awardKey)||(session.kind==='lesson'&&Object.hasOwn(state.completed,lesson.id));
   if(!already){
-    xp=session.kind==='daily'?30:session.kind==='review'?10:(lesson.boss?50:lesson.advanced?25:15)+(accuracy===100?10:0);credits=session.kind==='review'?2:5;
+    const firstLesson=session.kind==='lesson'&&Object.keys(state.completed).length===0&&!state.awards.includes(FIRST_LESSON_AWARD);
+    firstBonus=firstLesson?REWARD_POLICY.firstLesson:0;
+    xp=rewardPreview(lesson,{kind:session.kind,perfect:accuracy===100,firstLesson});credits=session.kind==='review'?2:5;
     state.awards.push(awardKey);
+    if(firstLesson)state.awards.push(FIRST_LESSON_AWARD);
     if(session.kind==='lesson')state.completed[lesson.id]={day,accuracy,topic:lesson.topic};
-    for(const unit of units){if(unit.lessons.every(id=>state.completed[id])&&!state.awards.includes('unit:'+unit.id)){state.awards.push('unit:'+unit.id);unitBonus+=100;}}
+    for(const unit of units){if(unit.lessons.length&&unit.lessons.every(id=>state.completed[id])&&!state.awards.includes('unit:'+unit.id)){state.awards.push('unit:'+unit.id);unitBonus+=REWARD_POLICY.unit;}}
     xp+=unitBonus;state.xp+=xp;state.credits+=credits;
   }
   if(!state.days.includes(day))state.days.push(day);state.days.sort();
   state.activity.push({day,xp,lessonId:lesson.id,kind:session.kind,accuracy});state.activity=state.activity.slice(-500);
-  return {xp,credits,accuracy,unitBonus,already,level:levelProgress(state.xp),streak:currentStreak(state,day)};
+  const newAchievements=reconcileAchievements(state,{day});
+  return {xp,credits,accuracy,unitBonus,firstBonus,newAchievements,already,level:levelProgress(state.xp),streak:currentStreak(state,day)};
 }
 export function mastery(state,topic){
   const attempts=Object.values(state.attempts).filter(value=>value.topic===topic&&value.total>0);
