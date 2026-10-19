@@ -4,13 +4,20 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node scripts/check.mjs && node scripts/check-academy.mjs && node scripts/check-backend.mjs && node scripts/check-account-sync.mjs && node scripts/check-postgres.mjs",
+    "check": "node scripts/check.mjs && node scripts/check-academy.mjs && node scripts/check-backend.mjs && node scripts/check-account-sync.mjs && node scripts/check-postgres.mjs && npm run check:translations && npm run check:profiles",
     "build": "node scripts/build.mjs",
     "db:generate": "drizzle-kit generate",
     "start": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/preview-local.mjs",
     "build:vercel": "npm run check",
     "db:check": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/database.mjs check",
-    "db:migrate": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/database.mjs migrate"
+    "db:migrate": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/database.mjs migrate",
+    "check:translations": "node scripts/check-translations.mjs",
+    "check:profiles": "node scripts/check-model-profiles.mjs",
+    "audit:translations": "node scripts/check-translations.mjs --report",
+    "audit:models": "node scripts/audit-models.mjs --write",
+    "audit:models:strict": "node scripts/audit-models.mjs --strict",
+    "photos:prepare": "node scripts/prepare-model-photos.mjs",
+    "prebuild": "npm run check:translations && npm run check:profiles"
   },
   "engines": {
     "node": ">=24.0.0"
@@ -22,6 +29,7 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.10",
-    "drizzle-kit": "0.31.5"
+    "drizzle-kit": "0.31.5",
+    "sharp": "^0.35.5"
   }
 }
