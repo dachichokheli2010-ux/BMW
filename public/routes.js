@@ -3,7 +3,7 @@ export const pageRoutes = Object.freeze({
   '/': 'index.html', '/models': 'index.html', '/learn': 'index.html',
   '/compare': 'index.html', '/engine-lab': 'index.html',
   '/tuning-garage': 'index.html', '/my-garage': 'index.html',
-  '/account': 'index.html', '/login': 'index.html', '/signup': 'index.html',
+  '/photos': 'index.html', '/account': 'index.html', '/login': 'index.html', '/signup': 'index.html',
   '/parts': 'parts.html', '/electric': 'electric.html', '/about': 'about.html',
 });
 

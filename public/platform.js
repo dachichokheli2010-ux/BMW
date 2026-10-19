@@ -5,6 +5,8 @@ import {mountNavigation} from './navigation.js';
 import {workspaceRoutes} from './routes.js';
 import {account} from './account-sync.js';
 import {mountAccount,mountAccountButton} from './account.js';
+import {renderModelProfile} from './model-profile-ui.js';
+import {responsivePhotoAttributes,photoBlurStyle} from './responsive-photos.js';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pages={
@@ -40,7 +42,7 @@ export function mountPlatform({catalog,getCurrent,selectModel,showCollection,ope
   document.querySelector('.footer-brand').innerHTML='<a href="/" class="footer-wordmark">APEX<span>.</span></a><p>Independent BMW stories, specifications and engineering guides.</p><small>Not affiliated with BMW AG.</small>';
   const footerLinks=document.querySelector('.footer-links'),creditsButton=footerLinks.querySelector('#credits');
   footerLinks.innerHTML='<div class="footer-group"><h2>Discover</h2><a href="/models">BMW models</a><a href="/electric">Electric BMWs</a><a href="/parts">Inside BMW</a><a href="/about">About APEX</a></div><div class="footer-group"><h2>Explore</h2><a href="/compare">Compare cars</a><a href="/learn">Learn &amp; Play</a><a href="/engine-lab">Engine lab</a><a href="/tuning-garage">Tuning garage</a><a href="/my-garage">My garage</a></div><div class="footer-group"><h2>Sources</h2><a href="/account">Account &amp; sync</a></div>';
-  creditsButton.textContent='Photo credits & sources';footerLinks.querySelector('.footer-group:last-child').append(creditsButton);
+  creditsButton.textContent='Photos & sources';footerLinks.querySelector('.footer-group:last-child').append(creditsButton);
   document.querySelector('.footer-end').innerHTML='<span>Guest data stays on this device. Sign in to sync your garage.</span><a href="#main-content">Back to top ↑</a>';
   document.querySelector('#modelsearch')?.setAttribute('placeholder','Find a BMW, chassis or engine code…');
   let destination,panel,pending;
@@ -49,6 +51,7 @@ export function mountPlatform({catalog,getCurrent,selectModel,showCollection,ope
   if(document.body.dataset.page==='electric'){document.querySelector('.hero')?.removeAttribute('hidden');document.querySelector('.collection-ticker')?.removeAttribute('hidden');}
   document.querySelector('#collection').hidden=!['/models','/electric'].includes(path)||!!getCurrent();
   if(isHome){
+    const collectionCover=catalog.find(model=>model.id==='g80'),compareCover=catalog.find(model=>model.id==='g82-m4-csl');
     const hero=document.querySelector('.hero');
     hero.querySelector('.hero-kicker span:last-child').textContent='THE INDEPENDENT BMW LEARNING PLATFORM';
     hero.querySelector('h1').innerHTML='<span>Driven by</span><em>curiosity.</em>';
@@ -56,7 +59,7 @@ export function mountPlatform({catalog,getCurrent,selectModel,showCollection,ope
     hero.querySelector('.hero-actions').insertAdjacentHTML('beforeend','<a class="hero-lab-link" href="/learn">Start learning <span aria-hidden="true">↗</span></a>');
     hero.querySelector('.hero-scroll').href='/models';
     const section=document.createElement('section');section.className='home-directions home-feature';section.setAttribute('aria-labelledby','directions-title');
-    section.innerHTML=`<div class="directions-heading"><div><span class="eyebrow">FOLLOW YOUR CURIOSITY</span><h2 id="directions-title">Where will it take you?</h2></div><p>A collection to explore.<br>A whole machine to understand.</p></div><div class="directions-grid"><a class="direction-card" href="/models"><img src="/images/official-modern/g80-p90399300.webp" alt="" loading="lazy"><small>01 / THE COLLECTION</small><h3>Find your BMW.</h3><p>From the original icons to a new generation. Every car has a story.</p><span>Explore ${catalog.length} models <b aria-hidden="true">↗</b></span></a><a class="direction-card learn-direction" href="/learn"><i class="direction-road" aria-hidden="true"></i><small>02 / LEARN &amp; PLAY</small><h3>Know what drives it.</h3><p>Follow the learning road. Get hands-on with the engineering.</p><span>Enter the academy <b aria-hidden="true">↗</b></span></a><a class="direction-card" href="/compare"><img src="/images/next/g82-m4-csl.webp" alt="" loading="lazy"><small>03 / SIDE BY SIDE</small><h3>The finer differences.</h3><p>Two icons. Different characters. Go beyond the badge and compare.</p><span>Build a comparison <b aria-hidden="true">↗</b></span></a></div>`;
+    section.innerHTML=`<div class="directions-heading"><div><span class="eyebrow">FOLLOW YOUR CURIOSITY</span><h2 id="directions-title">Where will it take you?</h2></div><p>A collection to explore.<br>A whole machine to understand.</p></div><div class="directions-grid"><a class="direction-card" href="/models"><img src="${esc(collectionCover?.car||'images/photo-unavailable.svg')}" ${responsivePhotoAttributes({src:collectionCover?.car,width:collectionCover?.width,height:collectionCover?.height})} style="${photoBlurStyle(collectionCover?.car)}" alt="" loading="lazy"><small>01 / THE COLLECTION</small><h3>Find your BMW.</h3><p>From the original icons to a new generation. Every car has a story.</p><span>Explore ${catalog.length} models <b aria-hidden="true">↗</b></span></a><a class="direction-card learn-direction" href="/learn"><i class="direction-road" aria-hidden="true"></i><small>02 / LEARN &amp; PLAY</small><h3>Know what drives it.</h3><p>Follow the learning road. Get hands-on with the engineering.</p><span>Enter the academy <b aria-hidden="true">↗</b></span></a><a class="direction-card" href="/compare"><img src="${esc(compareCover?.car||'images/photo-unavailable.svg')}" ${responsivePhotoAttributes({src:compareCover?.car,width:compareCover?.width,height:compareCover?.height})} style="${photoBlurStyle(compareCover?.car)}" alt="" loading="lazy"><small>03 / SIDE BY SIDE</small><h3>The finer differences.</h3><p>Two icons. Different characters. Go beyond the badge and compare.</p><span>Build a comparison <b aria-hidden="true">↗</b></span></a></div>`;
     document.querySelector('.collection-ticker').after(section);
     document.title='APEX — Driven by curiosity';
   }
@@ -68,6 +71,10 @@ export function mountPlatform({catalog,getCurrent,selectModel,showCollection,ope
   }
   if(path==='/electric'||getCurrent())markNavigation('models');
   if(path==='/parts')markNavigation('parts');
+  if(path==='/photos'){
+    const sources=document.createElement('section');sources.className='photo-source-page';document.querySelector('main').prepend(sources);
+    import('./photo-sources.js').then(({mountPhotoSources})=>{instances.photos=mountPhotoSources(sources,{catalog});}).catch(()=>{sources.textContent='This page could not load.';});
+  }
   if(page&&!getCurrent()){
     destination=document.createElement('section');destination.className='destination-page';destination.id='destination';
     destination.innerHTML=`<nav class="destination-breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><span>${esc(page.title.replace(/\.$/,''))}</span></nav><div class="destination-heading"><div><span class="eyebrow">${page.kicker}</span><h1>${page.title}</h1><p>${page.description}</p></div><span class="destination-label">${page.label}</span></div><div class="destination-panel" id="${page.id}" tabindex="-1"><div class="workspace-loading" role="status"><span class="loading-orbit" aria-hidden="true"></span>Opening ${esc(page.title.toLowerCase())}…</div></div>`;
@@ -109,12 +116,7 @@ export function mountPlatform({catalog,getCurrent,selectModel,showCollection,ope
     document.querySelector('.detail-actions').after(actions);
     actions.querySelector('[data-open-engine]')?.addEventListener('click',()=>openWorkspace('engine-lab'));
     actions.querySelector('[data-open-garage]')?.addEventListener('click',()=>{location.href='/tuning-garage?garage='+encodeURIComponent(m.id);});
-    const section=document.createElement('section');section.className='expanded-factory-specs';section.setAttribute('aria-label','Detailed factory specifications');
-    const unavailable='Not yet verified';
-    const native=m.verified,dimensions=native?.dimensionsIn;
-    const values=[['0–100 km/h',m.acceleration100?m.acceleration100+' s':unavailable],...(native?.acceleration60Mph?[['0–60 mph',native.acceleration60Mph+' s']]:[]),['Top speed',m.topSpeed?m.topSpeed+' km/h':native?.topSpeedMph?native.topSpeedMph+' mph':unavailable],['Transmission',m.transmission||unavailable],['Drivetrain',m.drivetrain||unavailable],['Vehicle mass',m.weightKg?m.weightKg.toLocaleString()+' kg · '+(m.weightConvention||''):unavailable],['Displacement',m.displacementCc?m.displacementCc.toLocaleString()+' cm³':unavailable],...(m.lengthMm&&m.widthMm&&m.heightMm?[['Length / width / height',m.lengthMm+' / '+m.widthMm+' / '+m.heightMm+' mm']]:dimensions?[['Length / width / height',dimensions.length+' / '+dimensions.width+' / '+dimensions.height+' in']]:[]),...(m.wheelbaseMm?[['Wheelbase',m.wheelbaseMm+' mm']]:dimensions?[['Wheelbase',dimensions.wheelbase+' in']]:[])];
-    section.innerHTML=`<details ${m.verified?'open':''}><summary>Detailed factory specifications <span>${m.verified?'Source-checked launch configuration':'Additional source coverage pending'}</span></summary>${m.verified?`<p class="spec-context">${esc(m.verified.specification)}</p>`:''}<dl>${values.map(([label,value])=>`<div><dt>${label}</dt><dd class="${value===unavailable?'spec-unavailable':''}">${esc(value)}</dd></div>`).join('')}</dl>${m.verified?.sources?`<div class="spec-source-links">${m.verified.sources.map(s=>`<a href="${esc(typeof s==='string'?s:s.url)}" target="_blank" rel="noopener">${esc(typeof s==='string'?'BMW technical source':s.label||s.title||'BMW technical source')} ↗</a>`).join('')}</div>`:'<p class="spec-context">Power and torque above retain their original factory source. Additional measurements stay unavailable until their exact year, market and configuration are checked.</p>'}</details>`;
-    if(native?.verificationNote){const note=document.createElement('p');note.className='spec-accuracy-note';note.textContent=native.verificationNote;section.querySelector('details').append(note);}
+    const section=document.createElement('section');section.className='expanded-factory-specs';section.innerHTML=renderModelProfile(m);
     document.querySelector('.machine-bar').after(section);
   }
 
@@ -136,5 +138,6 @@ export function mountPlatform({catalog,getCurrent,selectModel,showCollection,ope
   function updateCount(){let count=0;try{const ids=JSON.parse(localStorage.getItem('apex-comparison')||'[]');if(Array.isArray(ids))count=new Set(ids.filter(id=>catalog.some(m=>m.id===id))).size;}catch{}const node=nav.querySelector('.nav-comparison-count');if(node)node.textContent=count?String(Math.min(3,count)):'';}
   updateCount();window.addEventListener('apex:localchange',updateCount,{signal:abort.signal});window.addEventListener('storage',updateCount,{signal:abort.signal});
   updateDetail();
+  window.addEventListener('apex:languagechange',()=>{const profile=document.querySelector('.model-profile');if(profile&&getCurrent()){const open=[...profile.querySelectorAll('.profile-data-group[open]')].map(node=>[...profile.querySelectorAll('.profile-data-group')].indexOf(node));const parent=profile.parentElement;parent.innerHTML=renderModelProfile(getCurrent());parent.querySelectorAll('.profile-data-group').forEach((node,index)=>node.open=open.includes(index));}},{signal:abort.signal});
   return {openWorkspace,search,destroy(){abort.abort();unsubscribeAccount();accountUI?.destroy?.();navigation.destroy();search.destroy();Object.values(instances).forEach(i=>i?.destroy?.());}};
 }

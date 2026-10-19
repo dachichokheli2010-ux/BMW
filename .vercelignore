@@ -1,0 +1,5 @@
+# Preserve research originals locally while excluding unapproved photo assets.
+public/images/official-heritage/**
+public/images/official-modern/**
+public/images/**/_candidates/**
+public/images/next/hero.webp

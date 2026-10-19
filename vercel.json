@@ -47,6 +47,14 @@
     {
       "source": "/about/:path*",
       "destination": "/about.html"
+    },
+    {
+      "source": "/photos/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/generation-guides/:path*",
+      "destination": "/index.html"
     }
   ],
   "framework": null,

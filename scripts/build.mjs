@@ -12,6 +12,10 @@ const binaryTypes=new Set(['.jpg','.jpeg','.webp','.png','.avif','.gif','.ico','
 function collect(directory){
   for(const entry of fs.readdirSync(directory,{withFileTypes:true})){
     const filename=path.join(directory,entry.name);
+    const relativeAsset=path.relative('public',filename).split(path.sep).join('/');
+    // Manufacturer website downloads and the retired Unsplash hero have no
+    // confirmed permission within this project's requested image policy.
+    if(/^images\/official-(?:heritage|modern)(?:\/|$)/.test(relativeAsset)||relativeAsset==='images/next/hero.webp')continue;
     // Keep source research on disk; unused contact sheets and rejected candidates
     // are not runtime assets and otherwise add hundreds of Worker entries.
     if(entry.isDirectory()){if(entry.name!=='_candidates')collect(filename);continue;}
