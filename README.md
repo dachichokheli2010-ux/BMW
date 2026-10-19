@@ -2,6 +2,33 @@
 
 An independent BMW collection and engineering learning platform. This upgrade extends the existing buildless JavaScript application and preserves its catalog, galleries, favorites, comparisons, preferences, recordings, and hosted garage API.
 
+## October 2026 expansion
+
+The local upgrade adds a floating glass header, mobile bottom navigation, three-tap onboarding, Easy/Nerd explanations, display-unit controls, a BMW name decoder, a preference finder, 30 engine/drive-family pages, 182 parts guides, an X-ray diagram, a four-stroke explainer, and an Arcade with 869 questions, 17 modes and 71 unlockable badges. My garage now includes collection cards and sets, a daily card, sourced 0–100 comparisons, dream-garage challenges, a service/reminder log, a specification-year timeline, an illustrative color studio, valuations, backup import/export and a downloadable SVG poster. The original academy, saved models/builds, account API and comparisons remain available.
+
+New pages: `/start`, `/engines`, `/engines/s58`, `/cars/f10-m5`, `/parts/turbocharger`, `/play`, `/glossary/torque`, `/badges/answers-1`, `/questions/car-f10-code` and `/lessons/first-engine`. Legacy model-query URLs still resolve. New Arcade/collection records are account-scoped **on the current browser**; the existing backend still syncs its original favorites, builds and Academy data. New collection/Arcade data is not promised to sync across devices.
+
+This is a functional expansion, not a completed every-BMW archive. The factual audit still identifies **5,880 review tasks and 791 missing exact required photo slots**. Placeholders, original diagrams and generic reference photos do not count as verified BMW photographs. Read [the delivery report](UPGRADE-REPORT.md), [the completeness report](reports/explorer-completeness.md) and [current-generation omissions](reports/current-lineup-coverage.md) before expanding the catalog. `npm run audit:completeness:strict` intentionally fails until these factual and image gaps are resolved.
+
+```sh
+npm run check
+npm run build
+npm run audit:completeness
+npm run audit:completeness:strict
+node scripts/check-public-links.mjs --origin http://127.0.0.1:3000
+```
+
+`npm run generate:discovery` regenerates the clean route manifest. Set `PUBLIC_ORIGIN` to the real publishing origin to generate absolute `sitemap.xml` and robots sitemap links; no invented production hostname is supplied. Metadata, OpenGraph and Vehicle JSON-LD update in the client. A crawler requiring server-rendered per-vehicle metadata is a follow-up. No Lighthouse score or real-browser mobile/desktop pass is claimed; browser automation was unavailable during final visual verification. DOM integration and local HTTP checks are separate evidence.
+
+### Adding cars, parts, engines and questions
+
+1. **Car:** add a uniquely identified model in the retained catalog data modules and include it in `catalog.js`. Attach exact market, source year, original power units and primary-source URLs. Put configuration-specific checked specifications in `verified-specs.js`, and sourced profile fields in `model-profiles.js`. Do not fill missing values from a similar trim. Run profile and completeness checks; update explicit catalog-size expectations when deliberately adding records. `explorer-data.js` creates its clean car URL and engine application automatically.
+2. **Photo:** record author, source page, license and matching vehicle/engine identity in the existing photo manifests. Put the permitted original under `public/images`, update the photo-policy mapping, then run `npm run photos:prepare`. Check the actual image; a working file is not proof that its identity or rights match the record. Rerun the completeness audit and update the missing-image manifest only when the required slot is actually covered.
+3. **Engine:** `explorer-data.js` indexes exact catalog engine codes. Add its individually authored introduction and separately evidenced family fields. Keep each application's power/market in its own row. Never replace a family range with one car's output. Run `node scripts/check-explorer-data.mjs`.
+4. **Part:** add one individually authored row to the appropriate system in `parts-encyclopedia-data.js`: ID, name, one-sentence job, analogy, location, technical explanation, symptoms and BMW context. Add relevant primary references. Retain qualitative cost/service guidance until dated, market-specific numeric evidence exists. Run `node scripts/check-parts-encyclopedia.mjs --write`; this validates every page and regenerates the photo manifest.
+5. **Question:** `play-data.js` generates scoped questions from source-backed catalog fields and the retained curriculum. Add authored trivia through its `add` helper with a unique lowercase slug, answers, correct answer, explanation, primary references and a `learnURL`. Use a specific configuration for a numerical question. Run `node scripts/check-play.mjs` to validate every question and all game modes.
+6. **Discovery and final verification:** run `npm run generate:discovery`, `npm run audit:completeness`, `npm run check`, then `npm run build`. With local preview running, run the HTTP link checker. Strict completeness is a separate content release gate and must not be disabled to produce a zero-gap claim.
+
 Run locally with Node.js 24 or later:
 
 ```sh

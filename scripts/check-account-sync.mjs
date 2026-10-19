@@ -12,7 +12,8 @@ function harness(){
     const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json'}});
     if(path==='/api/auth/session'&&sessionFailure)return json({error:sessionFailure.message},sessionFailure.status);
     if(path==='/api/auth/session')return json({user:signedIn,provider:'password',csrfToken:signedIn?'csrf-'+signedIn.id:null});
-    if(path==='/api/auth/login'||path==='/api/auth/signup'){signedIn=JSON.parse(options.body).email===bob.email?bob:alice;return json({user:signedIn,csrfToken:'csrf-'+signedIn.id});}
+    if(path==='/api/auth/signup')return json({user:null,csrfToken:null,provider:'password',code:'SIGNUP_ACCEPTED',message:'If this address can be registered, your account is ready. Sign in to continue.'},201);
+    if(path==='/api/auth/login'){signedIn=JSON.parse(options.body).email===bob.email?bob:alice;return json({user:signedIn,csrfToken:'csrf-'+signedIn.id});}
     if(!signedIn)return json({error:'Sign in required.'},401);
     if(options.method&&options.method!=='GET'&&options.headers['X-CSRF-Token']!=='csrf-'+signedIn.id)return json({error:'Invalid CSRF.'},403);
     if(path==='/api/auth/logout'){signedIn=null;return json({user:null});}
@@ -32,13 +33,20 @@ let checks=0;const check=(actual,expected)=>{assert.deepEqual(actual,expected);c
 
 const h=harness();
 try{
+  const guestBuild={id:'guest-build',name:'Guest configuration',modelId:'f80'};
   h.storage.setItem(ACCOUNT_KEYS.favorites,JSON.stringify(['guest-car']));
+  h.storage.setItem(ACCOUNT_KEYS.builds,JSON.stringify([guestBuild]));
   await h.controller.start();check(h.controller.getSnapshot().status,'guest');
   await h.controller.login({email:alice.email,password:'long password'});
-  check(read(h,'favorites'),['alice-car']);check(h.writes,0);check(h.controller.getSnapshot().guestSummary.favorites,1);
+  // Guest favorites are intentionally a sign-in shortlist merge. Builds and
+  // learning data require the separate explicit import action.
+  check(read(h,'favorites'),['alice-car','guest-car']);check(h.writes,1);check(h.controller.getSnapshot().guestSummary.favorites,1);
+  check(read(h,'builds'),[]);check(h.garages.get(alice.id).state.builds,[]);check(h.controller.getSnapshot().guestSummary.builds,1);
   await h.controller.importGuest();check(read(h,'favorites'),['alice-car','guest-car']);check(h.garages.get(alice.id).state.favorites,['alice-car','guest-car']);
+  check(h.garages.get(alice.id).state.builds,[guestBuild]);
   await h.controller.logout();check(read(h,'favorites'),['guest-car']);check(h.storage.getItem('apex-account-cache-v1'),null);
-  await h.controller.login({email:bob.email,password:'long password'});check(read(h,'favorites'),[]);check(h.writes,1);
+  await h.controller.login({email:bob.email,password:'long password'});check(read(h,'favorites'),['guest-car']);check(h.writes,3);
+  check(read(h,'builds'),[]);check(h.garages.get(bob.id).state.builds,[]);check(h.garages.get(alice.id).state.builds,[guestBuild]);
   h.change('favorites',['bob-car']);await h.controller.flush();check(h.garages.get(bob.id).state.favorites,['bob-car']);check(h.garages.get(alice.id).state.favorites,['alice-car','guest-car']);
   // Optimistic concurrency never silently replaces the other device's copy.
   h.garages.get(bob.id).state.favorites=['other-device'];h.garages.get(bob.id).revision++;
@@ -56,13 +64,21 @@ try{
   await h.controller.retry();check(h.controller.getSnapshot().user.id,alice.id);check(read(h,'favorites'),['alice-car','guest-car']);
 }finally{h.controller.destroy();}
 
+const registration=harness();
+try{
+  registration.storage.setItem(ACCOUNT_KEYS.favorites,JSON.stringify(['guest-shortlist']));await registration.controller.start();
+  const accepted=await registration.controller.signup({email:'new@example.com',name:'New driver',password:'a long new password'});
+  check(accepted.status,'guest');check(accepted.user,null);check(registration.writes,0);check(read(registration,'favorites'),['guest-shortlist']);
+}finally{registration.controller.destroy();}
+
 // Expired sessions restore guest data but retain an isolated pending account copy.
 const expired=harness();
 try{
   expired.storage.setItem(ACCOUNT_KEYS.favorites,JSON.stringify(['guest']));await expired.controller.start();await expired.controller.login({email:alice.email,password:'long password'});
   expired.change('favorites',['unsynced-private']);expired.setUser(null);await expired.controller.flush();
   check(expired.controller.getSnapshot().status,'expired');check(read(expired,'favorites'),['guest']);check(JSON.parse(expired.storage.getItem('apex-account-cache-v1')).state.favorites,['unsynced-private']);
-  await expired.controller.login({email:alice.email,password:'long password'});await expired.controller.flush();check(expired.garages.get(alice.id).state.favorites,['unsynced-private']);
+  await expired.controller.login({email:alice.email,password:'long password'});await expired.controller.flush();check(expired.garages.get(alice.id).state.favorites,['unsynced-private','guest']);
+  const recoveredWrites=expired.writes;await expired.controller.login({email:alice.email,password:'long password'});check(expired.writes,recoveredWrites);check(read(expired,'favorites'),['unsynced-private','guest']);
 }finally{expired.controller.destroy();}
 
 const unavailable=harness();

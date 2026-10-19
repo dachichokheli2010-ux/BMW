@@ -1,6 +1,38 @@
 {
   "rewrites": [
     {
+      "source": "/lessons/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/questions/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/badges/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/glossary/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/start/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/play/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/engines/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/cars/:path*",
+      "destination": "/index.html"
+    },
+    {
       "source": "/models/:path*",
       "destination": "/index.html"
     },

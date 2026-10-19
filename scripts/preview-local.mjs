@@ -58,7 +58,7 @@ const server=http.createServer(async(req,res)=>{
   res.end(req.method==='HEAD'?undefined:bytes);
  }catch(error){
   if(res.headersSent){res.end();return;}
-  if(error.code==='ENOENT'||error.code==='EISDIR'){res.writeHead(404);res.end('Not found');return;}
+  if(error.code==='ENOENT'||error.code==='EISDIR'){res.writeHead(404,{'Content-Type':'text/html; charset=utf-8'});res.end(req.method==='HEAD'?undefined:await fs.readFile(path.join(root,'404.html')));return;}
   if(error instanceof URIError||error instanceof TypeError){fail(res,400,'Invalid request.');return;}
   console.error('Server request failed:',error.name);
   fail(res,503,'The server could not complete this request. Please try again.');

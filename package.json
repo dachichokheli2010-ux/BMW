@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node scripts/check.mjs && node scripts/check-academy.mjs && node scripts/check-academy-session.mjs && node scripts/check-academy-translations.mjs && node scripts/check-backend.mjs && node scripts/check-account-sync.mjs && node scripts/check-postgres.mjs && npm run check:translations && npm run check:profiles && npm run check:icons",
+    "check": "node scripts/check.mjs && node scripts/check-academy.mjs && node scripts/check-academy-session.mjs && node scripts/check-academy-translations.mjs && node scripts/check-backend.mjs && node scripts/check-account-sync.mjs && node scripts/check-postgres.mjs && npm run check:translations && npm run check:profiles && npm run check:icons && node scripts/check-explorer-data.mjs && node scripts/check-parts-encyclopedia.mjs && node scripts/check-play.mjs && node scripts/check-experience.mjs && node scripts/check-platform-upgrade.mjs",
     "build": "node scripts/build.mjs",
     "db:generate": "drizzle-kit generate",
     "start": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/preview-local.mjs",
@@ -17,8 +17,11 @@
     "audit:models": "node scripts/audit-models.mjs --write",
     "audit:models:strict": "node scripts/audit-models.mjs --strict",
     "photos:prepare": "node scripts/prepare-model-photos.mjs",
-    "prebuild": "npm run check:translations && npm run check:profiles",
-    "check:icons": "node scripts/check-icons.mjs"
+    "prebuild": "npm run check:translations && npm run check:profiles && npm run generate:discovery && npm run audit:completeness",
+    "check:icons": "node scripts/check-icons.mjs",
+    "audit:completeness": "node scripts/check-completeness.mjs --write",
+    "audit:completeness:strict": "node scripts/check-completeness.mjs --strict",
+    "generate:discovery": "node scripts/generate-discovery.mjs"
   },
   "engines": {
     "node": ">=24.0.0"

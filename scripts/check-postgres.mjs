@@ -31,7 +31,10 @@ try{
  }
  const signed=await call('/api/auth/signup',{method:'POST',body:{name:'Test driver',email:'postgres@example.com',password:'a long test passphrase'}});
  check(signed.response.status===201,'Signup executes on PostgreSQL with a conflicting public.users schema.');
- cookie=signed.response.headers.getSetCookie()[0].split(';')[0];csrf=signed.data.csrfToken;
+ check(signed.data.user===null&&signed.data.csrfToken===null&&!signed.response.headers.getSetCookie().length,'PostgreSQL registration preserves the account-existence protection and creates no session.');
+ const firstLogin=await call('/api/auth/login',{method:'POST',body:{email:'postgres@example.com',password:'a long test passphrase'}});
+ check(firstLogin.response.status===200,'Explicit login creates the PostgreSQL session after registration.');
+ cookie=firstLogin.response.headers.getSetCookie()[0].split(';')[0];csrf=firstLogin.data.csrfToken;
  const state={...emptyGarage(),favorites:['f10-m5']};
  const saved=await call('/api/garage',{method:'PUT',body:{state,revision:0}});
  check(saved.response.status===200&&saved.data.revision===1,'Garage INSERT returns correct PostgreSQL affected-row count.');

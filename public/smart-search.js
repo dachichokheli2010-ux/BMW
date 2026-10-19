@@ -1,3 +1,4 @@
+import {engineRecords,engineURL} from './explorer-data.js';
 const normalize = value => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const categories = ['All', 'Vehicles', 'Components', 'Lessons', 'Engineering'];
@@ -16,6 +17,8 @@ const aliases = {
   tutorials:'lesson', lessons:'lesson', histories:'history', historic:'history',
 };
 const topics = [
+  ['starter-kit', 'Find my BMW & name decoder', 'beginner start here family BMW cheap affordable budget finder name decoder M340i xDrive eDrive comfy sporty', 'engineering'],
+  ['play-arcade', 'APEX games & daily challenge', 'arcade games daily quiz badges XP sprint survival memory timeline versus flashcards', 'engineering'],
   ['glossary', 'Automotive glossary', 'Glossary definitions terminology VANOS Valvetronic xDrive DCT torque horsepower ტერმინები ლექსიკონი словарь термины', 'academy'],
   ['m-recognition', 'BMW M photo challenges', 'BMW M recognition identify photo quiz M2 M3 M4 M5 M6 M8 generation chassis თამაში ფოტო викторина', 'academy'],
   ['academy-practice', 'Automotive puzzles', 'Puzzles matching sequence components quick practice quiz თავსატეხები задачи практика', 'academy'],
@@ -65,7 +68,7 @@ export function createSearchIndex(catalog = [], parts = []) {
     id:model.id, category:'Vehicles', title:[model.name,generationLabel(model)].filter(Boolean).join(' · '),
     subtitle:[model.code,model.power != null ? [model.power,model.powerUnit].filter(Boolean).join(' ') : '',model.market].filter(Boolean).join(' · '),
     identity:[model.id,model.name,model.generation,model.code].filter(Boolean).join(' '),
-    keywords:[model.id,model.name,model.generation,model.code,model.body,model.layout,model.description,model.powertrain,model.transmission,model.productionYears,model.years].filter(Boolean).join(' '),
+    keywords:[model.id,model.name,model.generation,model.code,model.body,model.layout,model.description,model.powertrain,model.transmission,model.productionYears,model.years,Number(model.power)>=400?'fast sporty performance':'',/touring|\bx[1357]\b/i.test(model.name)?'family practical':''].filter(Boolean).join(' '),
     image:model.car,
   }));
   const components = parts.map((part,index) => makeRecord({
@@ -74,7 +77,8 @@ export function createSearchIndex(catalog = [], parts = []) {
     keywords:[part.name,part.system,part.summary,part.purpose,part.how,...(part.connections || []).map(connection => connection.name)].filter(Boolean).join(' '),
     image:part.photo?.src,
   }));
-  return [...vehicles,...components,...topics.map(([id,title,keywords,kind]) => makeRecord({
+  const engines=engineRecords.map(engine=>makeRecord({id:'directory-engine-'+engine.id,category:'Engineering',title:engine.code+' engine family',identity:engine.code,keywords:[engine.name,engine.tagline,...engine.searchTerms].join(' '),subtitle:engine.applications.length+' catalog applications · engine directory',href:engineURL(engine)}));
+  return [...vehicles,...components,...engines,...topics.map(([id,title,keywords,kind]) => makeRecord({
     id, category:kind === 'academy' ? 'Lessons' : 'Engineering', title, identity:id, keywords,
     subtitle:kind === 'academy' ? 'Academy · interactive lesson' : 'Interactive educational workspace',
   }))];
