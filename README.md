@@ -62,6 +62,8 @@ npm run build
 
 Set `DATABASE_URL` in the Vercel project and deploy this checkout. Account endpoints have explicit files under `api/auth/`, `api/account/` and `api/garage.js`. App tables live in the `apex` PostgreSQL schema, preserving manually-created public tables. See [DATABASE.md](DATABASE.md) for the non-destructive setup, diagnostics and deployment checks. `npm run db:check` reads schema metadata; `npm run db:migrate` creates missing app tables. The seven manually created public learning tables are preserved but are not the source of the current JavaScript curriculum.
 
+To enable password recovery and email verification, add `PUBLIC_ORIGIN` (the production site origin), `RESEND_API_KEY`, and `ACCOUNT_MAIL_FROM` (a sender address verified with Resend) to the Vercel project's Production environment, then redeploy. Keep the API key private; never add it to `vercel.json` or client-side code. After deployment, `/api/auth/session` should report `mailConfigured`, `passwordRecovery`, and `emailVerification` as `true`.
+
 ## Page structure
 
 The homepage is a short discovery page with the retained **More to discover** editorial section. Features have dedicated, reloadable URLs:

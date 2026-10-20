@@ -55,4 +55,8 @@ for(const filename of ['index.html','electric.html','parts.html','about.html']){
   const sheets=[...page.querySelectorAll('link[rel=stylesheet]')].map(link=>link.getAttribute('href'));
   assert.ok(sheets.indexOf('liquid-glass.css')>sheets.indexOf('header-upgrade.css'),filename+' preserves the final responsive header cascade');
 }
+const helperStyles=await fs.readFile(new URL('../public/site-helper.css',import.meta.url),'utf8');
+assert.ok(helperStyles.includes('@media(max-width:760px){body:has(.account-page) .site-helper-trigger{display:none}}'),'The floating helper must not cover the account page on mobile');
+const glassStyles=await fs.readFile(new URL('../public/liquid-glass.css',import.meta.url),'utf8');
+assert.ok(glassStyles.includes('body:has(.account-page) .glass-bottom-nav { display: none; }'),'The fixed quick navigation must not cover account controls on mobile');
 console.log('PASS Responsive navigation: 320/390/1120px controls, 1121/1200/1440px restoration, queued close/reopen, focus, scroll lock, history routes, menu search, cleanup and all four page style orders (DOM simulation).');
