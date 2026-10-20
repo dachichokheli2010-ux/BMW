@@ -2,7 +2,6 @@ import {t} from './preferences.js';
 import './favorites-translations.js';
 import './account-translations.js';
 import {icon} from './icons.js';
-import {isAdministrator} from './account-routing.js';
 import {apiErrorMessage} from './api-message.js';
 
 let instances=0;
@@ -15,7 +14,6 @@ export function mountHeaderAccount(container,{accountController}){
  function render(){
   const name=state.user?.name?.split(' ')[0]||t('Account');button.querySelector('span').textContent=state.user?name:t('Sign in');button.querySelector('span').toggleAttribute('data-no-i18n',!!state.user);
   button.setAttribute('aria-label',t(state.user?'Open user menu':'Sign in or create an account'));button.dataset.status=state.status;
-  let adminLink=menu.querySelector('[data-header-admin]');if(isAdministrator(state.user)&&!adminLink){adminLink=document.createElement('a');adminLink.href='/admin';adminLink.dataset.headerAdmin='';adminLink.innerHTML=`${icon('garage')}<span></span>`;menu.prepend(adminLink);}if(adminLink){if(!isAdministrator(state.user))adminLink.remove();else adminLink.querySelector('span').textContent=t('Open admin workspace');}
   if(!state.user)close();
  }
  const focusFirst=()=>menu.querySelector('a:not([hidden]),button:not([hidden])')?.focus();

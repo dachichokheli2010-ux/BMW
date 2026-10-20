@@ -2,7 +2,6 @@ import {validName,validateGarage} from './validation.js';
 import {randomToken} from './passwords.js';
 import {validateCommunityPhoto,decodePhotoBytes} from './community-photos.js';
 import {communityQuestions} from './community-questions.js';
-import {administratorAccess} from './admin-policy.js';
 
 export const COMMUNITY_PATHS=new Set(['/api/community','/api/community/profile','/api/community/friends','/api/community/garage-share','/api/community/shared-garage','/api/community/cars','/api/community/submissions','/api/community/submissions/submit','/api/community/car-photo','/api/community/challenge','/api/admin/community','/api/admin/moderation']);
 const COST=50,REWARD=5,DAILY=10;
@@ -42,19 +41,20 @@ async function carInput(body,existing,env,ErrorClass){
 }
 
 export async function handleCommunity(request,env,context){
- const {session,ApiError,readJSON,requireCSRF,authRequired,limit,json,sessionHeaders}=context;
- const url=new URL(request.url),path=url.pathname,method=request.method,user=session?.user,{isAdmin}=administratorAccess(env,user);
+ const {session,adminSession,ApiError,readJSON,requireCSRF,authRequired,limit,json,sessionHeaders}=context;
+ const url=new URL(request.url),path=url.pathname,method=request.method,user=session?.user,isAdmin=Boolean(adminSession);
  const respond=(body,status=200)=>json(body,status,sessionHeaders(session));
  const allowed=methods=>{if(!methods.includes(method))throw new ApiError('Method not allowed.',405);};
  const requireProfile=async()=>{const p=await getProfile(env,user.id);if(!p)throw new ApiError('Create your public driver profile first.',409,'PROFILE_REQUIRED');return p;};
- const requireAdmin=()=>{authRequired(session);if(!isAdmin)throw new ApiError('Administrator access is required.',403,'ADMIN_REQUIRED');};
+ const requireAdmin=()=>{if(!adminSession||session?.tokenHash!==adminSession.tokenHash)throw new ApiError('Sign in to the administrator workspace.',401,'ADMIN_REQUIRED');};
+ if(path.startsWith('/api/admin/'))requireAdmin();
  const publicRead=method==='GET'&&['/api/community/cars','/api/community/car-photo','/api/community/shared-garage'].includes(path);
  if(!publicRead)authRequired(session);
  if(['POST','PUT','PATCH','DELETE'].includes(method))requireCSRF(request,session);
 
  if(path==='/api/community'){
   allowed(['GET']);const counts=await env.DB.prepare('SELECT COUNT(*) AS count FROM community_cars WHERE user_id = ?').bind(user.id).first();
-  return respond({profile:profile(await getProfile(env,user.id)),credits:await wallet(env,user.id),isAdmin,share:await shareState(env,user.id),counts:{submissions:Number(counts.count)}});
+  return respond({profile:profile(await getProfile(env,user.id)),credits:await wallet(env,user.id),isAdmin:false,share:await shareState(env,user.id),counts:{submissions:Number(counts.count)}});
  }
  if(path==='/api/community/profile'){
   allowed(['PUT']);await limit(env,'community-profile:'+user.id,20,60000);const body=await readJSON(request);
@@ -153,7 +153,7 @@ export async function handleCommunity(request,env,context){
  }
  if(path==='/api/admin/community'){
   allowed(['GET']);requireAdmin();const count=async(sql,values=[])=>Number((await env.DB.prepare(sql).bind(...values).first()).count);
-  const stats={accounts:await count('SELECT COUNT(*) AS count FROM users'),drivers:await count('SELECT COUNT(*) AS count FROM community_profiles'),sharedGarages:await count('SELECT COUNT(*) AS count FROM community_shares'),friendships:await count("SELECT COUNT(*) AS count FROM community_friends WHERE status = 'accepted'"),drafts:await count("SELECT COUNT(*) AS count FROM community_cars WHERE status = 'draft'"),pending:await count("SELECT COUNT(*) AS count FROM community_cars WHERE status = 'pending'"),approved:await count("SELECT COUNT(*) AS count FROM community_cars WHERE status = 'approved'"),rejected:await count("SELECT COUNT(*) AS count FROM community_cars WHERE status = 'rejected'"),creditsEarned:Number((await env.DB.prepare('SELECT COALESCE(SUM(amount),0) AS total FROM community_credit_ledger WHERE amount > 0').first()).total),creditsSpent:Number((await env.DB.prepare('SELECT COALESCE(SUM(-amount),0) AS total FROM community_credit_ledger WHERE amount < 0').first()).total)};
+  const stats={accounts:await count("SELECT COUNT(*) AS count FROM users WHERE provider IN ('password','chatgpt')"),drivers:await count('SELECT COUNT(*) AS count FROM community_profiles'),sharedGarages:await count('SELECT COUNT(*) AS count FROM community_shares'),friendships:await count("SELECT COUNT(*) AS count FROM community_friends WHERE status = 'accepted'"),drafts:await count("SELECT COUNT(*) AS count FROM community_cars WHERE status = 'draft'"),pending:await count("SELECT COUNT(*) AS count FROM community_cars WHERE status = 'pending'"),approved:await count("SELECT COUNT(*) AS count FROM community_cars WHERE status = 'approved'"),rejected:await count("SELECT COUNT(*) AS count FROM community_cars WHERE status = 'rejected'"),creditsEarned:Number((await env.DB.prepare('SELECT COALESCE(SUM(amount),0) AS total FROM community_credit_ledger WHERE amount > 0').first()).total),creditsSpent:Number((await env.DB.prepare('SELECT COALESCE(SUM(-amount),0) AS total FROM community_credit_ledger WHERE amount < 0').first()).total)};
   const rows=(await env.DB.prepare("SELECT * FROM community_cars WHERE status IN ('pending','approved','rejected') ORDER BY CASE WHEN status = 'pending' THEN 0 ELSE 1 END,updated_at DESC LIMIT 100").all()).results,submissions=await Promise.all(rows.map(row=>carView(env,row,{privateView:true}))),activity=(await env.DB.prepare('SELECT action,car_id,note,created_at FROM community_audit ORDER BY created_at DESC LIMIT 50').all()).results.map(row=>({action:row.action,carId:row.car_id,note:row.note,createdAt:iso(row.created_at)}));return respond({stats,pending:submissions.filter(c=>c.status==='pending'),submissions,recentActivity:activity});
  }
  if(path==='/api/admin/moderation'){

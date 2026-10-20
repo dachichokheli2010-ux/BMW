@@ -3,17 +3,17 @@ import {validName,normalizeEmail,validPassword,emptyGarage,validateGarage} from 
 import {validateAcademyTransition} from './academy-policy.js';
 import {accountMailConfigured,sendAccountMail} from './account-mail.js';
 import {COMMUNITY_PATHS,handleCommunity} from './community-api.js';
-import {administratorAccess,administratorUser} from './admin-policy.js';
+import {administratorUser} from './admin-policy.js';
+import {ADMIN_AUTH_PATHS,getAdminSession,handleAdminAuth} from './admin-auth.js';
 
 const SESSION_MS=7*24*60*60*1000;
-export const AUTH_PATHS=new Set(['/api/auth/session','/api/auth/signup','/api/auth/login','/api/auth/logout','/api/auth/forgot-password','/api/auth/reset-password','/api/auth/verify-email','/api/auth/resend-verification','/api/account/profile','/api/garage',...COMMUNITY_PATHS]);
+export const AUTH_PATHS=new Set(['/api/auth/session','/api/auth/signup','/api/auth/login','/api/auth/logout','/api/auth/forgot-password','/api/auth/reset-password','/api/auth/verify-email','/api/auth/resend-verification','/api/account/profile','/api/garage',...COMMUNITY_PATHS,...ADMIN_AUTH_PATHS]);
 const json=(body,status=200,headers={})=>Response.json(body,{status,headers:{'Cache-Control':'no-store','Pragma':'no-cache','X-Content-Type-Options':'nosniff','Vary':'Cookie',...headers}});
 class ApiError extends Error {constructor(message,status=400,code){super(message);this.status=status;this.code=code;}}
 const only=(body,keys)=>body&&typeof body==='object'&&!Array.isArray(body)&&Object.keys(body).every(key=>keys.includes(key));
 const viewUser=row=>({id:row.id,email:row.email,name:row.name,createdAt:new Date(row.created_at).toISOString(),emailVerified:row.provider==='chatgpt'||Boolean(row.email_verified_at),language:row.language||null});
 const hosted=env=>env.AUTH_PROVIDER==='chatgpt';
 const providerInfo=env=>({...(hosted(env)?{provider:'chatgpt',signInUrl:'/signin-with-chatgpt?return_to=%2Faccount',signOutUrl:'/signout-with-chatgpt?return_to=%2Faccount'}:{provider:'password'}),capabilities:{passwordRecovery:!hosted(env)&&accountMailConfigured(env),emailVerification:!hosted(env)&&accountMailConfigured(env),mailConfigured:!hosted(env)&&accountMailConfigured(env)}});
-const adminInfo=(env,user)=>{const {configured,verificationRequired}=administratorAccess(env,user);return {configured,verificationRequired};};
 const validAccountToken=value=>typeof value==='string'&&/^[A-Za-z0-9_-]{43}$/.test(value);
 const validLanguage=value=>value===undefined||['en','ka','ru'].includes(value);
 const tokenMessage='This link is invalid or has expired. Request a new link and try again.';
@@ -106,16 +106,19 @@ async function garageSnapshot(env,userId,{internal=false}={}){
 // platform garage endpoint and static-asset router can continue to handle them.
 export async function handleApi(request,env={}){
   const pathname=new URL(request.url).pathname;
-  if(!AUTH_PATHS.has(pathname))return pathname.startsWith('/api/auth/')||pathname.startsWith('/api/account/')?json({error:'Not found.'},404):null;
+  if(!AUTH_PATHS.has(pathname))return pathname.startsWith('/api/auth/')||pathname.startsWith('/api/account/')||pathname.startsWith('/api/admin/')?json({error:'Not found.'},404):null;
   if(!env.DB)return json({error:'Account storage is unavailable. Please try again later.'},503);
   let session;
   try{
     const method=request.method,write=['POST','PUT','PATCH','DELETE'].includes(method);
     if(write)requireOrigin(request);
-    session=await getSession(request,env);
+    if(ADMIN_AUTH_PATHS.has(pathname))return await handleAdminAuth(request,env,{ApiError,readJSON,requireCSRF,limit,json});
+    const adminRoute=pathname.startsWith('/api/admin/');
+    const adminSession=adminRoute||pathname==='/api/community/car-photo'?await getAdminSession(request,env):null;
+    session=adminRoute?adminSession:await getSession(request,env);
     if(session)session.user=administratorUser(env,session.user);
-    if(COMMUNITY_PATHS.has(pathname))return await handleCommunity(request,env,{session,ApiError,readJSON,requireCSRF,authRequired,limit,json,sessionHeaders});
-    const info={...providerInfo(env),adminAccess:adminInfo(env,session?.user)};
+    if(COMMUNITY_PATHS.has(pathname))return await handleCommunity(request,env,{session,adminSession,ApiError,readJSON,requireCSRF,authRequired,limit,json,sessionHeaders});
+    const info=providerInfo(env);
     if(pathname==='/api/auth/session'){
       if(method!=='GET')return json({error:'Method not allowed.'},405,{Allow:'GET'});
       return json({user:session?.user||null,csrfToken:session?.csrfToken||null,...info},200,sessionHeaders(session));
@@ -150,7 +153,7 @@ export async function handleApi(request,env={}){
       if(session?.tokenHash)await env.DB.prepare('DELETE FROM sessions WHERE token_hash = ?').bind(session.tokenHash).run();
       const fresh=await createSession(request,env,user.id);
       const signedInUser=administratorUser(env,viewUser(user));
-      return json({user:signedInUser,csrfToken:fresh.csrfToken,...info,adminAccess:adminInfo(env,signedInUser),redirectTo:signedInUser.isAdmin?'/admin':'/account'},200,sessionHeaders(fresh));
+      return json({user:signedInUser,csrfToken:fresh.csrfToken,...info,redirectTo:'/account'},200,sessionHeaders(fresh));
     }
     if(pathname==='/api/auth/forgot-password'){
       if(method!=='POST')return json({error:'Method not allowed.'},405,{Allow:'POST'});
@@ -193,7 +196,7 @@ export async function handleApi(request,env={}){
       if(!claimed)throw new ApiError(tokenMessage,400,'INVALID_TOKEN');
       await env.DB.prepare('INSERT INTO user_verifications (user_id,verified_at) VALUES (?,?) ON CONFLICT(user_id) DO UPDATE SET verified_at = excluded.verified_at').bind(claimed.user_id,Date.now()).run();
       const verifiedUser=session?.user.id===claimed.user_id?administratorUser(env,{...session.user,emailVerified:true}):null;
-      return json({message:'Email verified. You can continue to your account.',code:'EMAIL_VERIFIED',...(verifiedUser?{user:verifiedUser,adminAccess:adminInfo(env,verifiedUser)}:{})},200,sessionHeaders(session));
+      return json({message:'Email verified. You can continue to your account.',code:'EMAIL_VERIFIED',...(verifiedUser?{user:verifiedUser}:{})},200,sessionHeaders(session));
     }
     if(pathname==='/api/auth/logout'){
       if(method!=='POST')return json({error:'Method not allowed.'},405,{Allow:'POST'});

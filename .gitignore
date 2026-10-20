@@ -3,7 +3,8 @@ node_modules/
 
 dist/
 .env
-.env.local
+.env.*
+!.env.example
 .data/
 *.sqlite
 *.sqlite-wal

@@ -27,9 +27,9 @@ function controller({user=null,capabilities={},adminAccess={},loginUser=admin}={
 function fixture(options={}){const host=document.createElement('div');document.querySelector('#fixture').append(host);const paths=[],account=options.accountController||controller(),instance=mountAccount(host,{...options,accountController:account,navigate:path=>paths.push(path)});return {host,paths,account,close(){instance.destroy();host.remove();}};}
 function submitLogin(f){const form=f.host.querySelector('[data-account-auth]'),email=form.querySelector('[name=email]'),password=form.querySelector('[name=password]');email.value='owner@example.test';password.value='correct password';Object.defineProperty(email,'validity',{value:{valid:true}});Object.defineProperty(form,'elements',{value:{email,password}});form.dispatchEvent(new window.Event('submit',{bubbles:true,cancelable:true}));}
 
-check(accountDestination(admin),'/admin','Server-authorized administrators go straight to admin');
+check(accountDestination(admin),'','Public account sign-in never redirects into private administration');
 check(accountDestination(member,'/friends?tab=incoming#requests'),'/friends?tab=incoming#requests','Internal post-login destinations retain query and anchor');
-for(const value of ['https://evil.test','//evil.test','/\\evil.test','/api/auth/logout','/account?return_to=/admin','/signin-with-chatgpt','/friends\n'])check(accountDestination(member,value),'','External, control and auth-loop destinations are rejected');
+for(const value of ['https://evil.test','//evil.test','/\\evil.test','/api/auth/logout','/account?return_to=/admin','/signin-with-chatgpt','/friends\n','/admin','/admin/settings','/admin.html','/%61dmin','/%2fadmin','/ADMIN'])check(accountDestination(member,value),'','External, control and auth-loop destinations are rejected');
 check(accountDestination(null,'/admin'),'','Guests never navigate based on a return target');
 check(apiErrorMessage({error:{message:'The database needs a moment.'}}),'The database needs a moment.');
 check(apiErrorMessage({error:{code:'OFFLINE'}},'Please try again.'),'Please try again.');
@@ -39,7 +39,7 @@ check(native.origin,'https://apex.test','Hosted sign-in stays on the app origin'
 const nativeReturn=new URL(native.searchParams.get('return_to'),'https://apex.test');check(nativeReturn.searchParams.get('after_signin'),'1','Native login preserves an explicit post-sign-in marker');check(nativeReturn.searchParams.get('return_to'),'/friends','Native login retains a member destination');
 
 {
- const f=fixture();submitLogin(f);await tick();check(f.paths,['/admin'],'Submitting the actual login form opens admin once');check(f.host.querySelector('[data-account-admin]').getAttribute('href'),'/admin','Admin profile also exposes a persistent workspace link');f.close();
+ const f=fixture();submitLogin(f);await tick();check(f.paths,[],'Public login stays on the account profile even for legacy admin roles');check(f.host.querySelector('[data-account-admin]'),null,'Public profiles never expose private administrator controls');f.close();
 }
 {
  const f=fixture({accountController:controller({loginUser:member})});submitLogin(f);await tick();check(f.paths,[],'Member login stays on the account profile');check(f.host.querySelector('[data-account-admin]'),null,'Members do not receive administrator controls');f.close();
@@ -51,15 +51,15 @@ const nativeReturn=new URL(native.searchParams.get('return_to'),'https://apex.te
  const f=fixture({accountController:controller({user:admin})});check(f.paths,[],'Admins can still visit their account settings');check(f.host.querySelector('.account-profile-links a').getAttribute('href'),'/models?collection=saved','Profile favorites use the supported catalog route');setLanguage('ru');check(f.host.querySelector('[data-account-name]').textContent,'Models','A member-supplied name is preserved across language changes');setLanguage('en');f.close();
 }
 {
- globalThis.location=new URL('https://apex.test/account?after_signin=1');const f=fixture({accountController:controller({user:admin})});check(f.paths,['/admin'],'A completed native login sends the administrator into admin');f.close();globalThis.location=new URL('https://apex.test/account');
+ globalThis.location=new URL('https://apex.test/account?after_signin=1');const f=fixture({accountController:controller({user:admin})});check(f.paths,[],'Native public sign-in stays in the public account');f.close();globalThis.location=new URL('https://apex.test/account');
 }
 {
  const f=fixture({accountController:controller({capabilities:{passwordRecovery:false}})});f.host.querySelector('[data-account-mode=forgot]').click();check(f.host.querySelector('[data-account-recovery] button[type=submit]').disabled,true,'Unavailable mail cannot become enabled by the general render pass');f.close();
 }
 {
- const f=fixture({accountController:controller({user:member,adminAccess:{verificationRequired:true},capabilities:{emailVerification:false}})});check(f.host.querySelector('[data-account-admin-verification]').textContent.includes('Email delivery is unavailable'),true,'A configured owner receives an actionable verification status');f.close();
+ const f=fixture({accountController:controller({user:member,adminAccess:{verificationRequired:true},capabilities:{emailVerification:false}})});check(f.host.querySelector('[data-account-admin-verification]'),null,'Legacy admin state never appears in public account UI');f.close();
 }
 {
- const host=document.createElement('div');document.querySelector('#fixture').append(host);const account=controller({user:admin}),instance=mountHeaderAccount(host,{accountController:account});check(host.querySelector('[data-header-admin]').getAttribute('href'),'/admin','Header exposes administrator access');host.querySelector('.account-header-link').click();check(focused,host.querySelector('[data-header-admin]'),'Opening the user menu focuses admin first');const event=new window.Event('keydown',{bubbles:true,cancelable:true});event.key='End';focused.dispatchEvent(event);check(focused,host.querySelector('[data-header-signout]'),'Menu keyboard navigation reaches the last control');account.emit(member);check(host.querySelector('[data-header-admin]'),null,'Removing a role immediately removes its admin entry');instance.destroy();host.remove();
+ const host=document.createElement('div');document.querySelector('#fixture').append(host);const account=controller({user:admin}),instance=mountHeaderAccount(host,{accountController:account});check(host.querySelector('[data-header-admin]'),null,'Public header has no administrator entry');host.querySelector('.account-header-link').click();check(focused,host.querySelector('a[href="/account"]'),'Opening the user menu focuses the public account first');const event=new window.Event('keydown',{bubbles:true,cancelable:true});event.key='End';focused.dispatchEvent(event);check(focused,host.querySelector('[data-header-signout]'),'Menu keyboard navigation reaches the last control');account.emit(member);check(host.querySelector('[data-header-admin]'),null,'Removing a role immediately removes its admin entry');instance.destroy();host.remove();
 }
 console.log(`Account UI: ${checks} login, administrator access, return paths, mail availability, translations, error and keyboard checks passed.`);

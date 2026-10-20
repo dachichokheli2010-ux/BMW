@@ -1,11 +1,12 @@
 {
   "origin": "http://127.0.0.1:3000",
-  "checkedAt": "2026-10-20T06:19:03.017Z",
+  "checkedAt": "2026-10-20T10:54:01.473Z",
   "method": "HEAD",
   "pages": 1358,
+  "privatePages": 1,
   "images": 683,
-  "assets": 36,
-  "total": 2077,
-  "passed": 2077,
+  "assets": 38,
+  "total": 2080,
+  "passed": 2080,
   "failures": []
 }

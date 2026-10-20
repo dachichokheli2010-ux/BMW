@@ -3,7 +3,7 @@ import {t,getLanguage,setLanguage,translatePage} from './preferences.js';
 import {mountHeaderAccount} from './header-account.js';
 import {accountLinkFlow,accountFieldError,recoveryMarkup} from './account-recovery-ui.js';
 import {apiErrorMessage} from './api-message.js';
-import {accountDestination,isAdministrator,nativeAccountPath} from './account-routing.js';
+import {accountDestination,nativeAccountPath} from './account-routing.js';
 import './account-translations.js';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -44,7 +44,7 @@ export function mountAccount(container,{accountController=defaultAccount,navigat
   }
   function render(force=false){
     if(destroyed)return;
-    const key=[state.user?.id||'',state.provider,mode,hasGuest(state.guestSummary),state.user?.emailVerified,state.user?.language,isAdministrator(state.user),state.adminAccess?.verificationRequired].join('|');
+    const key=[state.user?.id||'',state.provider,mode,hasGuest(state.guestSummary),state.user?.emailVerified,state.user?.language].join('|');
     if(force||key!==renderKey){renderKey=key;state.user?renderProfile():renderAuth();}
     else{
       const sync=content.querySelector('[data-account-sync]');if(sync){const wrapper=document.createElement('div');wrapper.innerHTML=statusMarkup();sync.replaceWith(wrapper.firstElementChild);}
@@ -56,8 +56,6 @@ export function mountAccount(container,{accountController=defaultAccount,navigat
     const languageSelect=content.querySelector('[data-account-language]');if(languageSelect)languageSelect.value=state.user?.language||getLanguage();
     if(state.user){
       content.querySelector('[data-account-name]')?.setAttribute('data-no-i18n','');content.querySelector('.account-email')?.setAttribute('data-no-i18n','');
-      if(isAdministrator(state.user)&&!content.querySelector('[data-account-admin]')){const link=document.createElement('a');link.href='/admin';link.className='account-primary';link.dataset.accountAdmin='';link.textContent=t('Open admin workspace');content.querySelector('.account-profile-links')?.after(link);}
-      if(state.adminAccess?.verificationRequired&&!content.querySelector('[data-account-admin-verification]')){const note=document.createElement('p');note.className='account-form-note';note.dataset.accountAdminVerification='';note.textContent=t(state.capabilities?.emailVerification?'Verify your email to activate administrator access.':'Administrator access needs email verification. Email delivery is unavailable; contact the site owner to restore access.');content.querySelector('.account-verification')?.append(note);}
     }
     translatePage();
     container.setAttribute('aria-busy',String(submitting));

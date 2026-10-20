@@ -14,7 +14,7 @@ const configuredOrigin=process.env.PUBLIC_ORIGIN?new URL(process.env.PUBLIC_ORIG
 if(configuredOrigin&&!/^https?:/.test(configuredOrigin))throw new Error('PUBLIC_ORIGIN must be an HTTP or HTTPS origin.');
 const neonConnection=databaseURL();
 let database=neonConnection?null:await createLocalDatabase(path.resolve(project,process.env.DATABASE_PATH||'.data/bmw-garage.sqlite'));
-const env={AUTH_PROVIDER:'password',PUBLIC_ORIGIN:process.env.PUBLIC_ORIGIN,RESEND_API_KEY:process.env.RESEND_API_KEY,ACCOUNT_MAIL_FROM:process.env.ACCOUNT_MAIL_FROM,ADMIN_EMAILS:process.env.ADMIN_EMAILS,ADMIN_USER_IDS:process.env.ADMIN_USER_IDS};
+const env={AUTH_PROVIDER:'password',PUBLIC_ORIGIN:process.env.PUBLIC_ORIGIN,RESEND_API_KEY:process.env.RESEND_API_KEY,ACCOUNT_MAIL_FROM:process.env.ACCOUNT_MAIL_FROM,ADMIN_LOGIN_EMAIL:process.env.ADMIN_LOGIN_EMAIL,ADMIN_PASSWORD_HASH:process.env.ADMIN_PASSWORD_HASH};
 const maxBodyBytes=1024*1024;
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.png':'image/png','.svg':'image/svg+xml','.woff2':'font/woff2','.json':'application/json'};
 function securityHeaders(res){res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');res.setHeader('X-Frame-Options','SAMEORIGIN');}
@@ -49,12 +49,14 @@ const server=http.createServer(async(req,res)=>{
   if(url.pathname.startsWith('/api/')){await apiRequest(req,res,url);return;}
   if(!['GET','HEAD'].includes(req.method)){fail(res,405,'Method not allowed.');return;}
   const relative=resolvePage(url.pathname)||decodeURIComponent(url.pathname).replace(/^\/+/, '');
+  const privateAdmin=relative==='admin.html';
+  if(privateAdmin){res.setHeader('X-Robots-Tag','noindex, nofollow, noarchive');res.setHeader('X-Frame-Options','DENY');res.setHeader('Content-Security-Policy',"frame-ancestors 'none'");res.setHeader('Referrer-Policy','same-origin');}
   let file=path.resolve(root,relative);
   const within=path.relative(root,file);
   if(within.startsWith('..')||path.isAbsolute(within)){fail(res,403,'Forbidden.');return;}
   try{await fs.access(file);}catch{if(file.endsWith('.jpg'))file=file.slice(0,-4)+'.webp';}
   const bytes=await fs.readFile(file);
-  res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream','Cache-Control':'no-cache'});
+  res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream','Cache-Control':privateAdmin?'private, no-store':'no-cache'});
   res.end(req.method==='HEAD'?undefined:bytes);
  }catch(error){
   if(res.headersSent){res.end();return;}

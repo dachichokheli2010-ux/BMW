@@ -10,7 +10,8 @@ import {handleApi} from '../server/api.js';
 import {communityQuestions} from '../server/community-questions.js';
 import {validateCommunityPhoto,encodePhotoBytes,decodePhotoBytes} from '../server/community-photos.js';
 import {emptyGarage} from '../server/validation.js';
-import {createVercelHandler} from '../server/vercel-api.js';
+import {createRoutedVercelHandler} from '../server/vercel-router.js';
+import {hashPassword,randomToken} from '../server/passwords.js';
 
 let checks=0;const check=(v,m)=>{assert.ok(v,m);checks++;};
 const jpg=await sharp({create:{width:320,height:200,channels:3,background:'#35618c'}}).jpeg().withExif({IFD0:{Artist:'PRIVATE PHOTO METADATA'}}).toBuffer();
@@ -34,18 +35,22 @@ const pg=new PGlite();const query=async(sql,values=[])=>{const r=await pg.query(
 const transaction=statements=>pg.transaction(async tx=>{const results=[];for(const [sql,values] of statements)results.push(await tx.query(sql,values));return results;});
 await initializePostgres(query,transaction);const postgres=createPostgresAdapter(query,transaction);
 async function suite(DB,label){
- const origin='https://garage.example',password='BMW community test password!',env={DB,AUTH_PROVIDER:'password',CLIENT_IP:label,ADMIN_EMAILS:'owner@example.test'};
+ const adminPassword=randomToken(),adminHash=await hashPassword(adminPassword);
+ const origin='https://garage.example',password='BMW community test password!',env={DB,AUTH_PROVIDER:'password',CLIENT_IP:label,ADMIN_EMAILS:'owner@example.test',ADMIN_LOGIN_EMAIL:'private-owner@example.test',ADMIN_PASSWORD_HASH:adminHash};
  async function call(route,{method='GET',body,actor,headers={}}={}){
   const response=await handleApi(new Request(origin+route,{method,headers:{Origin:origin,'Content-Type':'application/json',...(actor?{Cookie:actor.cookie,'X-CSRF-Token':actor.csrf}:{}),...headers},body:body===undefined?undefined:JSON.stringify(body)}),env);
   const data=response.headers.get('Content-Type')?.startsWith('application/json')?await response.json():new Uint8Array(await response.arrayBuffer());return {status:response.status,data,headers:response.headers};
  }
  async function user(email,name){await call('/api/auth/signup',{method:'POST',body:{email,name,password,language:'ka'}});const result=await call('/api/auth/login',{method:'POST',body:{email,password}});check(result.status===200,label+' account login');check(result.data.user.language==='ka',label+' signup language persists through login');check(result.data.user.isAdmin===false&&result.data.user.role==='member'&&result.data.redirectTo==='/account',label+' regular login returns explicit member role and destination');return {id:result.data.user.id,cookie:result.headers.get('Set-Cookie').split(';')[0],csrf:result.data.csrfToken};}
  const alice=await user('alice@example.test','Private Alice'),bob=await user('bob@example.test','Private Bob'),owner=await user('owner@example.test','Private Owner');
+ const adminLogin=await call('/api/admin/login',{method:'POST',body:{email:'PRIVATE-OWNER@EXAMPLE.TEST',password:adminPassword}});
+ check(adminLogin.status===200&&adminLogin.data.user.name==='Administrator',label+' dedicated administrator login');
+ const admin={cookie:adminLogin.headers.get('Set-Cookie').split(';')[0],csrf:adminLogin.data.csrfToken};
  check((await call('/api/community')).status===401,label+' community account is private');
- check((await call('/api/admin/community',{actor:alice})).status===403,label+' ordinary user denied admin');
- check((await call('/api/admin/community',{actor:owner})).status===403,label+' squatted unverified owner email denied admin');
+ check((await call('/api/admin/community',{actor:alice})).status===401,label+' ordinary user denied admin');
+ check((await call('/api/admin/community',{actor:owner})).status===401,label+' legacy owner email denied dedicated admin');
  const ownerSession=(await call('/api/auth/session',{actor:owner})).data;
- check(ownerSession.user.isAdmin===false&&ownerSession.adminAccess.configured&&ownerSession.adminAccess.verificationRequired,label+' session explains unverified owner access without granting admin');
+ check(ownerSession.user.isAdmin===false&&!('adminAccess' in ownerSession),label+' public session never grants or advertises administrator access');
  check(!JSON.stringify((await call('/api/auth/session',{actor:alice})).data).includes('owner@example.test'),label+' session does not disclose the admin email allowlist');
  await call('/api/auth/signup',{method:'POST',body:{email:'alice@example.test',name:'Changed name',password,language:'ru'}});
  check((await call('/api/auth/session',{actor:alice})).data.user.language==='ka',label+' duplicate registration cannot change an existing language preference');
@@ -92,27 +97,30 @@ async function suite(DB,label){
  check((await call('/api/community/submissions/submit',{actor:alice,method:'POST',body:{id}})).data.credits.balance===0,label+' retry idempotent');
  check((await call('/api/community/submissions',{actor:alice,method:'PUT',body:{...input,id,photos:undefined}})).status===409,label+' pending cannot edit');
  check((await call('/api/community/cars')).data.cars.length===0,label+' pending never published');
- check((await call('/api/admin/moderation',{actor:alice,method:'POST',body:{id,action:'approve',note:''}})).status===403,label+' no owner self-approval');
+ check((await call('/api/admin/moderation',{actor:alice,method:'POST',body:{id,action:'approve',note:''}})).status===401,label+' no owner self-approval');
  await DB.prepare('INSERT INTO user_verifications (user_id,verified_at) VALUES (?,?)').bind(owner.id,Date.now()).run();
- const adminLogin=await call('/api/auth/login',{method:'POST',body:{email:'owner@example.test',password}});
- check(adminLogin.data.user.isAdmin===true&&adminLogin.data.user.role==='admin'&&adminLogin.data.redirectTo==='/admin'&&!adminLogin.data.adminAccess.verificationRequired,label+' verified administrator goes straight to admin after login');
- check((await call('/api/account/profile',{actor:owner})).data.user.isAdmin===true,label+' account profile and session share the server admin policy');
- check((await call('/api/community',{actor:owner})).data.isAdmin===true,label+' verified allowlisted administrator');
- check((await call('/api/admin/community',{actor:owner})).data.pending.length===1,label+' real private moderation queue');
- check((await call('/api/admin/moderation',{actor:owner,method:'POST',body:{id,action:'approve',note:'Ownership and specification checked.'}})).status===200,label+' admin approval');
+ const publicOwnerLogin=await call('/api/auth/login',{method:'POST',body:{email:'owner@example.test',password}});
+ check(publicOwnerLogin.data.user.isAdmin===false&&publicOwnerLogin.data.redirectTo==='/account',label+' public owner login stays in the public account');
+ check((await call('/api/account/profile',{actor:owner})).data.user.isAdmin===false,label+' verified legacy account remains a member');
+ check((await call('/api/community',{actor:owner})).data.isAdmin===false,label+' public community has no administrator role');
+ check((await call('/api/admin/community',{actor:admin})).data.pending.length===1,label+' real private moderation queue');
+ check((await call(photoURL,{actor:admin})).status===200,label+' dedicated administrator can inspect private photographs');
+ check((await call('/api/admin/moderation',{actor:admin,method:'POST',body:{id,action:'approve',note:'Ownership and specification checked.'}})).status===200,label+' admin approval');
  const published=(await call('/api/community/cars?id='+id)).data.car;check(published.photos.length===1&&published.author.handle==='alice-driver',label+' approved card published');
  check(!JSON.stringify(published).includes('Private ownership')&&!('evidence'in published)&&!('moderationNote'in published)&&!('user_id'in published),label+' private proof never public');
  const binary=await call(photoURL);check(binary.status===200&&binary.headers.get('Content-Type')==='image/jpeg'&&binary.headers.get('Cache-Control').includes('no-store'),label+' approved binary photo');
- check((await call('/api/admin/moderation',{actor:owner,method:'POST',body:{id,action:'reject',note:'Please clarify the engine replacement history.'}})).status===200,label+' admin can unpublish');
+ check((await call('/api/admin/moderation',{actor:admin,method:'POST',body:{id,action:'reject',note:'Please clarify the engine replacement history.'}})).status===200,label+' admin can unpublish');
  check((await call('/api/community/cars?id='+id)).status===404&&(await call(photoURL)).status===404,label+' rejection revokes public car and photo');
  const edited=await call('/api/community/submissions',{actor:alice,method:'PUT',body:{...input,id,photos:undefined,description:input.description+' The engine replacement history is now attached.'}});check(edited.status===200&&edited.data.submission.photos.length===1,label+' rejected draft retains omitted photos');
  const captioned=await call('/api/community/submissions',{actor:alice,method:'PUT',body:{...input,id,photos:[{id:edited.data.submission.photos[0].id,caption:'Updated owner caption'}]}});check(captioned.status===200&&captioned.data.submission.photos[0].caption==='Updated owner caption',label+' owner edits retained photo caption');
  const again=await call('/api/community/submissions/submit',{actor:alice,method:'POST',body:{id}});check(again.status===200&&again.data.credits.balance===0,label+' same reviewed car correction free');
- const analytics=(await call('/api/admin/community',{actor:owner})).data;check(analytics.stats.accounts===3&&analytics.stats.pending===1&&analytics.stats.creditsEarned===50&&analytics.stats.creditsSpent===50&&analytics.recentActivity.length>=3,label+' database analytics accurate');
+ const analytics=(await call('/api/admin/community',{actor:admin})).data;check(analytics.stats.accounts===3&&analytics.stats.pending===1&&analytics.stats.creditsEarned===50&&analytics.stats.creditsSpent===50&&analytics.recentActivity.length>=3,label+' database analytics accurate');
  check(!JSON.stringify(analytics).includes('password_hash'),label+' admin response excludes credentials');
- const vercel=createVercelHandler({environment:{DATABASE_URL:'postgresql://test:secret@test.invalid/isolated',ADMIN_EMAILS:env.ADMIN_EMAILS},connect:async()=>DB});
- check((await vercel(new Request(origin+'/api/community/cars'))).status===200,label+' catch-all serverless community route');
- check((await vercel(new Request(origin+'/api/admin/community',{headers:{Cookie:owner.cookie}}))).status===200,label+' serverless administrator environment forwarded');
+ const vercel=createRoutedVercelHandler({environment:{DATABASE_URL:'postgresql://test:secret@test.invalid/isolated',ADMIN_LOGIN_EMAIL:env.ADMIN_LOGIN_EMAIL,ADMIN_PASSWORD_HASH:env.ADMIN_PASSWORD_HASH},connect:async()=>DB});
+ check((await vercel(new Request(origin+'/api/community/cars'))).status===200,label+' shared serverless community route');
+ check((await vercel(new Request(origin+'/api/admin/community',{headers:{Cookie:admin.cookie}}))).status===200,label+' serverless administrator environment forwarded');
+ check((await vercel(new Request(origin+'/api/router?__apex_route=community/cars'))).status===200,label+' explicit community rewrite reaches the database');
+ check((await vercel(new Request(origin+'/api/router?__apex_route=admin/community',{headers:{Cookie:admin.cookie}}))).status===200,label+' explicit private rewrite retains isolated authentication');
  check((await call('/api/community/friends',{actor:alice,method:'DELETE',body:{id:request.data.id}})).status===200,label+' friend removal');
  check((await call('/api/community/friends',{actor:bob})).data.friends.length===0,label+' friend removed for both');
  let friendReaders=0,releaseFriends;const friendBarrier=new Promise(resolve=>{releaseFriends=resolve;});
@@ -126,9 +134,9 @@ async function suite(DB,label){
  const beforeAudit=Number((await DB.prepare('SELECT COUNT(*) AS count FROM community_audit WHERE car_id = ?').bind(reviewRace.id).first()).count);
  // Hold both reviewers after reading the same pending snapshot. Batch statements
  // stay original adapter statements, exercising actual atomic SQL and row locks.
- let readers=0,release;const barrier=new Promise(resolve=>{release=resolve;});env.ADMIN_USER_IDS=bob.id;
+ let readers=0,release;const barrier=new Promise(resolve=>{release=resolve;});
  env.DB={...DB,prepare(sql){const statement=DB.prepare(sql);if(sql!=='SELECT * FROM community_cars WHERE id = ?')return statement;return {...statement,bind(...values){const bound=statement.bind(...values);return {...bound,async first(...args){const row=await bound.first(...args);if(row?.id===reviewRace.id&&row.status==='pending'){if(++readers===2)release();await barrier;}return row;}};}};}};
- const decisions=await Promise.all([call('/api/admin/moderation',{actor:owner,method:'POST',body:{id:reviewRace.id,action:'approve',note:'Approved after review.'}}),call('/api/admin/moderation',{actor:bob,method:'POST',body:{id:reviewRace.id,action:'reject',note:'Please clarify the factory engine specification.'}})]);env.DB=DB;delete env.ADMIN_USER_IDS;
+ const decisions=await Promise.all([call('/api/admin/moderation',{actor:admin,method:'POST',body:{id:reviewRace.id,action:'approve',note:'Approved after review.'}}),call('/api/admin/moderation',{actor:admin,method:'POST',body:{id:reviewRace.id,action:'reject',note:'Please clarify the factory engine specification.'}})]);env.DB=DB;
  check(decisions.filter(r=>r.status===200).length===1&&decisions.filter(r=>r.data.code==='MODERATION_CHANGED').length===1,label+' stale competing reviewer gets conflict');
  const afterAudit=Number((await DB.prepare('SELECT COUNT(*) AS count FROM community_audit WHERE car_id = ?').bind(reviewRace.id).first()).count);check(afterAudit===beforeAudit+1,label+' competing moderation records only actual winning action');
  const reviewed=await DB.prepare('SELECT status FROM community_cars WHERE id = ?').bind(reviewRace.id).first(),decision=decisions.find(r=>r.status===200);check(reviewed.status===decision.data.submission.status,label+' moderation response matches committed result');
@@ -146,12 +154,12 @@ async function suite(DB,label){
  const retried=await Promise.all([1,2].map(()=>call('/api/community/submissions/submit',{actor:alice,method:'POST',body:{id:same.id}})));
  check(retried.every(r=>r.status===200),label+' concurrent retry returns pending success');
  check((await call('/api/community',{actor:alice})).data.credits.balance===50,label+' concurrent retry charges only once');
- env.ADMIN_USER_IDS=bob.id;check((await call('/api/community',{actor:bob})).data.isAdmin===true,label+' explicit immutable admin ID supported');
+ env.ADMIN_USER_IDS=bob.id;check((await call('/api/community',{actor:bob})).data.isAdmin===false,label+' legacy immutable admin ID cannot grant dedicated access');
  const pinnedLogin=await call('/api/auth/login',{method:'POST',body:{email:'bob@example.test',password}});
- check(pinnedLogin.data.user.isAdmin===true&&pinnedLogin.data.redirectTo==='/admin'&&pinnedLogin.data.user.emailVerified===false,label+' explicitly configured existing owner can use admin without unavailable verification mail');
+ check(pinnedLogin.data.user.isAdmin===false&&pinnedLogin.data.redirectTo==='/account',label+' legacy administrator settings cannot redirect public login');
  delete env.ADMIN_USER_IDS;
  check((await call('/api/auth/session',{actor:bob})).data.user.isAdmin===false,label+' session role is recalculated when administrator access is revoked');
- check((await call('/api/admin/community',{actor:bob})).status===403,label+' removing server admin ID revokes privilege');
+ check((await call('/api/admin/community',{actor:bob})).status===401,label+' public cookie cannot authenticate the administrator workspace');
  return {id,photoURL,alice,call};
 }
 try{

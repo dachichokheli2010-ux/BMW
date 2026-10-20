@@ -30,7 +30,6 @@ const pages={
   '/community':{id:'community',view:'community',title:'Real cars. Real stories.',kicker:'THE APEX OWNERS CLUB',description:'Meet owner cars, connect with friends and make your garage part of the story.',label:'THE OWNERS CLUB'},
   '/friends':{id:'community',view:'friends',title:'Find your people.',kicker:'YOUR APEX FRIENDS',description:'Connect with other BMW enthusiasts and keep your requests in one place.',label:'YOUR PEOPLE'},
   '/submit-car':{id:'community',view:'submission',title:'Your car has a story.',kicker:'SUBMIT YOUR BMW',description:'Earn community credits, prepare your car’s profile and send it for review before publication.',label:'OWNER SUBMISSIONS'},
-  '/admin':{id:'community',view:'admin',title:'The review desk.',kicker:'APEX ADMINISTRATION',description:'Review owner submissions and understand real community activity.',label:'PRIVATE ADMINISTRATION'},
 };
 
 export function mountPlatform({catalog,getCurrent,selectModel,showCollection,openPart,compareModels,mountComparison,dialog,toast}) {

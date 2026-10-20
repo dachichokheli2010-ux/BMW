@@ -20,7 +20,7 @@ The first account API request initializes these tables in one transaction. It ta
 ## Deploy the fix
 
 1. Keep `DATABASE_URL` in the Vercel project's environment settings, enabled for each deployment environment you use. Do not expose it as a browser variable.
-2. Deploy this checkout. The individual functions under `api/auth/`, `api/account/`, and `api/garage.js` are required; the older single dynamic API file did not serve nested endpoints on the observed deployment.
+2. Deploy this checkout. Keep the individual account functions under `api/auth/`, `api/account/`, and `api/garage.js`. Community and private admin endpoints use `api/router.js` with the explicit rewrites in `vercel.json`; deploy the router and configuration together. The older single dynamic API file did not serve nested endpoints on the observed deployment.
 3. Confirm `/api/auth/session` returns JSON with `user: null` while signed out. `/api/garage` should return JSON with status 401 while signed out, rather than 404 or a database error.
 4. Create an account, save a BMW or build, sign out, and sign in on another browser to confirm persistence.
 

@@ -18,48 +18,42 @@ published submissions.
   Uploaded photos are database rows, so they travel with the submissions in a
   database backup. No temporary filesystem or third-party upload bucket is used.
 
-## Explicit administrator configuration
+## Private administrator sign-in
 
-Set `ADMIN_EMAILS` to a comma-separated list of owner email addresses in the
-**server environment only**. These addresses grant access only after account
-email verification. Configure the existing `RESEND_API_KEY`,
-`ACCOUNT_MAIL_FROM` and `PUBLIC_ORIGIN` email settings to deliver verification
-links. ChatGPT-hosted identities already supply verified email addresses.
+Open `/admin` directly in the address bar. Public navigation, public account
+pages and search discovery do not advertise the workspace. It has its own
+email/password form, session cookie and logout, independent of public accounts.
+There is no administrator registration or recovery route.
 
-This checkout configures the owner's requested email in the ignored
-`.env.local` for `npm start` and in `vercel.json`'s server runtime `env` block
-for the next Vercel deployment. It is not included in browser assets. Changing
-local files does not change an already-running deployment. The existing local
-owner account is also pinned by its exact immutable account ID in `.env.local`,
-so local administration works without a mail provider. That local ID is not
-copied into production. An email allowlist does not create an account or mark
-an address as verified.
+Set `ADMIN_LOGIN_EMAIL` and `ADMIN_PASSWORD_HASH` in the **server environment
+only**. The password record uses the existing salted PBKDF2-SHA256 format with
+600,000 iterations. `npm run admin:configure` configures the ignored local
+`.env.local` file; `npm run admin:check` reports configuration status without
+printing credentials. Local files do not update a running deployment. Configure
+the same two variables through the deployment provider's private server secrets
+before deploying. Never commit them to source code, browser assets or
+`vercel.json`. No email delivery provider or pre-existing public account is
+required for administrator sign-in.
 
-If email delivery is not available, the owner can instead set `ADMIN_USER_IDS`
-to the exact immutable ID of their already-created account (for example,
-`local:...`). Obtain that ID from their authenticated `/api/auth/session`
-response or an authorised database inspection. A public driver handle is not
-an account ID. Neither setting is sent to the browser, and the first registered
-account is never automatically made an administrator.
+Public account responses always report `isAdmin: false`, `role: 'member'` and
+`redirectTo: '/account'` after login. Legacy `ADMIN_EMAILS` and `ADMIN_USER_IDS`
+allowlists cannot grant private workspace access, even to a verified account.
+The public API does not expose administrator configuration or owner addresses.
 
-Run `npm run admin:check` to inspect only the configured administrator accounts
-in the active local or Neon database. It reports their immutable IDs and access
-status without changing accounts, granting permissions or printing passwords.
-The command requires the same server environment as the deployment being
-diagnosed; a local SQLite account ID is separate from a Neon account ID.
+Dedicated administrator cookies are HttpOnly, SameSite=Strict and Secure on
+HTTPS. Sessions expire after eight hours; only hashed, namespaced tokens are
+stored in the existing session table. Changing either server credential
+invalidates previous administrator tokens. A non-login audit principal is
+created after a successful administrator login to preserve existing moderation
+foreign keys, without adding a public account or changing account credentials.
+It is excluded from public account totals. Login is rate limited and all writes
+require the exact site origin. Authenticated administrator writes additionally
+require their own CSRF token.
 
-Session, login and account profile responses include `user.isAdmin` and
-`user.role` (`admin` or `member`), calculated from the current server settings on
-every request. Login also returns `redirectTo: '/admin'` for administrators.
-The `adminAccess` response reports whether any administrator is configured and
-whether this signed-in account needs email verification. It never exposes
-the allowlist. Email verification is offered only when a mail provider is
-configured; otherwise use an explicitly authorized existing account ID.
-
-The admin page shows the private moderation queue and database counts. A
-submission becomes public only after an authorised administrator approves it.
-Rejecting an already approved car removes both its public record and anonymous
-photo access. No email notifications are sent by this feature.
+The workspace shows the private moderation queue and database counts. A
+submission becomes public only after administrator approval. Rejecting an
+approved car removes both its public record and anonymous photo access. No
+email notifications are sent by this feature.
 
 ## Credits and review rules
 
@@ -97,8 +91,10 @@ can remove them. Only an explicitly public driver handle can be searched.
 
 ## Frontend contract
 
-All writes use the existing same-origin session cookie and `X-CSRF-Token` from
-`GET /api/auth/session`; JSON content type is required. Errors return
+Public account writes use the same-origin public session cookie and
+`X-CSRF-Token` from `GET /api/auth/session`. Administrator writes use the
+separate private cookie and token from `GET /api/admin/session` or its login
+response. JSON content type is required. Errors return
 `{error,code?}` with an appropriate HTTP status. All API responses are no-store.
 
 | Endpoint | Method and request | Response |
@@ -117,6 +113,9 @@ All writes use the existing same-origin session cookie and `X-CSRF-Token` from
 | same | POST car fields to create draft; PUT same fields plus `id` | `{submission}` |
 | `/api/community/submissions/submit` | POST `{id}` | `{submission,credits}` |
 | `/api/community/car-photo?id=...` | GET | Authorised JPEG / WebP bytes |
+| `/api/admin/session` | GET | `{configured,user:null\|{id,name},csrfToken:null\|string}` |
+| `/api/admin/login` | POST `{email,password}` | Private session snapshot and cookie |
+| `/api/admin/logout` | POST `{}`; private CSRF token | Signed-out snapshot and expired private cookie |
 | `/api/admin/community` | GET, administrator | `{stats,pending,submissions,recentActivity}` |
 | `/api/admin/moderation` | POST `{id,action:'approve'\|'reject',note}` | `{submission}` |
 
@@ -137,3 +136,5 @@ Credits are `{balance,submissionCost:50,reward:5,dailyLimit:10,earnedToday}`.
 Run `node scripts/check-community-backend.mjs` for isolated SQLite and PGlite
 PostgreSQL checks. It creates temporary test accounts only, verifies permission
 boundaries and persistence, and never reads deployment secrets or a real DB.
+`node scripts/check-admin-auth.mjs` exercises private login, cookie isolation,
+CSRF, rate limits and credential rotation against both database engines.

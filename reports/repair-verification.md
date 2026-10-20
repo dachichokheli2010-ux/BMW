@@ -1,5 +1,7 @@
 # Repair verification — 20 October 2026
 
+This report records the earlier repair run. Current administration behavior is documented in [private admin verification](private-admin-verification.md).
+
 This pass fixes observed defects in the existing website. It does not establish that every possible defect or content gap has been eliminated.
 
 ## Behavior repaired

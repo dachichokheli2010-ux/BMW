@@ -45,7 +45,11 @@ window.addEventListener('apex:modelselected',()=>{
 });
 function toast(text){$('#toast').textContent=text;$('#toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),3500);}
 function dialog(html){$('#dialog').classList.remove('part-dialog','photo-dialog','comparison-dialog');$('#dialogbody').innerHTML=html;$('#dialog').setAttribute('aria-label',$('#dialogbody h2')?.textContent||'BMW details');$('#dialog').showModal();}
-$('#close').onclick=()=>$('#dialog').close();$('#dialog').onclick=e=>{if(e.target===$('#dialog'))$('#dialog').close();};
+$('#close').onclick=()=>$('#dialog').close();$('#dialog').onclick=event=>{
+ const modal=$('#dialog');if(event.target!==modal)return;
+ const bounds=modal.getBoundingClientRect();
+ if(event.clientX<bounds.left||event.clientX>bounds.right||event.clientY<bounds.top||event.clientY>bounds.bottom)modal.close();
+};
 const buyingUI=mountBuyingLinks({container:$('#buying-links'),getModel:()=>current});
 const galleryUI=mountGalleryEnhancements({getCurrent:()=>current,getMode:()=>view,getPhotos:views,getIndex:()=>angle,onSelect:choosePhoto,openDialog:dialog});
 function clearAudioPlayers(){$('#recordingplayer').querySelectorAll('iframe').forEach(x=>x.remove());$('#playrecording').textContent='Play recording';$('#playrecording').setAttribute('aria-pressed','false');}

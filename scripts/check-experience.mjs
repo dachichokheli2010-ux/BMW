@@ -75,6 +75,8 @@ try{
     const service={carId:'e92',part:'oil-filter',mileage:100000,cost:120,date:'2026-10-01',note:'Oil & filter checked',due:'2027-10-01'};
     const result=validateHub({...emptyHub(),cards:['e92','fake-car','e92'],values:{e92:25000,'fake-car':1,f90:-2},services:[service,{...service,carId:'fake-car'},{...service,cost:Infinity}],paint:'<img src=x>',wheel:'unknown',password:'must not persist'},allModels);
     assert.deepEqual(result.cards,['e92']);assert.deepEqual(result.values,{e92:25000});assert.deepEqual(result.services,[service]);assert.equal(result.paint,'Alpine White');assert.equal(result.wheel,'silver');assert.equal(Object.hasOwn(result,'password'),false);
+    const dates=validateHub({...emptyHub(),claimedDays:['2026-02-31','2026-02-28','2024-02-29','2025-02-29'],services:[{...service,date:'2026-02-31'},{...service,due:'2025-02-29'},service]},allModels);
+    assert.deepEqual(dates.claimedDays,['2026-02-28','2024-02-29'],'Imported dates must exist on the calendar');assert.deepEqual(dates.services,[service]);
     assert.throws(()=>validateHub({cards:[]},allModels),/not an APEX collection/);assert.throws(()=>validateHub({...emptyHub(),services:Array(1001).fill(service)},allModels),/1,000/);
   });
 
@@ -90,6 +92,29 @@ try{
     host.querySelector('[data-claim]').click();const first=JSON.parse(storage.getItem('apex-collection-v1:guest'));assert.equal(first.cards.length,1);assert.equal(first.claimedDays.length,1);assert.equal(host.querySelector('[data-claim]').disabled,true);host.querySelector('[data-claim]').click();assert.equal(JSON.parse(storage.getItem('apex-collection-v1:guest')).cards.length,1);
     host.querySelector('[data-hub-tab=studio]').click();host.querySelector('[data-paint="Interlagos Blue"]').click();assert.equal(host.querySelector('[data-paint="Interlagos Blue"]').getAttribute('aria-pressed'),'true');assert.match(host.querySelector('.paint-preview svg').getAttribute('aria-label'),/Interlagos Blue/);
     host.querySelector('[data-wheel=bronze]').click();const final=JSON.parse(storage.getItem('apex-collection-v1:guest'));assert.equal(final.paint,'Interlagos Blue');assert.equal(final.wheel,'bronze');assert.equal(storage.getItem('apex-favorites'),favorites);instance.destroy();
+  });
+
+  await check('failed browser storage remains visible after daily claims and service saves',()=>{
+    const storage=new MemoryStorage();storage.setItem=()=>{throw new Error('Storage unavailable');};
+    const {host,window}=fixture('/my-garage',storage);const instance=mountGarageHub(host,{catalog:allModels});host.querySelector('[data-claim]').click();assert.match(host.querySelector('.hub-status').textContent,/could not save/);
+    host.querySelector('[data-hub-tab=care]').click();const service=host.querySelector('[data-service]');for(const [name,value]of Object.entries({date:'2026-10-01',mileage:'1000',cost:'0',note:'Oil checked'}))service.querySelector(`[name=${name}]`).value=value;service.dispatchEvent(new window.Event('submit',{bubbles:true,cancelable:true}));
+    assert.match(host.querySelector('.hub-status').textContent,/could not save/,'A success message must not replace the storage failure');instance.destroy();
+  });
+
+  await check('the full M challenge recognizes 1M, Z M and XM while excluding M Performance cars',()=>{
+    const {host,window,storage}=fixture('/my-garage'),fullM=['e82-1m','z3-m','z4-m','g09-xm','e368-z3m-coupe','e86-z4m-coupe'];
+    storage.setItem('apex-collection-v1:guest',JSON.stringify({...emptyHub(),values:Object.fromEntries([...fullM,'g29-z4'].map(id=>[id,1]))}));
+    const instance=mountGarageHub(host,{catalog:allModels});host.querySelector('[data-hub-tab=challenge]').click();const form=host.querySelector('[data-challenge]');form.querySelector('[name=theme]').value='m';
+    for(const id of fullM){const checkbox=form.querySelector(`[name=car][value="${id}"]`);checkbox.setAttribute('checked','');form.dispatchEvent(new window.Event('submit',{bubbles:true,cancelable:true}));assert.match(host.querySelector('[data-challenge-result]').textContent,/Challenge complete/,id+' is a full M model');checkbox.removeAttribute('checked');}
+    form.querySelector('[name=car][value="g29-z4"]').setAttribute('checked','');form.dispatchEvent(new window.Event('submit',{bubbles:true,cancelable:true}));assert.match(host.querySelector('[data-challenge-result]').textContent,/All-M theme needs/);
+    assert.equal(garageSummary(fullM.map(id=>allModels.find(model=>model.id===id))).personality,'The Track Enthusiast');assert.equal(garageSummary([allModels.find(model=>model.id==='g29-z4')]).personality,'The BMW Curator');instance.destroy();
+  });
+
+  await check('a pending backup cannot import into another account after the file finishes reading',async()=>{
+    const {host,window,storage}=fixture('/my-garage');setUser({id:'import-alice',name:'Alice'});const instance=mountGarageHub(host,{catalog:allModels});let finish;
+    const file=host.querySelector('[data-hub-file]');Object.defineProperty(file,'files',{value:[{size:100,text:()=>new Promise(resolve=>{finish=resolve;})}]});file.dispatchEvent(new window.Event('change',{bubbles:true}));
+    setUser({id:'import-bob',name:'Bob'});finish(JSON.stringify({...emptyHub(),cards:['e92']}));await tick();
+    assert.equal(storage.getItem('apex-collection-v1:import-bob'),null,'A late file result must not overwrite the next account’s collection');assert.equal(host.querySelector('[data-value=e92]'),null);instance.destroy();setUser(null);
   });
 
   await check('account changes keep collection cards and personal valuations in separate browser keys',()=>{

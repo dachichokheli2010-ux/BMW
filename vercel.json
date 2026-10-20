@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/api/admin/:action",
+      "destination": "/api/router?__apex_route=admin/:action"
+    },
+    {
+      "source": "/api/community/:path*",
+      "destination": "/api/router?__apex_route=community/:path*"
+    },
+    {
       "source": "/lessons/:path*",
       "destination": "/index.html"
     },
@@ -102,7 +110,7 @@
     },
     {
       "source": "/admin/:path*",
-      "destination": "/index.html"
+      "destination": "/admin.html"
     },
     {
       "source": "/garage/:path*",
@@ -110,9 +118,6 @@
     }
   ],
   "framework": null,
-  "env": {
-    "ADMIN_EMAILS": "dachi.chokheli2010@gmail.com"
-  },
   "outputDirectory": "dist/vercel",
   "buildCommand": "npm run build:vercel",
   "headers": [
@@ -148,6 +153,81 @@
         {
           "key": "Cache-Control",
           "value": "private, no-store"
+        }
+      ]
+    },
+    {
+      "source": "/admin",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "private, no-store"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "frame-ancestors 'none'"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "same-origin"
+        }
+      ]
+    },
+    {
+      "source": "/admin.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "private, no-store"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "frame-ancestors 'none'"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "same-origin"
+        }
+      ]
+    },
+    {
+      "source": "/admin/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "private, no-store"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "frame-ancestors 'none'"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "same-origin"
         }
       ]
     }

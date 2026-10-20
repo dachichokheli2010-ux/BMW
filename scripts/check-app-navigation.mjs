@@ -80,11 +80,16 @@ try{
   }
   const profilePhoto=document.querySelector('.profile-photo-slot img');assert.ok(profilePhoto);
   profilePhoto.dispatchEvent(new window.Event('error',{bubbles:true}));assert.equal(profilePhoto.getAttribute('src'),'/images/photo-unavailable.svg');assert.equal(profilePhoto.hasAttribute('srcset'),false,'Failed photo candidates must not keep retrying their srcset');
+  document.querySelector('#factorysource').click();
+  const dialog=document.querySelector('#dialog'),inside=new window.Event('click',{bubbles:true});Object.assign(inside,{clientX:200,clientY:40});dialog.dispatchEvent(inside);
+  assert.equal(dialog.open,true,'Clicking the detail dialog’s own interior padding keeps its content open');
+  const outside=new window.Event('click',{bubbles:true});Object.assign(outside,{clientX:-1,clientY:-1});dialog.dispatchEvent(outside);
+  assert.equal(dialog.open,false,'The detail dialog still closes when its backdrop is clicked');
   const {resolvePage}=await import('../public/routes.js');
   for(const link of document.querySelectorAll('.header-user-menu a[href]'))assert.ok(resolvePage(new URL(link.getAttribute('href'),location.href).pathname),'Account-menu links must resolve to real pages: '+link.getAttribute('href'));
   await new Promise(resolve=>setTimeout(resolve,80));
   assert.deepEqual(errors,[],'Actual app entry point and navigation should not throw');
-  console.log('PASS App navigation: collection, all 93 cars, 12 3D entries, engine views, URLs and Back/Forward restoration (DOM simulation).');
+  console.log('PASS App navigation: collection, all 93 cars, 12 3D entries, engine views, URLs, dialog dismissal and Back/Forward restoration (DOM simulation).');
 }finally{
   account.destroy();console.error=originalError;
   window.dispatchEvent(new window.Event('pagehide'));

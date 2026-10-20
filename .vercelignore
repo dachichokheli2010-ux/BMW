@@ -3,3 +3,9 @@ public/images/official-heritage/**
 public/images/official-modern/**
 public/images/**/_candidates/**
 public/images/next/hero.webp
+.env
+.env.*
+.data/**
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm

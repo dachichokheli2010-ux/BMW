@@ -30,10 +30,10 @@ async function inventory(directory){
 }
 await inventory(output);
 // Keep this framework-free project within its 12-function deployment budget.
-// Community endpoints share api/[...path].js rather than creating 12 functions.
+// Community and admin endpoints share api/router.js through explicit rewrites.
 async function apiEntries(directory){let files=[];for(const entry of await fs.readdir(directory,{withFileTypes:true})){const filename=path.join(directory,entry.name);if(entry.isDirectory())files.push(...await apiEntries(filename));else if(/\.[cm]?[jt]s$/.test(entry.name))files.push(filename);}return files;}
 const functions=await apiEntries(path.join(project,'api'));
-assert.ok(functions.length<=12,'Too many Vercel function entry points; consolidate routes in the existing catch-all API.');
+assert.ok(functions.length<=12,'Too many Vercel function entry points; consolidate related routes in the shared router.');
 async function existing(url,label){
   assert.equal(url.origin,origin,label+' must stay on this origin');
   const relative=decodeURIComponent(url.pathname).replace(/^\//,'');
@@ -110,5 +110,10 @@ const globalHeaders=config.headers.find(rule=>rule.source==='/(.*)')?.headers||[
 assert.ok(globalHeaders.some(header=>header.key==='Cache-Control'&&header.value.includes('must-revalidate')),'HTML and unversioned assets must revalidate');
 assert.ok(config.headers.some(rule=>rule.source.startsWith('/_apex/')&&rule.headers.some(header=>header.key==='Cache-Control'&&header.value.includes('immutable'))),'Release assets must be immutable');
 assert.ok(config.headers.some(rule=>rule.source==='/api/:path*'&&rule.headers.some(header=>header.key==='Cache-Control'&&header.value==='private, no-store')),'Account API responses must never inherit the static asset caching policy');
+for(const route of ['/admin','/admin.html','/admin/:path*']){
+  const headers=config.headers.find(rule=>rule.source===route)?.headers||[];
+  for(const [key,value]of [['Cache-Control','private, no-store'],['X-Robots-Tag','noindex, nofollow, noarchive'],['X-Frame-Options','DENY'],['Content-Security-Policy',"frame-ancestors 'none'"]])assert.ok(headers.some(header=>header.key===key&&header.value===value),route+' must retain '+key);
+}
+assert.ok(!manifest.paths.some(route=>/^\/admin(?:\/|$)/.test(route)),'Private administration must not publish in discovery');
 assert.equal(await fs.stat(path.join(output,'images','next','hero.webp')).catch(()=>null),null,'Unapproved hero must not publish');
 console.log(`Vercel release checks passed: ${modules} modules, ${styles} stylesheets, ${images.size} images, ${references} asset references and ${manifest.paths.length} deep links.`);

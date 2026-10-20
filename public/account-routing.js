@@ -1,12 +1,10 @@
-export const isAdministrator = user => user?.isAdmin === true || user?.role === 'admin';
-
 export function accountDestination(user, returnTo = '') {
   if (!user) return '';
-  if (isAdministrator(user)) return '/admin';
   if (typeof returnTo !== 'string' || !returnTo.startsWith('/') || returnTo.startsWith('//') || /[\\\u0000-\u0020]/.test(returnTo)) return '';
   try {
     const url = new URL(returnTo, 'https://apex.invalid');
-    if (url.origin !== 'https://apex.invalid' || /^\/(?:account|api|signin-with-chatgpt|signout-with-chatgpt)(?:\/|$)/.test(url.pathname)) return '';
+    const pathname = decodeURIComponent(url.pathname).replace(/^\/+/, '/');
+    if (url.origin !== 'https://apex.invalid' || /^\/admin(?:\.html)?(?:\/|$)/i.test(pathname) || /^\/(?:account|api|signin-with-chatgpt|signout-with-chatgpt)(?:\/|$)/.test(pathname)) return '';
     return url.pathname + url.search + url.hash;
   } catch { return ''; }
 }

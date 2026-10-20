@@ -7,7 +7,7 @@ export const pageRoutes = Object.freeze({
   '/photos': 'index.html', '/account': 'index.html', '/login': 'index.html', '/signup': 'index.html',
   '/cars': 'index.html', '/engines': 'index.html', '/play': 'index.html', '/start': 'index.html',
   '/glossary': 'index.html', '/badges': 'index.html',
-  '/community':'index.html', '/friends':'index.html', '/submit-car':'index.html', '/admin':'index.html',
+  '/community':'index.html', '/friends':'index.html', '/submit-car':'index.html', '/admin':'admin.html',
   '/parts': 'parts.html', '/electric': 'electric.html', '/about': 'about.html',
 });
 

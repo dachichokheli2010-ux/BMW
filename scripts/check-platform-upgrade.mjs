@@ -6,7 +6,7 @@ import {parseHTML} from 'linkedom';
 import {registerHooks} from 'node:module';
 
 const cases=['/','/models','/electric','/about','/photos','/parts','/cars/f10-m5','/cars/f92-m8','/cars/i4','/engines','/engines/s65','/engines/s70','/engines/edrive','/engines/unknown-engine','/start','/learn','/lessons/first-engine','/play','/play?mode=practice','/my-garage','/tuning-garage','/engine-lab','/generation-guides','/compare','/account','/parts/turbocharger','/glossary','/glossary/torque','/badges','/badges/answers-1','/questions/car-f10-code'];
-cases.push('/community','/friends','/submit-car','/admin','/garage/test-token','/community/cars/test-car','/questions/academy-part-turbocharger-photo');
+cases.push('/community','/friends','/submit-car','/garage/test-token','/community/cars/test-car','/questions/academy-part-turbocharger-photo');
 const route=process.argv[process.argv.indexOf('--route')+1];
 if(!process.argv.includes('--route')){
   for(const path of cases){

@@ -2,7 +2,7 @@
 
 An independent BMW collection and engineering learning platform. This upgrade extends the existing buildless JavaScript application and preserves its catalog, galleries, favorites, comparisons, preferences, recordings, and hosted garage API.
 
-The 20 October repair pass adds direct admin sign-in routing, clear API error messages, safer offline account synchronization, persistent language preferences, and fixes for PostgreSQL migration, mobile navigation and account readability. Photo question cards now show their reference image, answer and credits; glossary deep links follow the selected language. Run `npm run admin:check` to inspect configured owner access without changing accounts. See [the repair verification report](reports/repair-verification.md) for coverage and deployment limits.
+The 20 October repair pass adds a separate private `/admin` login, clear API error messages, safer offline account synchronization, persistent language preferences, and fixes for PostgreSQL migration, mobile navigation and account readability. Photo question cards now show their reference image, answer and credits; glossary deep links follow the selected language. Administration has its own credentials and session, entered directly through `/admin`. Run `npm run admin:configure` to configure local owner credentials securely and `npm run admin:check` to check their status. See [the private admin verification report](reports/private-admin-verification.md) for the latest behavior and deployment limits.
 
 ## October 2026 expansion
 
