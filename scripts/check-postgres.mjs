@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {PGlite} from '@electric-sql/pglite';
-import {initializePostgres,createPostgresAdapter,postgresSQL,postgresSchemaStatements,databaseURL,validateDatabaseURL} from '../server/postgres-db.js';
+import {initializePostgres,inspectPostgres,createPostgresAdapter,postgresSQL,postgresSchemaStatements,databaseURL,validateDatabaseURL} from '../server/postgres-db.js';
 import {handleApi} from '../server/api.js';
 import {createVercelHandler} from '../server/vercel-api.js';
 import {emptyGarage} from '../server/validation.js';
@@ -12,10 +12,12 @@ assert.equal(postgresSQL("SELECT '?' AS literal, users.* FROM users WHERE email 
 assert.equal(postgresSQL('SELECT $$?$$, ? /* ? */'), 'SELECT $$?$$, $1 /* ? */');checks++;
 assert.equal(databaseURL({DATABASE_URL:'postgresql://test:secret@primary.neon.tech/db',POSTGRES_URL:'other'}),'postgresql://test:secret@primary.neon.tech/db');checks++;
 assert.throws(()=>validateDatabaseURL('not-a-connection'));checks++;
-const database=new PGlite(),legacy=new PGlite();
+const database=new PGlite(),legacy=new PGlite(),manual=new PGlite();
 const runner=pg=>async(sql,values=[])=>{const result=await pg.query(sql,values);return {rows:result.rows,rowCount:result.affectedRows??result.rows.length};};
 const transact=pg=>async statements=>pg.transaction(async tx=>{for(const [sql,values]of statements)await tx.query(sql,values);});
 try{
+ await manual.exec(await fs.readFile(new URL('../sql/neon-accounts.sql',import.meta.url),'utf8'));
+ check(Object.values(await inspectPostgres(runner(manual))).every(table=>table.missing.length===0),'Manual Neon setup creates the complete auth, recovery and community schema.');
  await database.exec("CREATE TABLE public.users (id UUID PRIMARY KEY,email TEXT); INSERT INTO public.users VALUES ('11111111-1111-1111-1111-111111111111','existing@example.com');");
  for(const table of ['lessons','questions','user_progress','user_stats','achievements','user_achievements'])await database.exec(`CREATE TABLE public.${table}(id INTEGER PRIMARY KEY)`);
  const query=runner(database),DB=createPostgresAdapter(query);
@@ -58,10 +60,19 @@ try{
  const oldHash=(await database.query('SELECT password_hash FROM apex.users')).rows[0].password_hash;
  await legacy.query("INSERT INTO public.users VALUES ('local:legacy','password','legacy@example.com','Legacy driver',$1,1,1)",[oldHash]);
  await legacy.query("INSERT INTO public.user_garages VALUES ('local:legacy',$1,3,1)",[JSON.stringify(state)]);
+ await legacy.query("INSERT INTO public.user_verifications VALUES ('local:legacy',1)");
+ await legacy.query("INSERT INTO public.user_preferences VALUES ('local:legacy','ka')");
+ await legacy.query("INSERT INTO public.sessions VALUES ('legacy-revoked-token','local:legacy','legacy-csrf',1,$1)",[Date.now()+86400000]);
+ await legacy.query("INSERT INTO public.account_tokens VALUES ('legacy-used-reset','local:legacy','reset',1,$1)",[Date.now()+86400000]);
  await initializePostgres(runner(legacy),transact(legacy));
  check((await legacy.query('SELECT count(*)::int AS count FROM apex.users')).rows[0].count===1,'Existing compatible app accounts are retained.');
  check((await legacy.query('SELECT revision FROM apex.user_garages')).rows[0].revision===3,'Prior garage saves retain their revision.');
+ check((await legacy.query('SELECT verified_at FROM apex.user_verifications')).rows[0].verified_at===1,'Existing verified email ownership survives the schema migration.');
+ check((await legacy.query('SELECT language FROM apex.user_preferences')).rows[0].language==='ka','Existing language preference survives the schema migration.');
+ check((await legacy.query('SELECT count(*)::int AS count FROM apex.sessions')).rows[0].count===0,'Legacy sessions are not resurrected after logout or a password reset.');
+ check((await legacy.query('SELECT count(*)::int AS count FROM apex.account_tokens')).rows[0].count===0,'Legacy recovery links cannot be replayed after migration.');
  await initializePostgres(runner(legacy),transact(legacy));
  check((await legacy.query('SELECT count(*)::int AS count FROM public.users')).rows[0].count===1,'Repeat migration leaves original accounts untouched.');
+ check((await legacy.query('SELECT count(*)::int AS count FROM apex.sessions')).rows[0].count===0,'Repeated cold-start initialization cannot revive legacy sessions.');
  console.log(`PostgreSQL: ${checks} checks passed (real SQL, seven-table preservation, auth, saves, migration and API routes).`);
-}finally{await database.close();await legacy.close();}
+}finally{await database.close();await legacy.close();await manual.close();}

@@ -83,4 +83,16 @@ function fill(form,values){for(const[key,value]of Object.entries(values)){const 
 {
  let captured=null;const existing={...valid,id:'draft-existing',status:'draft',photos:[{id:'photo-existing',url:'/api/community/car-photo?id=photo-existing',caption:'Old caption'}]};const f=fixture({view:'submission',handlers:{'GET /api/community/submissions':{submissions:[existing]},'/api/community/submissions?id=draft-existing':{submission:existing},'PUT /api/community/submissions':({body})=>{captured=body;return {submission:existing};},'POST /api/community/submissions/submit':{submission:{...existing,status:'pending'},credits:{...baseline.credits,balance:0}}}});await f.instance.ready;f.host.querySelector('[data-community-action=edit-submission]').click();await tick();const form=f.host.querySelector('[data-community-form=submission]');form.querySelector('[data-community-caption]').value='Updated engine view';form.querySelector('[name=consent]').checked=true;submit(form);await tick();assert.deepEqual(captured.photos,[{id:'photo-existing',caption:'Updated engine view'}]);checks++;check(captured.id==='draft-existing','Editing preserves the existing draft identity');f.close();
 }
+{
+ const f=fixture({view:'admin',user:null});await f.instance.ready;check(f.host.querySelector('.community-empty a').getAttribute('href')==='/account?return_to=%2Fadmin','Admin login gate retains the workspace destination');f.close();
+}
+{
+ const f=fixture({view:'admin',handlers:{'/api/auth/session':{user:{id:'owner',name:'Owner'},adminAccess:{verificationRequired:true},capabilities:{emailVerification:false}}}});await f.instance.ready;check(f.host.textContent.includes('Email delivery is unavailable'),'Admin denial explains blocked verification');check(f.host.querySelector('.community-empty a').getAttribute('href')==='/account','Blocked owner can reach account recovery controls');f.close();
+}
+{
+ const f=fixture({view:'admin',overview:{...baseline,isAdmin:true},handlers:{'/api/admin/community':{stats:{},pending:[],submissions:[],recentActivity:[]}}});await f.instance.ready;check(f.host.querySelector('[data-community-admin-link]').getAttribute('aria-current')==='page','Administrator navigation identifies the active workspace');f.close();
+}
+for(const payload of [{error:{message:'The garage database is reconnecting.'}},{error:{code:'OFFLINE'}},null]){
+ const f=fixture({handlers:{'/api/community':new Response(JSON.stringify(payload),{status:503})}});await f.instance.ready;check(!f.host.textContent.includes('[object Object]'),'Structured service failures never appear as object coercions');check(f.host.querySelector('[data-community-notice]').textContent===(payload?.error?.message||'This request could not be completed. Please try again.'),'Structured and empty API failures retain readable feedback');f.close();
+}
 console.log(`Community UI checks passed: ${checks} validation, privacy, credits, friendships, sharing, moderation, failure, focus and cleanup assertions.`);

@@ -5,3 +5,35 @@ html[data-theme="light"] .account-page .account-primary:hover{background:#0d4e91
 @media(max-width:1000px){.account-shell{gap:35px;grid-template-columns:minmax(0,1fr) minmax(340px,420px)}.account-card{padding:29px}.account-story h1{font-size:52px}.account-road{height:150px}.account-story>p{font-size:12px;max-width:300px}.account-benefits{max-width:320px}.account-benefits p{font-size:10px}.account-benefits strong{font-size:11px}.account-header-link>span{max-width:65px}}
 @media(max-width:760px){.account-page{padding:15px 0 45px}.account-shell{grid-template-columns:1fr;max-width:500px;gap:26px}.account-story{padding:0}.account-story h1{font-size:46px;letter-spacing:-2.3px;margin:16px 0}.account-story h1 br:nth-child(2){display:none}.account-story h1 em:before{content:' '}.account-story>p{max-width:350px}.account-road,.account-benefits{display:none}.account-guest-link{margin:12px 0 0;font-size:10px;min-height:30px}.account-card{padding:27px}.account-card h2{font-size:38px}.account-tabs{margin-bottom:25px}.account-header-link>span{display:none}.account-header-link{width:30px;justify-content:center;min-height:32px}.account-header-link>i{left:21px;top:3px}}
 @media(prefers-reduced-motion:reduce){.account-sync-dot{animation:none!important}}
+
+/* Account actions and recovery guidance stay legible at a normal reading size. */
+.account-page .account-card{border-radius:22px}
+.account-page :is(.account-kicker,.account-stats span,.account-import .account-kicker){font-size:11px;line-height:1.6}
+.account-page :is(.account-card-intro,.account-story>p){font-size:14px;line-height:1.8}
+.account-page :is(label,.account-tabs button,.account-benefits strong){font-size:14px}
+.account-page :is(.account-benefits p,.account-password-note,.account-form-note,.account-mode-copy,.account-form-error,.account-notice,.account-email,.account-import p,.account-conflict p,.account-clean-note,.account-import details p){font-size:13px;line-height:1.75;overflow-wrap:anywhere}
+.account-page :is(.account-guest-link,.account-local-link,.account-password button,.account-mode-copy button,.account-import button,.account-conflict button,.account-name-form button,.account-profile-footer>button,.account-profile-footer>a,.account-profile-footer>span){font-size:13px;min-height:44px}
+.account-page .account-primary{font-size:14px;min-height:50px;border-radius:10px}
+.account-page .account-primary+.account-primary{margin-top:12px}
+.account-page .account-password input{padding-right:86px}
+.account-page .account-password button{width:78px;padding-inline:4px}
+.account-page :is(input,.account-import button,.account-conflict button,.account-name-form button){border-radius:9px}
+.account-page .account-import summary{font-size:13px;min-height:44px;padding-block:10px}
+.account-page .account-sync{flex-wrap:wrap}
+.account-page .account-sync p{font-size:12px;flex-basis:180px}
+.account-page .account-sync button{font-size:13px;min-height:44px;white-space:normal}
+.account-page .account-profile-footer{flex-wrap:wrap;gap:6px 20px}
+.account-page .account-profile-footer>*{min-width:0;overflow-wrap:anywhere}
+.account-page .account-tabs{gap:22px;flex-wrap:wrap}
+.account-page .account-stats>div{min-width:0}
+.account-page .account-stats strong{font-size:clamp(21px,3vw,28px);overflow-wrap:anywhere}
+html[data-theme="light"] .account-page :is(.account-form-error,.account-notice.is-error,.account-field-error){color:#9e3028!important}
+html[data-theme="light"] .account-page .account-conflict h3{color:#85530a}
+@media(max-width:400px){
+  .account-page .account-card{padding:24px 20px}
+  .account-page .account-story h1{font-size:40px;letter-spacing:-1.8px}
+  .account-page .account-card h2{font-size:34px}
+  .account-page .account-tabs{gap:18px}
+  .account-page .account-stats>div{padding-left:10px}
+  .account-page .account-stats>div:first-child{padding-left:0}
+}

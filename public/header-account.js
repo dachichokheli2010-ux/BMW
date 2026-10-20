@@ -2,6 +2,8 @@ import {t} from './preferences.js';
 import './favorites-translations.js';
 import './account-translations.js';
 import {icon} from './icons.js';
+import {isAdministrator} from './account-routing.js';
+import {apiErrorMessage} from './api-message.js';
 
 let instances=0;
 export function mountHeaderAccount(container,{accountController}){
@@ -13,13 +15,15 @@ export function mountHeaderAccount(container,{accountController}){
  function render(){
   const name=state.user?.name?.split(' ')[0]||t('Account');button.querySelector('span').textContent=state.user?name:t('Sign in');button.querySelector('span').toggleAttribute('data-no-i18n',!!state.user);
   button.setAttribute('aria-label',t(state.user?'Open user menu':'Sign in or create an account'));button.dataset.status=state.status;
+  let adminLink=menu.querySelector('[data-header-admin]');if(isAdministrator(state.user)&&!adminLink){adminLink=document.createElement('a');adminLink.href='/admin';adminLink.dataset.headerAdmin='';adminLink.innerHTML=`${icon('garage')}<span></span>`;menu.prepend(adminLink);}if(adminLink){if(!isAdministrator(state.user))adminLink.remove();else adminLink.querySelector('span').textContent=t('Open admin workspace');}
   if(!state.user)close();
  }
- button.addEventListener('click',()=>{if(!state.user){location.href='/account';return;}menu.hidden=!menu.hidden;button.setAttribute('aria-expanded',String(!menu.hidden));if(!menu.hidden)menu.querySelector('a').focus();},{signal});
- shell.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();close(true);}if(event.key==='ArrowDown'&&event.target===button&&state.user){event.preventDefault();menu.hidden=false;button.setAttribute('aria-expanded','true');menu.querySelector('a').focus();}},{signal});
+ const focusFirst=()=>menu.querySelector('a:not([hidden]),button:not([hidden])')?.focus();
+ button.addEventListener('click',()=>{if(!state.user){location.href='/account';return;}menu.hidden=!menu.hidden;button.setAttribute('aria-expanded',String(!menu.hidden));if(!menu.hidden)focusFirst();},{signal});
+ shell.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();close(true);}if(event.key==='ArrowDown'&&event.target===button&&state.user){event.preventDefault();menu.hidden=false;button.setAttribute('aria-expanded','true');focusFirst();}else if(!menu.hidden&&['ArrowDown','ArrowUp','Home','End'].includes(event.key)){const items=[...menu.querySelectorAll('a:not([hidden]),button:not([hidden]):not([disabled])')],index=items.indexOf(event.target);if(index<0)return;event.preventDefault();items[event.key==='Home'?0:event.key==='End'?items.length-1:(index+(event.key==='ArrowDown'?1:-1)+items.length)%items.length]?.focus();}},{signal});
  document.addEventListener('pointerdown',event=>{if(!shell.contains(event.target))close();},{signal});
  shell.addEventListener('focusout',event=>{if(!shell.contains(event.relatedTarget))close();},{signal});
- shell.querySelector('[data-header-signout]').addEventListener('click',async()=>{try{await accountController.logout();close();}catch(error){shell.querySelector('[role=status]').textContent=t(error.message);}},{signal});
+ shell.querySelector('[data-header-signout]').addEventListener('click',async event=>{const control=event.currentTarget;if(control.disabled)return;control.disabled=true;try{await accountController.logout();close();}catch(error){shell.querySelector('[role=status]').textContent=t(apiErrorMessage(error));}finally{control.disabled=false;}},{signal});
  const unsubscribe=accountController.subscribe(next=>{state=next;render();});window.addEventListener('apex:languagechange',render,{signal});
  return {destroy(){unsubscribe();abort.abort();shell.remove();}};
 }

@@ -6,7 +6,7 @@ import {parseHTML} from 'linkedom';
 import {registerHooks} from 'node:module';
 
 const cases=['/','/models','/electric','/about','/photos','/parts','/cars/f10-m5','/cars/f92-m8','/cars/i4','/engines','/engines/s65','/engines/s70','/engines/edrive','/engines/unknown-engine','/start','/learn','/lessons/first-engine','/play','/play?mode=practice','/my-garage','/tuning-garage','/engine-lab','/generation-guides','/compare','/account','/parts/turbocharger','/glossary','/glossary/torque','/badges','/badges/answers-1','/questions/car-f10-code'];
-cases.push('/community','/friends','/submit-car','/admin','/garage/test-token','/community/cars/test-car');
+cases.push('/community','/friends','/submit-car','/admin','/garage/test-token','/community/cars/test-car','/questions/academy-part-turbocharger-photo');
 const route=process.argv[process.argv.indexOf('--route')+1];
 if(!process.argv.includes('--route')){
   for(const path of cases){
@@ -47,6 +47,7 @@ if(!process.argv.includes('--route')){
   if(process.env.APEX_DEBUG_ROUTE)console.log('Route: imports settled',errors);
   assert.equal(document.querySelector('.destination-error'),null,'A lazy destination must mount without its error state');
   assert.equal(document.querySelector('.workspace-loading'),null,'The requested destination must finish loading');
+  assert.ok(!document.body.textContent.includes('[object Object]'),'Page text must not stringify objects');
   if(routeURL.pathname==='/engine-lab'){
     assert.ok(document.querySelector('.el-no-webgl'),'A DOM without a GPU must receive the usable component guide');
     assert.ok(errors.every(error=>error.startsWith('THREE.WebGLRenderer:')),'Only the expected no-WebGL renderer diagnostic is allowed: '+errors.join('\n'));
@@ -82,8 +83,21 @@ if(!process.argv.includes('--route')){
   }
   if(routeURL.pathname.startsWith('/parts/'))assert.ok(document.querySelector('.pe-detail'),'Part deep links open the encyclopedia detail');
   if(routeURL.pathname.startsWith('/glossary/'))assert.ok(document.querySelector('.reference-page').textContent.includes('Torque'));
+  if(routeURL.pathname==='/glossary/torque'){
+    const {setLanguage}=await import('../public/preferences.js'),{getGlossaryEntry}=await import('../public/academy-glossary.js');
+    for(const language of ['ka','ru','en']){
+      setLanguage(language,false);
+      assert.equal(document.querySelector('.reference-page .reference-lead')?.textContent,getGlossaryEntry('torque',language).summary,'Glossary deep links update definitions when the language changes');
+    }
+  }
   if(routeURL.pathname.startsWith('/badges/'))assert.ok(document.querySelector('.reference-page').textContent.includes('Answers explored'));
   if(routeURL.pathname.startsWith('/questions/'))assert.ok(document.querySelector('.knowledge-answer'));
+  if(routeURL.pathname==='/questions/academy-part-turbocharger-photo'){
+    assert.equal(document.querySelector('.knowledge-photo')?.getAttribute('src'),'/images/parts/turbocharger.webp','Photo reference cards use the question bank photo object');
+    assert.equal(document.querySelector('.knowledge-answer h3')?.textContent,'Turbocharger','The explanation identifies the correct answer');
+    assert.ok(document.querySelector('.knowledge-answer a[href="https://commons.wikimedia.org/wiki/File:Turbocharger_3.jpg"]'),'Reference cards retain photo attribution');
+    assert.ok(document.querySelector('.knowledge-answer a[href*="garrettmotion.com"]'),'Reference cards expose their factual source');
+  }
   if(routeURL.pathname==='/lessons/first-engine'){
     if(process.env.APEX_DEBUG_QUIZ)console.log('Academy scroll regression: mounted');
     const {academyLessons,academyReferenceData}=await import('../public/academy.js'),{createCurriculum}=await import('../public/academy-content.js'),{partCatalog}=await import('../public/parts.js');

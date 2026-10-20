@@ -29,9 +29,11 @@ links. ChatGPT-hosted identities already supply verified email addresses.
 This checkout configures the owner's requested email in the ignored
 `.env.local` for `npm start` and in `vercel.json`'s server runtime `env` block
 for the next Vercel deployment. It is not included in browser assets. Changing
-local files does not change an already-running deployment. Sign in with that
-account and verify its email before opening `/admin`; the allowlist does not
-create an account or mark an address as verified.
+local files does not change an already-running deployment. The existing local
+owner account is also pinned by its exact immutable account ID in `.env.local`,
+so local administration works without a mail provider. That local ID is not
+copied into production. An email allowlist does not create an account or mark
+an address as verified.
 
 If email delivery is not available, the owner can instead set `ADMIN_USER_IDS`
 to the exact immutable ID of their already-created account (for example,
@@ -39,6 +41,20 @@ to the exact immutable ID of their already-created account (for example,
 response or an authorised database inspection. A public driver handle is not
 an account ID. Neither setting is sent to the browser, and the first registered
 account is never automatically made an administrator.
+
+Run `npm run admin:check` to inspect only the configured administrator accounts
+in the active local or Neon database. It reports their immutable IDs and access
+status without changing accounts, granting permissions or printing passwords.
+The command requires the same server environment as the deployment being
+diagnosed; a local SQLite account ID is separate from a Neon account ID.
+
+Session, login and account profile responses include `user.isAdmin` and
+`user.role` (`admin` or `member`), calculated from the current server settings on
+every request. Login also returns `redirectTo: '/admin'` for administrators.
+The `adminAccess` response reports whether any administrator is configured and
+whether this signed-in account needs email verification. It never exposes
+the allowlist. Email verification is offered only when a mail provider is
+configured; otherwise use an explicitly authorized existing account ID.
 
 The admin page shows the private moderation queue and database counts. A
 submission becomes public only after an authorised administrator approves it.

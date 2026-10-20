@@ -3,6 +3,7 @@ import {validName,normalizeEmail,validPassword,emptyGarage,validateGarage} from 
 import {validateAcademyTransition} from './academy-policy.js';
 import {accountMailConfigured,sendAccountMail} from './account-mail.js';
 import {COMMUNITY_PATHS,handleCommunity} from './community-api.js';
+import {administratorAccess,administratorUser} from './admin-policy.js';
 
 const SESSION_MS=7*24*60*60*1000;
 export const AUTH_PATHS=new Set(['/api/auth/session','/api/auth/signup','/api/auth/login','/api/auth/logout','/api/auth/forgot-password','/api/auth/reset-password','/api/auth/verify-email','/api/auth/resend-verification','/api/account/profile','/api/garage',...COMMUNITY_PATHS]);
@@ -12,6 +13,7 @@ const only=(body,keys)=>body&&typeof body==='object'&&!Array.isArray(body)&&Obje
 const viewUser=row=>({id:row.id,email:row.email,name:row.name,createdAt:new Date(row.created_at).toISOString(),emailVerified:row.provider==='chatgpt'||Boolean(row.email_verified_at),language:row.language||null});
 const hosted=env=>env.AUTH_PROVIDER==='chatgpt';
 const providerInfo=env=>({...(hosted(env)?{provider:'chatgpt',signInUrl:'/signin-with-chatgpt?return_to=%2Faccount',signOutUrl:'/signout-with-chatgpt?return_to=%2Faccount'}:{provider:'password'}),capabilities:{passwordRecovery:!hosted(env)&&accountMailConfigured(env),emailVerification:!hosted(env)&&accountMailConfigured(env),mailConfigured:!hosted(env)&&accountMailConfigured(env)}});
+const adminInfo=(env,user)=>{const {configured,verificationRequired}=administratorAccess(env,user);return {configured,verificationRequired};};
 const validAccountToken=value=>typeof value==='string'&&/^[A-Za-z0-9_-]{43}$/.test(value);
 const validLanguage=value=>value===undefined||['en','ka','ru'].includes(value);
 const tokenMessage='This link is invalid or has expired. Request a new link and try again.';
@@ -86,7 +88,7 @@ async function getSession(request,env){
   // Platform and local accounts have separate identities; never link by email.
   // Platform email is supplied live and is intentionally not a unique DB key.
   await env.DB.prepare("INSERT INTO users (id, provider, email, name, password_hash, created_at, updated_at) VALUES (?, 'chatgpt', NULL, ?, NULL, ?, ?) ON CONFLICT(id) DO NOTHING").bind(id,name,now,now).run();
-  const user=await env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(id).first();
+  const user=await env.DB.prepare('SELECT users.*, user_preferences.language FROM users LEFT JOIN user_preferences ON user_preferences.user_id = users.id WHERE users.id = ?').bind(id).first();
   const appSession=await createSession(request,env,id);
   return {user:{...viewUser(user),email},...appSession};
 }
@@ -111,8 +113,9 @@ export async function handleApi(request,env={}){
     const method=request.method,write=['POST','PUT','PATCH','DELETE'].includes(method);
     if(write)requireOrigin(request);
     session=await getSession(request,env);
+    if(session)session.user=administratorUser(env,session.user);
     if(COMMUNITY_PATHS.has(pathname))return await handleCommunity(request,env,{session,ApiError,readJSON,requireCSRF,authRequired,limit,json,sessionHeaders});
-    const info=providerInfo(env);
+    const info={...providerInfo(env),adminAccess:adminInfo(env,session?.user)};
     if(pathname==='/api/auth/session'){
       if(method!=='GET')return json({error:'Method not allowed.'},405,{Allow:'GET'});
       return json({user:session?.user||null,csrfToken:session?.csrfToken||null,...info},200,sessionHeaders(session));
@@ -135,17 +138,19 @@ export async function handleApi(request,env={}){
         const now=Date.now(),id='local:'+crypto.randomUUID();
         await env.DB.prepare("INSERT INTO users (id, provider, email, name, password_hash, created_at, updated_at) VALUES (?, 'password', ?, ?, ?, ?, ?) ON CONFLICT(email) DO NOTHING").bind(id,email,body.name.trim(),password,now,now).run();
         user=await env.DB.prepare("SELECT users.*, user_verifications.verified_at AS email_verified_at, user_preferences.language FROM users LEFT JOIN user_verifications ON user_verifications.user_id = users.id LEFT JOIN user_preferences ON user_preferences.user_id = users.id WHERE users.email = ? AND users.provider = 'password'").bind(email).first();
+        if(user?.id===id&&body.language){await env.DB.prepare('INSERT INTO user_preferences (user_id,language) VALUES (?,?) ON CONFLICT(user_id) DO NOTHING').bind(id,body.language).run();user.language=body.language;}
         if(user&&!user.email_verified_at&&accountMailConfigured(env))await issueAccountToken(env,user,'verify',body.language);
         // A creation-only session would expose account existence. Both new and
         // existing addresses receive the same response and then sign in normally.
         return json({user:null,csrfToken:null,message:signupMessage,code:'SIGNUP_ACCEPTED',...info},201);
       }else{
-        user=await env.DB.prepare("SELECT users.*, user_verifications.verified_at AS email_verified_at FROM users LEFT JOIN user_verifications ON user_verifications.user_id = users.id WHERE users.email = ? AND users.provider = 'password'").bind(email).first();
+        user=await env.DB.prepare("SELECT users.*, user_verifications.verified_at AS email_verified_at, user_preferences.language FROM users LEFT JOIN user_verifications ON user_verifications.user_id = users.id LEFT JOIN user_preferences ON user_preferences.user_id = users.id WHERE users.email = ? AND users.provider = 'password'").bind(email).first();
         if(!await verifyPassword(body.password,user?.password_hash))throw new ApiError('Email or password is incorrect.',401);
       }
       if(session?.tokenHash)await env.DB.prepare('DELETE FROM sessions WHERE token_hash = ?').bind(session.tokenHash).run();
       const fresh=await createSession(request,env,user.id);
-      return json({user:viewUser(user),csrfToken:fresh.csrfToken,...info},signup?201:200,sessionHeaders(fresh));
+      const signedInUser=administratorUser(env,viewUser(user));
+      return json({user:signedInUser,csrfToken:fresh.csrfToken,...info,adminAccess:adminInfo(env,signedInUser),redirectTo:signedInUser.isAdmin?'/admin':'/account'},200,sessionHeaders(fresh));
     }
     if(pathname==='/api/auth/forgot-password'){
       if(method!=='POST')return json({error:'Method not allowed.'},405,{Allow:'POST'});
@@ -187,7 +192,8 @@ export async function handleApi(request,env={}){
       const claimed=await consumeAccountToken(env,body.token,'verify');
       if(!claimed)throw new ApiError(tokenMessage,400,'INVALID_TOKEN');
       await env.DB.prepare('INSERT INTO user_verifications (user_id,verified_at) VALUES (?,?) ON CONFLICT(user_id) DO UPDATE SET verified_at = excluded.verified_at').bind(claimed.user_id,Date.now()).run();
-      return json({message:'Email verified. You can continue to your account.',code:'EMAIL_VERIFIED',...(session?.user.id===claimed.user_id?{user:{...session.user,emailVerified:true}}:{})},200,sessionHeaders(session));
+      const verifiedUser=session?.user.id===claimed.user_id?administratorUser(env,{...session.user,emailVerified:true}):null;
+      return json({message:'Email verified. You can continue to your account.',code:'EMAIL_VERIFIED',...(verifiedUser?{user:verifiedUser,adminAccess:adminInfo(env,verifiedUser)}:{})},200,sessionHeaders(session));
     }
     if(pathname==='/api/auth/logout'){
       if(method!=='POST')return json({error:'Method not allowed.'},405,{Allow:'POST'});
@@ -217,7 +223,7 @@ export async function handleApi(request,env={}){
       const statements=[env.DB.prepare('UPDATE users SET name = ?, updated_at = ? WHERE id = ?').bind(name,Date.now(),session.user.id)];
       if(Object.hasOwn(body,'language'))statements.push(env.DB.prepare('INSERT INTO user_preferences (user_id,language) VALUES (?,?) ON CONFLICT(user_id) DO UPDATE SET language = excluded.language').bind(session.user.id,body.language));
       await env.DB.batch(statements);
-      return json({user:{...session.user,name,...(Object.hasOwn(body,'language')?{language:body.language}:{})}},200,sessionHeaders(session));
+      return json({user:{...session.user,name,...(Object.hasOwn(body,'language')?{language:body.language}:{})},...info},200,sessionHeaders(session));
     }
     if(pathname==='/api/garage'){
       if(method==='GET')return json(await garageSnapshot(env,session.user.id),200,sessionHeaders(session));

@@ -10,8 +10,19 @@
   dialog.innerHTML=`<div class="mn-top"><a class="mn-wordmark" href="/" id="mn-title">APEX<span>DRIVEN BY CURIOSITY</span></a><button type="button" data-menu-close aria-label="Close navigation" autofocus><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><div class="mn-scroll"><button class="mn-search" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><span>Search cars, parts & lessons</span>${arrow}</button>${groups.map(([title,links])=>`<section class="mn-group"><h2>${title}</h2><nav aria-label="${title}">${links.map(([href,title,description],i)=>`<a href="${href}" style="--mn-index:${i}" ${location.pathname===href?'aria-current="page"':''}><span>${title}<small>${description}</small></span>${arrow}</a>`).join('')}</nav></section>`).join('')}<div class="mn-personal"><a href="/my-garage"><span>My garage<small>Your cars & saved builds</small></span>${arrow}</a><a href="/account"><span>Your account<small>Profile, sign-in & sync</small></span>${arrow}</a></div><div class="mn-preferences"><div><label for="language-select">Language</label><div data-menu-language></div></div><div><span>Appearance</span><div data-menu-theme></div></div></div><div class="mn-bottom"><a href="/about">About APEX ↗</a><span>Independent BMW exploration.</span></div></div>`;
   document.body.append(dialog);
   const language=document.getElementById('language-select'),theme=document.getElementById('theme-toggle'),anchors=[];
-  for(const control of [language,theme])if(control){const anchor=document.createComment('Header preference');control.before(anchor);anchors.push({control,anchor});}
-  let closeTimer,closing,resolveClose,scrollY=0,priorTop='',touchStart=null;
+  for(const control of [language,theme])if(control){const anchor=document.createComment('Header preference');(control.closest('.apex-select')||control).before(anchor);anchors.push({control,anchor});}
+  let closeTimer,closing,resolveClose,scrollY=0,priorTop='',touchStart=null,returnFocus=null;
+  function currentRoute(){
+    const path=location.pathname.replace(/\/+$/,'')||'/';
+    const selected=path.startsWith('/cars/')||path==='/cars'?'/models':path.startsWith('/lessons/')||path==='/glossary'||path.startsWith('/glossary/')?'/learn':path.startsWith('/questions/')||path==='/badges'||path.startsWith('/badges/')?'/play':path.startsWith('/garage/')?'/my-garage':['/login','/signup'].includes(path)?'/account':path;
+    let current=null;
+    for(const link of dialog.querySelectorAll('a[href]')){
+      const href=link.getAttribute('href');
+      if((selected===href||(href!=='/'&&selected.startsWith(href+'/')))&&(!current||href.length>current.getAttribute('href').length))current=link;
+      link.removeAttribute('aria-current');
+    }
+    current?.setAttribute('aria-current','page');
+  }
   function preferences(){
     for(const {control,anchor} of anchors){const node=control.closest('.apex-select')||control;
       if(mobile.matches)dialog.querySelector(control===language?'[data-menu-language]':'[data-menu-theme]').append(node);
@@ -20,8 +31,12 @@
     if(!mobile.matches)close(true);
   }
   function cleanup(){
+    // Native close events are queued; an old event must not unlock a new menu.
+    if(dialog.open)return;
     clearTimeout(closeTimer);dialog.classList.remove('is-closing');button.setAttribute('aria-expanded','false');
     if(document.body.classList.contains('navigation-open')){document.body.classList.remove('navigation-open');document.body.style.top=priorTop;window.scrollTo({top:scrollY,behavior:'instant'});}
+    if(returnFocus?.isConnected&&returnFocus.getClientRects().length)returnFocus.focus({preventScroll:true});
+    returnFocus=null;touchStart=null;
     resolveClose?.();resolveClose=null;closing=null;
   }
   function close(immediate=false){
@@ -33,8 +48,11 @@
   }
   function open(){
     if(dialog.open)return;
+    currentRoute();returnFocus=document.activeElement;
     scrollY=window.scrollY;priorTop=document.body.style.top;document.body.style.top=-scrollY+'px';document.body.classList.add('navigation-open');
-    header.classList.remove('is-hidden');dialog.showModal();dialog.scrollTop=0;dialog.querySelector('.mn-scroll').scrollTop=0;button.setAttribute('aria-expanded','true');
+    header.classList.remove('is-hidden');
+    try{dialog.showModal();}catch(error){cleanup();throw error;}
+    dialog.scrollTop=0;dialog.querySelector('.mn-scroll').scrollTop=0;button.setAttribute('aria-expanded','true');dialog.querySelector('[data-menu-close]').focus({preventScroll:true});
   }
   button.addEventListener('click',open,{signal});
   dialog.addEventListener('cancel',event=>{event.preventDefault();void close();},{signal});
@@ -48,6 +66,9 @@
   dialog.querySelector('.mn-search').addEventListener('click',async()=>{await close();openSearch();},{signal});
   dialog.querySelector('.mn-top').addEventListener('pointerdown',event=>{if(event.pointerType==='touch'&&!event.target.closest('a,button'))touchStart={x:event.clientX,y:event.clientY};},{signal});
   dialog.querySelector('.mn-top').addEventListener('pointerup',event=>{if(touchStart&&((event.clientY-touchStart.y>70&&Math.abs(event.clientX-touchStart.x)<70)||(event.clientX-touchStart.x>90&&Math.abs(event.clientY-touchStart.y)<45)))void close();touchStart=null;},{signal});
+  dialog.querySelector('.mn-top').addEventListener('pointercancel',()=>{touchStart=null;},{signal});
+  for(const event of ['apex:modelselected','apex:collection','popstate'])window.addEventListener(event,currentRoute,{signal});
+  currentRoute();
   mobile.addEventListener('change',preferences);preferences();
   return {close,destroy(){close(true);events.abort();mobile.removeEventListener('change',preferences);for(const {control,anchor} of anchors){anchor.after(control.closest('.apex-select')||control);anchor.remove();}dialog.remove();button.remove();}};
 }

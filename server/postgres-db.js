@@ -99,11 +99,15 @@ export async function initializePostgres(query,transaction){
  // Preserve accounts from the prior app schema, if it is actually that schema.
  // Manually-created public tables with different columns are left untouched.
  const legacy=(await query(columnsQuery,['public'])).rows;
- const compatible=table=>required[table].every(column=>legacy.some(row=>row.table_name===table&&row.column_name===column))&&legacy.filter(row=>row.table_name===table&&['created_at','updated_at','expires_at'].includes(row.column_name)).every(row=>numericTypes.has(row.data_type));
+ const compatible=table=>required[table].every(column=>legacy.some(row=>row.table_name===table&&row.column_name===column))&&legacy.filter(row=>row.table_name===table&&['created_at','updated_at','expires_at','verified_at'].includes(row.column_name)).every(row=>numericTypes.has(row.data_type));
  if(compatible('users')){
   const migrate=[[`INSERT INTO apex.users (id,provider,email,name,password_hash,created_at,updated_at) SELECT id::text,provider,email,name,password_hash,created_at,updated_at FROM public.users WHERE id::text ~ '^(local:|chatgpt:)' AND provider IN ('password','chatgpt') AND name IS NOT NULL ON CONFLICT DO NOTHING`,[]]];
   if(compatible('user_garages'))migrate.push([`INSERT INTO apex.user_garages (user_id,state,revision,updated_at) SELECT user_id::text,state::text,revision,updated_at FROM public.user_garages WHERE EXISTS (SELECT 1 FROM apex.users WHERE id=public.user_garages.user_id::text) ON CONFLICT DO NOTHING`,[]]);
-  if(compatible('sessions'))migrate.push([`INSERT INTO apex.sessions (token_hash,user_id,csrf_token,created_at,expires_at) SELECT token_hash,user_id::text,csrf_token,created_at,expires_at FROM public.sessions WHERE EXISTS (SELECT 1 FROM apex.users WHERE id=public.sessions.user_id::text) ON CONFLICT DO NOTHING`,[]]);
+  if(compatible('user_verifications'))migrate.push([`INSERT INTO apex.user_verifications (user_id,verified_at) SELECT user_id::text,verified_at FROM public.user_verifications WHERE EXISTS (SELECT 1 FROM apex.users WHERE id=public.user_verifications.user_id::text) ON CONFLICT DO NOTHING`,[]]);
+  if(compatible('user_preferences'))migrate.push([`INSERT INTO apex.user_preferences (user_id,language) SELECT user_id::text,language FROM public.user_preferences WHERE language IN ('en','ka','ru') AND EXISTS (SELECT 1 FROM apex.users WHERE id=public.user_preferences.user_id::text) ON CONFLICT DO NOTHING`,[]]);
+  // Sessions and account recovery tokens are deliberately not copied. Re-copying
+  // a legacy token on a later cold start would resurrect a revoked session or
+  // let an already-used recovery link run again. Owners sign in to the new schema.
   if(transaction)await transaction(migrate);else for(const [sql,values]of migrate)await query(sql,values);
  }
  return report;

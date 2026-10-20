@@ -2,6 +2,7 @@ import {validName,validateGarage} from './validation.js';
 import {randomToken} from './passwords.js';
 import {validateCommunityPhoto,decodePhotoBytes} from './community-photos.js';
 import {communityQuestions} from './community-questions.js';
+import {administratorAccess} from './admin-policy.js';
 
 export const COMMUNITY_PATHS=new Set(['/api/community','/api/community/profile','/api/community/friends','/api/community/garage-share','/api/community/shared-garage','/api/community/cars','/api/community/submissions','/api/community/submissions/submit','/api/community/car-photo','/api/community/challenge','/api/admin/community','/api/admin/moderation']);
 const COST=50,REWARD=5,DAILY=10;
@@ -13,7 +14,6 @@ const text=(value,min,max)=>typeof value==='string'&&value.trim().length>=min&&v
 const only=(value,keys)=>value&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).every(k=>keys.includes(k));
 const profile=row=>row?{handle:row.handle,displayName:row.display_name,bio:row.bio}:null;
 const getProfile=(env,id)=>env.DB.prepare('SELECT handle,display_name,bio FROM community_profiles WHERE user_id = ?').bind(id).first();
-const adminFor=(env,user)=>Boolean(user&&((env.ADMIN_USER_IDS||'').split(',').map(v=>v.trim()).filter(Boolean).includes(user.id)||user.emailVerified&&(env.ADMIN_EMAILS||'').split(',').map(v=>v.trim().toLowerCase()).filter(Boolean).includes(user.email?.toLowerCase())));
 const creditDay=()=>new Date().toISOString().slice(0,10);
 async function wallet(env,id){
  const day=creditDay(),balance=await env.DB.prepare('SELECT balance FROM community_wallets WHERE user_id = ?').bind(id).first();
@@ -43,7 +43,7 @@ async function carInput(body,existing,env,ErrorClass){
 
 export async function handleCommunity(request,env,context){
  const {session,ApiError,readJSON,requireCSRF,authRequired,limit,json,sessionHeaders}=context;
- const url=new URL(request.url),path=url.pathname,method=request.method,user=session?.user,isAdmin=adminFor(env,user);
+ const url=new URL(request.url),path=url.pathname,method=request.method,user=session?.user,{isAdmin}=administratorAccess(env,user);
  const respond=(body,status=200)=>json(body,status,sessionHeaders(session));
  const allowed=methods=>{if(!methods.includes(method))throw new ApiError('Method not allowed.',405);};
  const requireProfile=async()=>{const p=await getProfile(env,user.id);if(!p)throw new ApiError('Create your public driver profile first.',409,'PROFILE_REQUIRED');return p;};
@@ -74,7 +74,9 @@ export async function handleCommunity(request,env,context){
    if(!only(body,['handle'])||typeof body.handle!=='string')throw new ApiError('Enter a driver handle.');const recipient=await env.DB.prepare('SELECT user_id FROM community_profiles WHERE handle = ?').bind(body.handle.trim().toLowerCase()).first();if(!recipient)throw new ApiError('No driver with this handle was found.',404);if(recipient.user_id===user.id)throw new ApiError('Choose another driver.');
    const pair=[user.id,recipient.user_id].sort().join('|'),existing=await env.DB.prepare('SELECT id FROM community_friends WHERE pair_key = ?').bind(pair).first();if(existing)throw new ApiError('You already have a request or friendship with this driver.',409);
    const count=await env.DB.prepare('SELECT COUNT(*) AS count FROM community_friends WHERE requester_id = ? OR recipient_id = ?').bind(user.id,user.id).first();if(Number(count.count)>=200)throw new ApiError('Your friend list is full. Remove an old request first.',409);
-   const id=uuid(),now=Date.now();await env.DB.prepare("INSERT INTO community_friends (id,requester_id,recipient_id,pair_key,status,created_at,updated_at) VALUES (?,?,?,?,'pending',?,?) ON CONFLICT(pair_key) DO NOTHING").bind(id,user.id,recipient.user_id,pair,now,now).run();return respond({id,message:'Friend request sent.'},201);
+   const id=uuid(),now=Date.now(),created=await env.DB.prepare("INSERT INTO community_friends (id,requester_id,recipient_id,pair_key,status,created_at,updated_at) VALUES (?,?,?,?,'pending',?,?) ON CONFLICT(pair_key) DO NOTHING RETURNING id").bind(id,user.id,recipient.user_id,pair,now,now).first();
+   if(!created)throw new ApiError('You already have a request or friendship with this driver.',409,'FRIEND_EXISTS');
+   return respond({id:created.id,message:'Friend request sent.'},201);
   }
   if(!only(body,method==='PATCH'?['id','action']:['id'])||!safeID(body.id))throw new ApiError('Choose a valid friend request.');
   const row=await env.DB.prepare('SELECT * FROM community_friends WHERE id = ?').bind(body.id).first();if(!row||![row.requester_id,row.recipient_id].includes(user.id))throw new ApiError('Friend request not found.',404);

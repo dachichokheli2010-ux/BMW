@@ -15,7 +15,7 @@ Account and garage data lives in a separate PostgreSQL schema:
 | `apex.auth_limits` | Login and mutation rate limits |
 | `apex.user_garages` | Each account's favorites, tuning builds and academy progress |
 
-The first account API request initializes these tables in one transaction. It takes a database advisory lock to avoid concurrent initialization. A matching account schema from an older app version in `public` is copied without removing its original rows. Unrelated public tables are ignored.
+The first account API request initializes these tables in one transaction. It takes a database advisory lock to avoid concurrent initialization. A matching account schema from an older app version in `public` is copied without removing its original rows, including email verification and language preferences. Unrelated public tables are ignored. Legacy session and recovery tokens are not copied: sign in again after a schema migration. This prevents a later server restart from restoring a session that was already revoked by logout or a password reset.
 
 ## Deploy the fix
 

@@ -25,7 +25,7 @@ img { max-width: 100%; }
 button, input, select, textarea { font: inherit; }
 input, select, textarea { max-width: 100%; }
 button, a, summary { -webkit-tap-highlight-color: transparent; }
-button:focus-visible, a:focus-visible, summary:focus-visible, select:focus-visible, input:focus-visible {
+button:focus-visible, a:focus-visible, summary:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible {
   outline: 2px solid var(--blue); outline-offset: 4px;
 }
 .skip-link { z-index: 120; border-radius: 14px; }
@@ -366,9 +366,11 @@ html:has(dialog[open]),html:has(dialog[open]) body { overflow:hidden; }
   .collection .section-heading { align-items: flex-start; gap: 12px; }
   .collection .section-heading > #collectioncount { font-size: 11px; }
   .collection-filters { gap: 7px; }
-  .collection-filters button { font-size: 12px; padding: 10px 13px; }
+  .collection-filters button { font-size: 12px; min-height: 44px; padding: 10px 13px; }
   .quick-picks { gap: 8px; }
-  .quick-picks button { font-size: 11px; min-height: 42px; }
+  .quick-picks button { font-size: 12px; min-height: 44px; }
+  .collection .view-switch > button { min-width: 44px; min-height: 44px; }
+  .collection :is(.finder-toolbar > button,.active-filters > button,.card-actions button) { min-height: 44px; }
   .collection-search { padding-inline: 14px; }
   .finder-toolbar { flex-wrap: wrap; gap: 10px; }
   .collection-selects { gap: 10px; }

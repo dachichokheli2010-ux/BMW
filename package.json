@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node scripts/check.mjs && node scripts/check-academy.mjs && node scripts/check-academy-session.mjs && node scripts/check-academy-translations.mjs && node scripts/check-backend.mjs && node scripts/check-account-sync.mjs && node scripts/check-postgres.mjs && npm run check:translations && npm run check:profiles && npm run check:icons && node scripts/check-explorer-data.mjs && node scripts/check-parts-encyclopedia.mjs && node scripts/check-play.mjs && node scripts/check-experience.mjs && node scripts/check-platform-upgrade.mjs && node scripts/check-app-navigation.mjs && node scripts/check-overlays.mjs && node scripts/check-community-backend.mjs && node scripts/check-community-ui.mjs",
+    "check": "node scripts/check.mjs && node scripts/check-academy.mjs && node scripts/check-academy-session.mjs && node scripts/check-academy-translations.mjs && node scripts/check-backend.mjs && node scripts/check-http-accounts.mjs && node scripts/check-account-sync.mjs && node scripts/check-account-ui.mjs && node scripts/check-postgres.mjs && npm run check:translations && npm run check:profiles && npm run check:icons && node scripts/check-explorer-data.mjs && node scripts/check-parts-encyclopedia.mjs && node scripts/check-play.mjs && node scripts/check-experience.mjs && node scripts/check-platform-upgrade.mjs && node scripts/check-app-navigation.mjs && node scripts/check-overlays.mjs && node scripts/check-community-backend.mjs && node scripts/check-community-ui.mjs && node scripts/check-responsive-navigation.mjs",
     "build": "node scripts/build.mjs",
     "db:generate": "drizzle-kit generate",
     "start": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/preview-local.mjs",
@@ -21,7 +21,8 @@
     "check:icons": "node scripts/check-icons.mjs",
     "audit:completeness": "node scripts/check-completeness.mjs --write",
     "audit:completeness:strict": "node scripts/check-completeness.mjs --strict",
-    "generate:discovery": "node scripts/generate-discovery.mjs"
+    "generate:discovery": "node scripts/generate-discovery.mjs",
+    "admin:check": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/admin-access.mjs"
   },
   "engines": {
     "node": ">=24.0.0"
