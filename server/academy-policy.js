@@ -1,5 +1,5 @@
 import {catalogMeta} from './catalog-meta.js';
-import {REWARD_POLICY,FIRST_LESSON_AWARD,rewardPreview} from '../public/academy-rewards.js';
+import {REWARD_POLICY,FIRST_LESSON_AWARD,rewardPreview,creditReward} from '../public/academy-rewards.js';
 import {achievementProgress} from '../public/academy-achievements.js';
 
 // These are bounds for imported personal learning records. The browser still
@@ -28,7 +28,8 @@ function receipt(state,key,latestDay){
   const split=key.indexOf(':'),kind=key.slice(0,split),id=key.slice(split+1);
   if(kind==='lesson'){
     if(!lessonEvidence(state,id,latestDay))return null;
-    return {xp:rewardPreview({boss:academyRewardMetadata.checkpointIds.includes(id),advanced:academyRewardMetadata.advancedIds.includes(id)},{perfect:state.completed[id].accuracy===100}),credits:5};
+    const lesson={boss:academyRewardMetadata.checkpointIds.includes(id),advanced:academyRewardMetadata.advancedIds.includes(id)},completion=state.completed[id];
+    return {xp:rewardPreview(lesson,{perfect:completion.accuracy===100}),credits:completion.rewardVersion===2?creditReward(lesson,{accuracy:completion.accuracy}):5};
   }
   if(kind==='unit'){
     const members=academyRewardMetadata.unitMembers[id];
@@ -40,7 +41,8 @@ function receipt(state,key,latestDay){
   // Activity is a bounded 500-entry history. Older valid daily records survive
   // that truncation through their unique award and learning-day records.
   if((!activity&&!state.days.includes(id))||count<(kind==='daily'?3:1))return null;
-  return {xp:kind==='daily'?Math.max(30,REWARD_POLICY.daily):REWARD_POLICY.review,credits:kind==='daily'?5:2};
+  const evidence=state.activity.find(item=>item.kind===kind&&(kind==='daily'?item.lessonId==='daily-'+id:item.day===id));
+  return {xp:kind==='daily'?Math.max(30,REWARD_POLICY.daily):REWARD_POLICY.review,credits:evidence?.rewardVersion===2?creditReward(null,{kind,accuracy:evidence.accuracy}):kind==='daily'?5:2};
 }
 function reset(state){
   return state===null||state.xp===0&&state.credits===0&&['completed','attempts','review','achievements'].every(key=>Object.keys(state[key]||{}).length===0)&&['days','awards','unlocked','activity'].every(key=>(state[key]||[]).length===0);

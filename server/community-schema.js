@@ -10,6 +10,9 @@ export const communitySchemaStatements=[
  `CREATE INDEX IF NOT EXISTS community_credits_user_idx ON community_credit_ledger(user_id,created_at)`,
  `CREATE TABLE IF NOT EXISTS community_challenges (id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, question_id TEXT NOT NULL, created_at DOUBLE PRECISION NOT NULL, expires_at DOUBLE PRECISION NOT NULL)`,
  `CREATE INDEX IF NOT EXISTS community_challenges_user_idx ON community_challenges(user_id,expires_at)`,
+ `CREATE TABLE IF NOT EXISTS community_mastery_rounds (id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, day TEXT NOT NULL, attempt_no INTEGER NOT NULL, question_data TEXT NOT NULL, answers_json TEXT, score INTEGER, created_at DOUBLE PRECISION NOT NULL, expires_at DOUBLE PRECISION NOT NULL, completed_at DOUBLE PRECISION, UNIQUE(user_id,day,attempt_no))`,
+ `CREATE UNIQUE INDEX IF NOT EXISTS community_mastery_active_idx ON community_mastery_rounds(user_id) WHERE completed_at IS NULL`,
+ `CREATE INDEX IF NOT EXISTS community_mastery_day_idx ON community_mastery_rounds(user_id,day)`,
  `CREATE TABLE IF NOT EXISTS community_cars (id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, title TEXT NOT NULL, model TEXT NOT NULL, year INTEGER NOT NULL, engine TEXT NOT NULL, transmission TEXT NOT NULL, horsepower INTEGER, description TEXT NOT NULL, modifications TEXT NOT NULL, evidence TEXT NOT NULL, status TEXT NOT NULL CHECK(status IN ('draft','pending','approved','rejected')), moderation_note TEXT NOT NULL DEFAULT '', moderated_by TEXT REFERENCES users(id), submitted_at DOUBLE PRECISION, reviewed_at DOUBLE PRECISION, credit_spent INTEGER NOT NULL DEFAULT 0, created_at DOUBLE PRECISION NOT NULL, updated_at DOUBLE PRECISION NOT NULL)`,
  `CREATE INDEX IF NOT EXISTS community_cars_status_idx ON community_cars(status,updated_at)`,
  `CREATE INDEX IF NOT EXISTS community_cars_owner_idx ON community_cars(user_id,updated_at)`,
@@ -17,4 +20,4 @@ export const communitySchemaStatements=[
  `CREATE INDEX IF NOT EXISTS community_photos_car_idx ON community_photos(car_id,position)`,
  `CREATE TABLE IF NOT EXISTS community_audit (id TEXT PRIMARY KEY, actor_id TEXT REFERENCES users(id) ON DELETE SET NULL, action TEXT NOT NULL, car_id TEXT REFERENCES community_cars(id) ON DELETE SET NULL, note TEXT NOT NULL, created_at DOUBLE PRECISION NOT NULL)`
 ];
-export const communityTableNames=['community_profiles','community_friends','community_shares','community_wallets','community_credit_ledger','community_challenges','community_cars','community_photos','community_audit'];
+export const communityTableNames=['community_profiles','community_friends','community_shares','community_wallets','community_credit_ledger','community_challenges','community_mastery_rounds','community_cars','community_photos','community_audit'];

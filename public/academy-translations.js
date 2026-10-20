@@ -2,6 +2,8 @@ import {registerTranslations, hasTranslation} from './preferences.js';
 import {academyContentTranslations} from './academy-translations-content.js';
 import {legacyTranslations} from './academy-translations-legacy.js';
 import {partsTranslations} from './academy-translations-parts.js';
+import {academyLearningInterfaceTranslations} from './academy-learning-translations.js';
+import {assessmentTranslations} from './academy-assessments.js';
 
 // English source strings are stable keys. Only presentation changes: lesson IDs,
 // answer positions, matching IDs and saved progress always retain their values.
@@ -365,7 +367,7 @@ export const academyInterfaceTranslations = [
 ];
 
 export function registerAcademyTranslations(additionalRows = []) {
-  const rows = [...legacyTranslations, ...partsTranslations, ...academyInterfaceTranslations, ...academyContentTranslations, ...additionalRows];
+  const rows = [...legacyTranslations, ...partsTranslations, ...academyInterfaceTranslations, ...academyContentTranslations, ...academyLearningInterfaceTranslations, ...assessmentTranslations, ...additionalRows];
   // Cards shorten English prose before it reaches the DOM. Register the same
   // preview keys against shortened localized prose so previews also translate.
   const variants = rows.flatMap(([en, ka, ru]) => {

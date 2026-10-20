@@ -7,13 +7,15 @@ import {PGlite} from '@electric-sql/pglite';
 import {createLocalDatabase} from '../server/local-db.mjs';
 import {initializePostgres,createPostgresAdapter} from '../server/postgres-db.js';
 import {handleApi} from '../server/api.js';
-import {communityQuestions} from '../server/community-questions.js';
+import {communityQuestions,masteryExpiry} from '../server/community-questions.js';
 import {validateCommunityPhoto,encodePhotoBytes,decodePhotoBytes} from '../server/community-photos.js';
 import {emptyGarage} from '../server/validation.js';
 import {createRoutedVercelHandler} from '../server/vercel-router.js';
 import {hashPassword,randomToken} from '../server/passwords.js';
 
 let checks=0;const check=(v,m)=>{assert.ok(v,m);checks++;};
+check(masteryExpiry(Date.parse('2026-10-20T23:59:00Z'))===Date.parse('2026-10-21T00:00:00Z'),'A round cannot carry yesterday’s reward budget past UTC midnight.');
+check(masteryExpiry(Date.parse('2026-10-21T00:00:00Z'))===Date.parse('2026-10-21T00:15:00Z'),'A round normally allows fifteen minutes without speed rewards.');
 const jpg=await sharp({create:{width:320,height:200,channels:3,background:'#35618c'}}).jpeg().withExif({IFD0:{Artist:'PRIVATE PHOTO METADATA'}}).toBuffer();
 const webp=await sharp({create:{width:320,height:200,channels:3,background:'#35618c'}}).webp().toBuffer();
 const photo={data:'data:image/jpeg;base64,'+jpg.toString('base64'),caption:'My BMW on a closed driveway'};
@@ -86,13 +88,39 @@ async function suite(DB,label){
  check((await call(photoURL)).status===404,label+' draft photo not public');check((await call(photoURL,{actor:alice})).status===200,label+' owner previews photo');
  check((await call('/api/community/submissions/submit',{actor:alice,method:'POST',body:{id}})).data.code==='CREDITS_REQUIRED',label+' server credit gate');
  check((await call('/api/community/submissions',{actor:alice,method:'PUT',body:{...input,id,credits:9999}})).status===400,label+' no client balance grant');
- const first=await call('/api/community/challenge',{actor:alice});check(first.data.challenge&&!('answer'in first.data.challenge),label+' challenge hides server answer');
- check((await call('/api/community/challenge',{actor:bob,method:'POST',body:{id:first.data.challenge.id,answer:0}})).status===409,label+' challenge bound to user');
- const q=communityQuestions.find(q=>q.prompt===first.data.challenge.prompt);const wrong=await call('/api/community/challenge',{actor:alice,method:'POST',body:{id:first.data.challenge.id,answer:(q.answer+1)%3}});check(wrong.data.correct===false&&wrong.data.credits.balance===0,label+' wrong answer earns nothing');
- check((await call('/api/community/challenge',{actor:alice,method:'POST',body:{id:first.data.challenge.id,answer:q.answer}})).status===409,label+' no answer replay');
- const expired=await call('/api/community/challenge',{actor:alice});await DB.prepare('UPDATE community_challenges SET expires_at = ? WHERE id = ?').bind(Date.now()-1000,expired.data.challenge.id).run();check((await call('/api/community/challenge',{actor:alice,method:'POST',body:{id:expired.data.challenge.id,answer:0}})).status===409,label+' expired challenge cannot earn');
- for(let i=0;i<10;i++){const next=await call('/api/community/challenge',{actor:alice}),question=communityQuestions.find(q=>q.prompt===next.data.challenge.prompt);const result=await call('/api/community/challenge',{actor:alice,method:'POST',body:{id:next.data.challenge.id,answer:question.answer}});check(result.data.correct&&result.data.credits.balance===(i+1)*5,label+' server-earned reward');}
- check((await call('/api/community/challenge',{actor:alice})).data.challenge===null,label+' ten rewarded questions daily cap');
+ // A prior-policy wallet is a preserved baseline, never repriced on upgrade.
+ await DB.prepare('INSERT INTO community_wallets (user_id,balance,updated_at) VALUES (?,41,?) ON CONFLICT(user_id) DO UPDATE SET balance = 41').bind(alice.id,Date.now()).run();
+ await DB.prepare("INSERT INTO community_credit_ledger (id,user_id,amount,reason,source_key,created_at) VALUES (?,?,41,'legacy','preserved-history',?)").bind(crypto.randomUUID(),alice.id,Date.now()).run();
+ const start=actor=>call('/api/community/challenge',{actor,method:'POST',body:{action:'start'}});
+ const answers=(round,wrongCount=0)=>round.questions.map((item,index)=>{const question=communityQuestions.find(q=>q.id===item.id),correct=item.options.indexOf(question.options[question.answer]);return index<wrongCount?(correct+1)%4:correct;});
+ check((await call('/api/community/challenge',{actor:alice})).data.challenge===null,label+' reading challenge does not consume an attempt');
+ const first=await start(alice),round=first.data.challenge;check(round.questions.length===5&&new Set(round.questions.map(q=>q.topic)).size===5,label+' applied round covers five topics');
+ check(round.questions.every(q=>!('answer'in q)&&!('explanation'in q)&&!('order'in q)&&q.options.length===4),label+' shuffled answers and explanations stay server-side');
+ check((await call('/api/community/challenge',{actor:alice})).data.challenge.id===round.id&&(await start(alice)).data.credits.attemptsToday===1,label+' reload and start resume the same paid attempt');
+ check((await call('/api/community/challenge',{actor:alice,method:'POST',body:{id:round.id,answers:[0]}})).status===400,label+' partial round does not consume answers');
+ check((await call('/api/community/challenge',{actor:bob,method:'POST',body:{id:round.id,answers:answers(round)}})).status===409,label+' round bound to its account');
+ const wrong=await call('/api/community/challenge',{actor:alice,method:'POST',body:{id:round.id,answers:answers(round,5)}});check(wrong.data.correct===false&&wrong.data.score===0&&wrong.data.awarded===0&&wrong.data.credits.balance===41,label+' guessing all answers wrong earns nothing and preserves past credits');
+ check(wrong.data.results.every(result=>result.source.url.startsWith('https://')&&result.explanation&&Number.isInteger(result.answer)),label+' submitted answers receive sourced explanation');
+ check((await call('/api/community/challenge',{actor:alice,method:'POST',body:{id:round.id,answers:answers(round)}})).status===409,label+' no answer replay');
+ const expired=await start(alice);await DB.prepare('UPDATE community_mastery_rounds SET expires_at = ? WHERE id = ?').bind(Date.now()-1000,expired.data.challenge.id).run();
+ check((await call('/api/community/challenge',{actor:alice,method:'POST',body:{id:expired.data.challenge.id,answers:answers(expired.data.challenge)}})).status===409,label+' expired round cannot earn');
+ const seen=new Set([...round.questions,...expired.data.challenge.questions].map(q=>q.id));
+ for(let i=0;i<3;i++){
+  const next=await start(alice);check(next.data.challenge.questions.every(q=>!seen.has(q.id)),label+' daily rounds do not recycle issued questions');for(const q of next.data.challenge.questions)seen.add(q.id);
+  if(i===0){const realBatch=env.DB.batch;env.DB={...DB,batch:async()=>{throw new Error('simulated temporary transaction failure');}};
+   check((await call('/api/community/challenge',{actor:alice,method:'POST',body:{id:next.data.challenge.id,answers:answers(next.data.challenge,1)}})).status===503,label+' transaction failure is reported');env.DB={...DB,batch:realBatch};
+   check((await call('/api/community/challenge',{actor:alice})).data.challenge.id===next.data.challenge.id,label+' failed database transaction leaves round resumable');
+  }
+  const result=await call('/api/community/challenge',{actor:alice,method:'POST',body:{id:next.data.challenge.id,answers:answers(next.data.challenge,1)}});check(result.data.correct&&result.data.score===4&&result.data.awarded===3&&result.data.credits.balance===41+(i+1)*3,label+' four of five earns three server-verified credits');
+ }
+ const capped=await start(alice);check(capped.data.challenge===null&&capped.data.credits.earnedToday===3&&capped.data.credits.attemptsToday===5&&capped.data.credits.dailyCreditLimit===9,label+' daily cap is three rewards and nine credits, with abandoned attempts counted');
+ const concurrent=await Promise.all([start(bob),start(bob)]);check(concurrent.every(result=>result.data.challenge.id===concurrent[0].data.challenge.id),label+' concurrent start returns one persisted round');
+ check((await call('/api/community/challenge',{actor:bob})).data.credits.attemptsToday===1,label+' concurrent start consumes one attempt');
+ const raceRound=concurrent[0].data.challenge,raceAnswers=answers(raceRound),claims=await Promise.all([1,2].map(()=>call('/api/community/challenge',{actor:bob,method:'POST',body:{id:raceRound.id,answers:raceAnswers}})));
+ check(claims.filter(result=>result.status===200).length===1&&claims.filter(result=>result.status===409).length===1,label+' concurrent answer claims settle once');
+ check((await call('/api/community',{actor:bob})).data.credits.balance===3,label+' concurrent claims cannot duplicate reward');
+ for(let i=0;i<5;i++){const attempt=await start(owner);await call('/api/community/challenge',{actor:owner,method:'POST',body:{id:attempt.data.challenge.id,answers:answers(attempt.data.challenge,2)}});}
+ const attemptsCapped=await start(owner);check(attemptsCapped.data.challenge===null&&attemptsCapped.data.credits.attemptsRemaining===0&&attemptsCapped.data.credits.earnedToday===0,label+' five unsuccessful rounds exhaust attempts without awarding credits');
  const submitted=await call('/api/community/submissions/submit',{actor:alice,method:'POST',body:{id}});check(submitted.status===200&&submitted.data.submission.status==='pending'&&submitted.data.credits.balance===0,label+' spend exactly50 and queue');
  check((await call('/api/community/submissions/submit',{actor:alice,method:'POST',body:{id}})).data.credits.balance===0,label+' retry idempotent');
  check((await call('/api/community/submissions',{actor:alice,method:'PUT',body:{...input,id,photos:undefined}})).status===409,label+' pending cannot edit');
@@ -114,7 +142,7 @@ async function suite(DB,label){
  const edited=await call('/api/community/submissions',{actor:alice,method:'PUT',body:{...input,id,photos:undefined,description:input.description+' The engine replacement history is now attached.'}});check(edited.status===200&&edited.data.submission.photos.length===1,label+' rejected draft retains omitted photos');
  const captioned=await call('/api/community/submissions',{actor:alice,method:'PUT',body:{...input,id,photos:[{id:edited.data.submission.photos[0].id,caption:'Updated owner caption'}]}});check(captioned.status===200&&captioned.data.submission.photos[0].caption==='Updated owner caption',label+' owner edits retained photo caption');
  const again=await call('/api/community/submissions/submit',{actor:alice,method:'POST',body:{id}});check(again.status===200&&again.data.credits.balance===0,label+' same reviewed car correction free');
- const analytics=(await call('/api/admin/community',{actor:admin})).data;check(analytics.stats.accounts===3&&analytics.stats.pending===1&&analytics.stats.creditsEarned===50&&analytics.stats.creditsSpent===50&&analytics.recentActivity.length>=3,label+' database analytics accurate');
+ const analytics=(await call('/api/admin/community',{actor:admin})).data;check(analytics.stats.accounts===3&&analytics.stats.pending===1&&analytics.stats.creditsEarned===53&&analytics.stats.creditsSpent===50&&analytics.recentActivity.length>=3,label+' database analytics accurate');
  check(!JSON.stringify(analytics).includes('password_hash'),label+' admin response excludes credentials');
  const vercel=createRoutedVercelHandler({environment:{DATABASE_URL:'postgresql://test:secret@test.invalid/isolated',ADMIN_LOGIN_EMAIL:env.ADMIN_LOGIN_EMAIL,ADMIN_PASSWORD_HASH:env.ADMIN_PASSWORD_HASH},connect:async()=>DB});
  check((await vercel(new Request(origin+'/api/community/cars'))).status===200,label+' shared serverless community route');

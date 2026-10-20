@@ -1,10 +1,10 @@
 import {validName,validateGarage} from './validation.js';
 import {randomToken} from './passwords.js';
 import {validateCommunityPhoto,decodePhotoBytes} from './community-photos.js';
-import {communityQuestions} from './community-questions.js';
+import {MASTERY_POLICY,masteryExpiry,createMasteryQuestions,publicMasteryQuestions,gradeMasteryQuestions} from './community-questions.js';
 
 export const COMMUNITY_PATHS=new Set(['/api/community','/api/community/profile','/api/community/friends','/api/community/garage-share','/api/community/shared-garage','/api/community/cars','/api/community/submissions','/api/community/submissions/submit','/api/community/car-photo','/api/community/challenge','/api/admin/community','/api/admin/moderation']);
-const COST=50,REWARD=5,DAILY=10;
+const COST=50,REWARD=MASTERY_POLICY.reward,DAILY=MASTERY_POLICY.dailyRewards;
 const uuid=()=>crypto.randomUUID();
 const iso=value=>value?new Date(value).toISOString():null;
 const safeID=value=>typeof value==='string'&&/^[0-9a-f-]{36}$/.test(value);
@@ -17,8 +17,11 @@ const creditDay=()=>new Date().toISOString().slice(0,10);
 async function wallet(env,id){
  const day=creditDay(),balance=await env.DB.prepare('SELECT balance FROM community_wallets WHERE user_id = ?').bind(id).first();
  const count=await env.DB.prepare('SELECT COUNT(*) AS count FROM community_credit_ledger WHERE user_id = ? AND reason = ? AND source_key LIKE ?').bind(id,'challenge',day+':%').first();
- return {balance:balance?.balance||0,submissionCost:COST,reward:REWARD,dailyLimit:DAILY,earnedToday:Number(count.count)};
+ const attempts=await env.DB.prepare('SELECT COUNT(*) AS count FROM community_mastery_rounds WHERE user_id = ? AND day = ?').bind(id,day).first();
+ return {balance:Number(balance?.balance)||0,submissionCost:COST,reward:REWARD,dailyLimit:DAILY,dailyCreditLimit:REWARD*DAILY,earnedToday:Number(count.count),attemptLimit:MASTERY_POLICY.dailyAttempts,attemptsToday:Number(attempts.count),attemptsRemaining:Math.max(0,MASTERY_POLICY.dailyAttempts-Number(attempts.count))};
 }
+const activeRound=(env,id,now)=>env.DB.prepare('SELECT * FROM community_mastery_rounds WHERE user_id = ? AND completed_at IS NULL AND expires_at > ?').bind(id,now).first();
+function roundView(round){if(!round)return null;const data=JSON.parse(round.question_data);return {id:round.id,questions:publicMasteryQuestions(data.items,data.language),language:data.language,total:MASTERY_POLICY.questions,requiredCorrect:MASTERY_POLICY.requiredCorrect,expiresAt:iso(round.expires_at)};}
 async function shareState(env,id){const row=await env.DB.prepare('SELECT token FROM community_shares WHERE user_id = ?').bind(id).first();return row?{enabled:true,token:row.token,url:'/garage/'+row.token}:{enabled:false};}
 async function photosFor(env,id){return (await env.DB.prepare('SELECT id,caption,width,height FROM community_photos WHERE car_id = ? ORDER BY position').bind(id).all()).results.map(row=>({...row,url:'/api/community/car-photo?id='+row.id}));}
 async function carView(env,row,{privateView=false}={}){
@@ -98,22 +101,39 @@ export async function handleCommunity(request,env,context){
  }
  if(path==='/api/community/challenge'){
   allowed(['GET','POST']);await limit(env,'community-challenge:'+user.id,90,60*60*1000);const now=Date.now(),credits=await wallet(env,user.id);
-  if(method==='GET'){
-   await env.DB.prepare('DELETE FROM community_challenges WHERE user_id = ? OR expires_at <= ?').bind(user.id,now).run();
+  if(method==='GET')return respond({challenge:roundView(await activeRound(env,user.id,now)),credits});
+  const body=await readJSON(request);
+  if(only(body,['action'])&&body.action==='start'){
+   // One active round per account is enforced in both databases. Reloads and
+   // concurrent start requests resume it, instead of consuming another attempt.
+   await env.DB.prepare('UPDATE community_mastery_rounds SET completed_at = ? WHERE user_id = ? AND completed_at IS NULL AND expires_at <= ?').bind(now,user.id,now).run();
+   const existing=await activeRound(env,user.id,now);if(existing)return respond({challenge:roundView(existing),credits});
    if(credits.earnedToday>=DAILY)return respond({challenge:null,credits,message:'Today’s credit rewards are complete. More challenges unlock tomorrow (UTC).'});
-   const completed=(await env.DB.prepare('SELECT source_key FROM community_credit_ledger WHERE user_id = ? AND reason = ? AND source_key LIKE ?').bind(user.id,'challenge',creditDay()+':%').all()).results.map(r=>r.source_key.split(':').slice(1).join(':'));
-   const available=communityQuestions.filter(q=>!completed.includes(q.id)),random=new Uint32Array(1);crypto.getRandomValues(random);const q=available[random[0]%available.length],id=uuid();await env.DB.prepare('INSERT INTO community_challenges (id,user_id,question_id,created_at,expires_at) VALUES (?,?,?,?,?)').bind(id,user.id,q.id,now,now+10*60*1000).run();return respond({challenge:{id,prompt:q.prompt,options:q.options},credits});
+   if(credits.attemptsRemaining===0)return respond({challenge:null,credits,message:'All five rounds have been used today. Practice in Learn and return tomorrow (UTC).'});
+   const day=creditDay(),language=['en','ka','ru'].includes(url.searchParams.get('language'))?url.searchParams.get('language'):'en';
+   const previous=(await env.DB.prepare('SELECT question_data FROM community_mastery_rounds WHERE user_id = ? AND day = ? ORDER BY attempt_no').bind(user.id,day).all()).results.map(row=>JSON.parse(row.question_data).items);
+   const data=JSON.stringify({version:1,language,items:createMasteryQuestions(previous)}),id=uuid(),expiresAt=masteryExpiry(now);
+   await env.DB.prepare('INSERT INTO community_mastery_rounds (id,user_id,day,attempt_no,question_data,created_at,expires_at) SELECT ?,?,?,COALESCE(MAX(attempt_no),0)+1,?,?,? FROM community_mastery_rounds WHERE user_id = ? AND day = ? HAVING COUNT(*) < ? ON CONFLICT DO NOTHING').bind(id,user.id,day,data,now,expiresAt,user.id,day,MASTERY_POLICY.dailyAttempts).run();
+   return respond({challenge:roundView(await activeRound(env,user.id,now)),credits:await wallet(env,user.id)});
   }
-  const body=await readJSON(request);if(!only(body,['id','answer'])||!safeID(body.id)||!Number.isInteger(body.answer)||body.answer<0||body.answer>2)throw new ApiError('Choose an answer to this credit challenge.');
-  const claim=await env.DB.prepare('DELETE FROM community_challenges WHERE id = ? AND user_id = ? AND expires_at > ? RETURNING question_id').bind(body.id,user.id,now).first();if(!claim)throw new ApiError('This challenge was answered or expired. Start another one.',409,'CHALLENGE_USED');
-  const q=communityQuestions.find(q=>q.id===claim.question_id);if(!q)throw new ApiError('Start a fresh challenge.',409);const correct=q.answer===body.answer;
-  if(correct){const id=uuid(),source=creditDay()+':'+q.id;await env.DB.batch([
+  if(!only(body,['id','answers'])||!safeID(body.id)||!Array.isArray(body.answers)||body.answers.length!==MASTERY_POLICY.questions||!body.answers.every(answer=>Number.isInteger(answer)&&answer>=0&&answer<4))throw new ApiError('Answer all five questions before submitting your round.',400,'INVALID_ROUND');
+  const round=await env.DB.prepare('SELECT * FROM community_mastery_rounds WHERE id = ? AND user_id = ? AND completed_at IS NULL AND expires_at > ?').bind(body.id,user.id,now).first();
+  if(!round)throw new ApiError('This round was submitted or expired. Start another round.',409,'CHALLENGE_USED');
+  const data=JSON.parse(round.question_data),results=gradeMasteryQuestions(data.items,body.answers,data.language),score=results.filter(item=>item.correct).length,correct=score>=MASTERY_POLICY.requiredCorrect;
+  const id=uuid(),source=round.day+':mastery:'+round.id,serializedAnswers=JSON.stringify(body.answers);
+  const saved=await env.DB.batch([
    env.DB.prepare('INSERT INTO community_wallets (user_id,balance,updated_at) VALUES (?,0,?) ON CONFLICT(user_id) DO NOTHING').bind(user.id,now),
+   // Completion and payment share one transaction: a temporary database error
+   // cannot consume a passed round without issuing its credit receipt.
    env.DB.prepare('UPDATE community_wallets SET updated_at = ? WHERE user_id = ?').bind(now,user.id),
-   env.DB.prepare("INSERT INTO community_credit_ledger (id,user_id,amount,reason,source_key,created_at) SELECT ?,?,?,'challenge',?,? WHERE (SELECT COUNT(*) FROM community_credit_ledger WHERE user_id = ? AND reason = 'challenge' AND source_key LIKE ?) < ? ON CONFLICT(user_id,source_key) DO NOTHING").bind(id,user.id,REWARD,source,now,user.id,creditDay()+':%',DAILY),
+   env.DB.prepare('UPDATE community_mastery_rounds SET completed_at = ?,answers_json = ?,score = ? WHERE id = ? AND user_id = ? AND completed_at IS NULL AND expires_at > ? RETURNING id').bind(now,serializedAnswers,score,round.id,user.id,now),
+   env.DB.prepare("INSERT INTO community_credit_ledger (id,user_id,amount,reason,source_key,created_at) SELECT ?,?,?,'challenge',?,? WHERE EXISTS (SELECT 1 FROM community_mastery_rounds WHERE id = ? AND completed_at = ? AND answers_json = ? AND score >= ?) AND (SELECT COUNT(*) FROM community_credit_ledger WHERE user_id = ? AND reason = 'challenge' AND source_key LIKE ?) < ? ON CONFLICT(user_id,source_key) DO NOTHING").bind(id,user.id,REWARD,source,now,round.id,now,serializedAnswers,MASTERY_POLICY.requiredCorrect,user.id,round.day+':%',DAILY),
    env.DB.prepare('UPDATE community_wallets SET balance = balance + ?,updated_at = ? WHERE user_id = ? AND EXISTS (SELECT 1 FROM community_credit_ledger WHERE id = ?)').bind(REWARD,now,user.id,id)
-  ]);}
-  return respond({correct,explanation:q.explanation,credits:await wallet(env,user.id)});
+  ]);
+  const claim=saved[2],changed=Number(claim.meta?.changes??claim.affectedRows??claim.rowCount??claim.rows?.length??0);
+  if(!changed)throw new ApiError('This round was submitted or expired. Start another round.',409,'CHALLENGE_USED');
+  const awarded=await env.DB.prepare('SELECT id FROM community_credit_ledger WHERE id = ?').bind(id).first()?REWARD:0;
+  return respond({correct,score,total:MASTERY_POLICY.questions,requiredCorrect:MASTERY_POLICY.requiredCorrect,awarded,results,credits:await wallet(env,user.id)});
  }
  if(path==='/api/community/car-photo'){
   allowed(['GET']);const id=url.searchParams.get('id');if(!safeID(id))throw new ApiError('Photo not found.',404);const photo=await env.DB.prepare('SELECT community_photos.*,community_cars.user_id,community_cars.status FROM community_photos INNER JOIN community_cars ON community_cars.id = community_photos.car_id WHERE community_photos.id = ?').bind(id).first();if(!photo||photo.status!=='approved'&&photo.user_id!==user?.id&&!isAdmin)throw new ApiError('Photo not found.',404);

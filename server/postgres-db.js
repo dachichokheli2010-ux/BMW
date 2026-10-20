@@ -28,6 +28,7 @@ Object.assign(required,{
  community_wallets:['user_id','balance','last_operation','updated_at'],
  community_credit_ledger:['id','user_id','amount','reason','source_key','created_at'],
  community_challenges:['id','user_id','question_id','created_at','expires_at'],
+ community_mastery_rounds:['id','user_id','day','attempt_no','question_data','answers_json','score','created_at','expires_at','completed_at'],
  community_cars:['id','user_id','title','model','year','engine','transmission','horsepower','description','modifications','evidence','status','moderation_note','moderated_by','submitted_at','reviewed_at','credit_spent','created_at','updated_at'],
  community_photos:['id','car_id','mime','data','width','height','caption','position'],
  community_audit:['id','actor_id','action','car_id','note','created_at']

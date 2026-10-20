@@ -23,7 +23,7 @@ function choice(id,prompt,answer,alternatives,extra={}){
 }
 
 export const PLAY_MODES=Object.freeze([
-  {id:'practice',name:'Practice',icon:'◎',tag:'START HERE',description:'Ten questions, no clock. Every hint is free.',rules:'Choose an answer, read the explanation, then continue. Hints are free. Ten questions make a round.',count:10},
+  {id:'practice',name:'Practice',icon:'◎',tag:'START HERE',description:'Ten questions, no clock. Understand the why.',rules:'Select an answer, then press Check answer. Read the explanation before continuing. Hints are free. Ten questions make a round.',count:10},
   {id:'daily',name:'Daily Challenge',icon:'◈',tag:'SAME FOR EVERYONE',description:'One shared ten-question challenge each UTC day.',rules:'The same ten questions and answer order for every player on the same UTC date. You have one scored entry a day. Leaving saves your place. The day resets at 00:00 UTC.',count:10},
   {id:'sprint',name:'60-second Sprint',icon:'↗',tag:'BEAT THE CLOCK',description:'How much can you learn in one minute?',rules:'Answer as many questions as you can before the 60-second clock ends. Reading explanations uses clock time. Faster correct answers earn a bonus.',count:500},
   {id:'survival',name:'Three-life Survival',icon:'♡',tag:'THREE LIVES',description:'Keep learning until your three lives run out.',rules:'A wrong answer or skip costs one life. Correct answers keep the round alive. The round ends when all three lives are used or you finish the pool.',count:500},
@@ -54,10 +54,11 @@ export function createQuestionBank(catalog=allModels){
     ['induction','Which induction or battery description belongs to this example?',model=>model.induction,'engines',3],
   ];
   for(const model of models){
-    const common={modelId:model.id,learnURL:'/models?model='+encodeURIComponent(model.id),sources:references(model),context:context(model),sourceStatus:model.verified?'factory-specification':'catalogue-source-linked'};
+    const common={modelId:model.id,assessmentKind:'reference',sourceGroup:model.id,learnURL:'/models?model='+encodeURIComponent(model.id),sources:references(model),context:context(model),sourceStatus:model.verified?'factory-specification':'catalogue-source-linked'};
     for(const [field,prompt,read,topic,difficulty] of fields){
       const answer=read(model);if(!answer)continue;
-      add(choice('car-'+model.id+'-'+field,`${context(model)}: ${prompt}`,answer,models.map(read),{...common,topic,difficulty,explanation:`For this specific catalogue application, ${answer} is the recorded ${field==='code'?'engine / drive family':field}. ${field==='generation'?'One generation can contain several engines and trims.':field==='body'?'This describes the pictured catalogue example, not every body produced in that generation.':`The scope is ${model.market||'the application shown'}, rather than every BMW with the same model badge.`}`}));
+      const peers=seededShuffle(models,'peers:'+model.id+':'+field).sort((a,b)=>Number(b.powertrain===model.powertrain)-Number(a.powertrain===model.powertrain)||Number(b.layout===model.layout)-Number(a.layout===model.layout));
+      add(choice('car-'+model.id+'-'+field,`${context(model)}: ${prompt}`,answer,peers.map(read),{...common,topic,difficulty,explanation:`For this specific catalogue application, ${answer} is the recorded ${field==='code'?'engine / drive family':field}. ${field==='generation'?'One generation can contain several engines and trims.':field==='body'?'This describes the pictured catalogue example, not every body produced in that generation.':`The scope is ${model.market||'the application shown'}, rather than every BMW with the same model badge.`}`}));
     }
     // A false statement uses another existing family, never a fabricated code.
     const other=models.find(value=>value.code&&value.code!==model.code);
@@ -66,7 +67,7 @@ export function createQuestionBank(catalog=allModels){
     if(model.verified){
       for(const [field,label,unit] of [['powerKw','rated power','kW'],['powerPS','metric horsepower','PS'],['torqueNm','peak torque','Nm'],['acceleration100','0–100 km/h time','seconds'],['weightKg','documented unladen mass','kg'],['modelYear','specification year','']]){
         const value=model.verified[field];if(!Number.isFinite(value))continue;
-        const values=models.filter(item=>Number.isFinite(item.verified?.[field])).map(item=>`${item.verified[field]}${unit?' '+unit:''}`);
+        const values=models.filter(item=>Number.isFinite(item.verified?.[field])).sort((a,b)=>Math.abs(a.verified[field]-value)-Math.abs(b.verified[field]-value)).map(item=>`${item.verified[field]}${unit?' '+unit:''}`);
         const answer=`${value}${unit?' '+unit:''}`;
         add(choice('spec-'+model.id+'-'+field,`${model.verified.specification||context(model)}: what is the ${label}?`,answer,values,{...common,topic:field==='modelYear'?'history':'specs',difficulty:4,explanation:`The matching factory specification records ${answer}. ${field==='weightKg'?(model.verified.weightConvention||'Use the stated mass convention when comparing vehicles.'):field==='powerPS'?'PS is metric horsepower; it is not the same unit as mechanical hp.':'Keep the model, year, market and equipment scope attached to this figure.'}`}));
       }
@@ -77,7 +78,7 @@ export function createQuestionBank(catalog=allModels){
   for(const lesson of curriculum.lessons){
     for(const question of lesson.questions){
       const fingerprint=JSON.stringify([question.prompt,question.answers,question.pairs,question.items]);if(seen.has(fingerprint))continue;seen.add(fingerprint);
-      add({...question,id:'academy-'+question.id,topic:lesson.topic,difficulty:lesson.advanced?4:2,context:lesson.title,prompt:question.recognition?question.prompt:`${lesson.title}: ${question.prompt}`,sources:question.sourceRefs||lesson.sources,learnURL:question.explore||'/learn?lesson='+encodeURIComponent(lesson.id),sourceStatus:'sourced-lesson',recognition:!!question.recognition});
+      add({...question,id:'academy-'+question.id,sourceGroup:lesson.id,assessmentKind:'understanding',topic:lesson.topic,difficulty:lesson.advanced?4:2,context:lesson.title,prompt:question.recognition?question.prompt:`${lesson.title}: ${question.prompt}`,sources:question.sourceRefs||lesson.sources,learnURL:question.explore||'/learn?lesson='+encodeURIComponent(lesson.id),sourceStatus:'sourced-lesson',recognition:!!question.recognition});
     }
   }
   const milestones=academyReferenceData.mTimeline;
@@ -104,21 +105,23 @@ export function createQuestionBank(catalog=allModels){
 
 export function poolForMode(bank,mode,difficulty='all',mistakes=[]){
   let pool=bank.filter(question=>difficulty==='all'||question.difficulty===Number(difficulty));
-  if(mode==='daily')return bank.filter(question=>question.type==='choice'&&!question.photo);
+  if(mode==='daily')return bank.filter(question=>question.type==='choice'&&!question.photo&&question.assessmentKind==='understanding');
   if(mode==='cars')return pool.filter(question=>question.recognition&&question.photo);
   if(mode==='parts')return pool.filter(question=>question.topic==='parts'&&question.type==='choice');
-  if(mode==='engines')return pool.filter(question=>question.topic==='engines'&&question.type==='choice');
+  if(mode==='engines'){const engines=pool.filter(question=>question.topic==='engines'&&question.type==='choice');const applied=engines.filter(question=>question.assessmentKind==='understanding');return applied.length?applied:engines;}
   if(mode==='match')return pool.filter(question=>question.type==='match');
   if(mode==='memory')return pool.filter(question=>question.type==='memory');
   if(mode==='timeline')return pool.filter(question=>question.topic==='timeline');
   if(mode==='build-engine')return pool.filter(question=>question.type==='order'&&question.topic!=='timeline');
   if(mode==='higher-lower'||mode==='true-false')return pool.filter(question=>question.topic===mode);
   if(mode==='mistakes')return bank.filter(question=>mistakes.includes(question.id));
-  return pool.filter(question=>question.type==='choice');
+  return pool.filter(question=>question.type==='choice'&&question.assessmentKind==='understanding');
 }
 export function dailyQuestionIds(bank,day=utcDay()){
-  // Sorting IDs makes the date's selection independent of catalogue iteration.
-  return seededShuffle(poolForMode(bank,'daily').map(question=>question.id).sort(),'apex-daily-v1:'+day).slice(0,10);
+  // Start with different lessons so a daily round tests several concepts.
+  const ordered=seededShuffle(poolForMode(bank,'daily').sort((a,b)=>a.id.localeCompare(b.id)),'apex-daily-v2:'+day),groups=new Set(),selected=[];
+  for(const question of ordered){const group=question.sourceGroup||question.id;if(groups.has(group))continue;groups.add(group);selected.push(question.id);if(selected.length===10)return selected;}
+  return [...selected,...ordered.filter(question=>!selected.includes(question.id)).map(question=>question.id)].slice(0,10);
 }
 
 const milestones=[1,5,10,25,50,100,250,500];

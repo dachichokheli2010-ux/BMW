@@ -6,8 +6,9 @@ published submissions.
 
 ## Database and deployments
 
-- Local preview: the SQLite migration `drizzle/0003_community.sql` is applied
-  additively on startup. Existing accounts and garage rows are retained.
+- Local preview: SQLite migrations `0003_community.sql` and
+  `0004_mastery_rounds.sql` are applied additively on startup. Existing accounts,
+  garage rows, wallet balances and reward history are retained.
 - Vercel / Neon: set `DATABASE_URL` in the server environment. The existing
   PostgreSQL initializer creates the community tables in the app-owned `apex`
   schema. `npm run db:migrate` and `npm run db:check` also include them. Existing
@@ -57,10 +58,21 @@ email notifications are sent by this feature.
 
 ## Credits and review rules
 
-- A community credit challenge is issued by the server, expires after ten
-  minutes and can be answered only once by its owner.
-- A correct answer awards 5 credits. At most 10 unique questions are rewarded
-  each UTC day. The balance and reward ledger are stored on the server.
+- A mastery round contains five application questions, one from each topic.
+  Options are shuffled on the server; questions do not repeat within that day's
+  five rounds. Answers and sourced explanations are revealed after submission.
+- A score of at least 4/5 earns 3 credits. At most three rounds (9 credits) pay
+  each UTC day. Five attempts are available per day, including failed and
+  expired rounds. There is no speed bonus. Rounds expire after 15 minutes or at
+  UTC midnight, whichever comes first; refreshing resumes the same active round.
+- Completion, the reward receipt and wallet payment share one database
+  transaction. Replays, concurrent starts and submissions cannot multiply
+  attempts or rewards. Existing balances are never repriced.
+- Academy collection credits remain separate: first lesson completions require
+  at least 80% first-answer accuracy for 2 credits (3 for a perfect run; 4 for a
+  checkpoint). A qualifying daily session earns 1 credit. Reviews earn XP only;
+  completed lessons cannot be replayed for extra credits. Existing Academy XP,
+  balances, completions and history remain intact.
 - The initial submission costs 50 community credits. Retrying a pending request
   does not charge twice. Correcting and resubmitting the same rejected car does
   not charge again. Browser Arcade / Academy XP remains separate.
@@ -106,8 +118,9 @@ response. JSON content type is required. Errors return
 | same | PATCH `{id,action:'accept'\|'decline'}`; DELETE `{id}` | `{ok:true}` |
 | `/api/community/garage-share` | GET; POST `{}` to enable; DELETE to revoke | `{enabled,token?,url?}` |
 | `/api/community/shared-garage?token=...` | GET, public | `{owner,garage:{favorites,builds},updatedAt}` |
-| `/api/community/challenge` | GET, signed in | `{challenge:{id,prompt,options}\|null,credits,message?}` |
-| same | POST `{id,answer}`; zero-based option index | `{correct,explanation,credits}` |
+| `/api/community/challenge` | GET, signed in; read/resume only | `{challenge:{id,questions,expiresAt,total:5,requiredCorrect:4,language}\|null,credits}` |
+| same | POST `{action:'start'}`; optional `?language=en\|ka\|ru` | `{challenge,credits,message?}`; creates or resumes the account's active round |
+| same | POST `{id,answers:[0,1,2,3,0]}`; five zero-based indices | `{correct,score,total,requiredCorrect,awarded,results,credits}` |
 | `/api/community/cars` | GET, public; optional `?id=...` | `{cars}` or `{car}`; approved only |
 | `/api/community/submissions` | GET, signed in; optional `?id=...` | `{submissions}` or `{submission}` |
 | same | POST car fields to create draft; PUT same fields plus `id` | `{submission}` |
@@ -131,7 +144,11 @@ payload. Public car responses exclude evidence, moderator notes and account IDs.
 Friend rows have `{id,profile:{handle,displayName,bio},createdAt,garageUrl?}`;
 `garageUrl` is present only for accepted friends when that driver has explicitly
 enabled sharing. Share URLs use the canonical `/garage/:token` page route.
-Credits are `{balance,submissionCost:50,reward:5,dailyLimit:10,earnedToday}`.
+Credits are `{balance,submissionCost:50,reward:3,dailyLimit:3,dailyCreditLimit:9,
+earnedToday,attemptLimit:5,attemptsToday,attemptsRemaining}`. `earnedToday` counts
+paid rounds, not credits. Public questions contain `{id,topic,prompt,options}`;
+only submitted results add `selected`, `answer`, `correct`, `explanation` and
+`source:{label,url}`. A round keeps the language selected when it was issued.
 
 Run `node scripts/check-community-backend.mjs` for isolated SQLite and PGlite
 PostgreSQL checks. It creates temporary test accounts only, verifies permission

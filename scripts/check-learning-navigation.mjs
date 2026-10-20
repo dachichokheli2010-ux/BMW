@@ -12,5 +12,8 @@ const feedback=targetAt(700,1300);assert.equal(revealLearningFeedback(feedback.t
 const tall=targetAt(120,1500);assert.equal(revealLearningFeedback(tall.target),false,'A long explanation with a visible opening must not drag the reader to its bottom');
 const reduced=targetAt(-400,-300,{reduced:true});focusLearningTarget(reduced.target);assert.equal(reduced.calls.at(-1).behavior,'instant');
 const top=targetAt(-500,-450,{scrollY:100});focusLearningTarget(top.target);assert.equal(top.calls.at(-1).top,0);
+const pinned=targetAt(660,700);pinned.target.ownerDocument.querySelector=selector=>selector==='.site-header'?{getBoundingClientRect:()=>({top:14,bottom:86,height:72})}:{getBoundingClientRect:()=>({top:640,bottom:780,height:140})};
+assert.equal(revealLearningFeedback(pinned.target),true,'Feedback hidden by the mobile action bar is moved above it');
+assert.equal(pinned.calls.at(-1).top,2158);
 assert.equal(focusLearningTarget(null),false);assert.equal(focusLearningTarget({}),false);
 console.log('PASS Learning navigation: offscreen questions, visible answers, long feedback, reduced motion and header clearance.');

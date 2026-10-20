@@ -7,9 +7,10 @@ import {createCurriculum} from '../public/academy-content.js';
 import {lessonTeaching} from '../public/academy-teaching.js';
 import {createMChallenges,mRecognitionModels,shuffled} from '../public/academy-recognition.js';
 import {emptyProgress,restoreProgress,localDay,beginSession,restoreSession,recordAnswer,finishSession,currentStreak,mastery,dueQuestions,daySeed,levelProgress,validateAnswer} from '../public/academy-state.js';
-import {REWARD_POLICY,lessonReward,rewardPreview} from '../public/academy-rewards.js';
+import {REWARD_POLICY,CREDIT_POLICY,lessonReward,rewardPreview,creditReward} from '../public/academy-rewards.js';
 import {achievementProgress,reconcileAchievements} from '../public/academy-achievements.js';
 import {validateAcademy} from '../server/validation.js';
+import {validateAcademyTransition} from '../server/academy-policy.js';
 
 const {lessons,units}=createCurriculum(academyLessons,academyReferenceData.sources,partCatalog,allModels,academyReferenceData.scenarios);
 const answerFor=q=>q.type==='order'?[...q.correct]:q.type==='match'?Object.fromEntries(q.pairs.map((_,i)=>[i,i])):q.correct;
@@ -66,6 +67,7 @@ assert.equal(recordAnswer(state,session,first,first.correct,day),null,'Resolved 
 for(const q of lesson.questions.slice(1))recordAnswer(state,session,q,answerFor(q),day);
 const result=finishSession(state,session,lesson,units,day);
 assert.equal(result.xp,50);assert.equal(result.firstBonus,30);assert.equal(result.accuracy,67);assert.equal(result.streak,1);
+assert.equal(result.credits,0,'Correcting mistakes teaches the lesson but cannot convert a low first-attempt score into credits');
 assert.deepEqual(state.achievements['first-ignition'],{day},'The first badge stores the actual completion date');
 assert.equal(mastery(state,'basics'),67,'Correcting a mistake cannot rewrite first-attempt accuracy');
 assert.equal(finishSession(state,session,lesson,units,day),null);
@@ -92,8 +94,10 @@ assert.equal(daySeed(day),daySeed(day));assert.notEqual(daySeed(day),daySeed('20
 assert.equal(levelProgress(0).level,1);assert.equal(levelProgress(75).level,2);
 
 const rewardState=emptyProgress(),daily={...lesson,id:'daily-'+day};
-assert.equal(complete(rewardState,daily,day,'daily').result.xp,25);
+const dailyResult=complete(rewardState,daily,day,'daily').result;
+assert.equal(dailyResult.xp,25);assert.equal(dailyResult.credits,1);
 assert.equal(complete(rewardState,daily,day,'daily').result.xp,0,'Daily completion rewards once per local day');
+assert.equal(complete(rewardState,{...lesson,id:'review-'+day},day,'review').result.credits,0,'Reviews build knowledge and XP without farming credits');
 const unitState=emptyProgress(),firstUnit=units[0];
 for(const id of firstUnit.lessons){const l=lessons.find(v=>v.id===id);complete(unitState,l,day);}
 assert.ok(unitState.awards.includes('unit:basics'));
@@ -103,6 +107,15 @@ assert.equal(complete(unitState,lesson,day).result.xp,0,'Unit completion bonus c
 assert.ok(Object.isFrozen(REWARD_POLICY));
 assert.equal(lessonReward(lesson),20);assert.equal(rewardPreview(lesson,{perfect:true,firstLesson:true}),65);
 assert.equal(complete(emptyProgress(),lesson,day).result.xp,65,'The first perfect lesson earns each configured reward once');
+assert.ok(Object.isFrozen(CREDIT_POLICY));
+for(const [accuracy,expected]of [[0,0],[79,0],[80,2],[99,2],[100,3]])assert.equal(creditReward(lesson,{accuracy}),expected);
+assert.equal(creditReward({...lesson,boss:true},{accuracy:80}),4);
+assert.equal(creditReward(lesson,{kind:'daily',accuracy:79}),0);
+const perfectProgress=emptyProgress();assert.equal(complete(perfectProgress,lesson,day).result.credits,3);
+assert.ok(validateAcademy(perfectProgress));
+assert.ok(validateAcademyTransition(perfectProgress,null,null,{now:Date.parse(day+'T12:00:00Z')}).ok);
+assert.equal(validateAcademyTransition({...perfectProgress,credits:4},null,null,{now:Date.parse(day+'T12:00:00Z')}).ok,false,'New-policy receipts reject an inflated credit amount');
+assert.equal(complete(perfectProgress,lesson,day).result.credits,0,'A perfect replay cannot farm credits');
 const historical=restoreProgress({...emptyProgress(),xp:25,completed:{'first-engine':{day:'2026-10-15',accuracy:100,topic:'basics'}},awards:['lesson:first-engine']});
 assert.equal(historical.xp,25,'Restoring progress never reprices historical rewards');
 assert.equal(complete(historical,lesson,day).result.xp,0,'Old-policy lesson rewards cannot be earned again');
@@ -117,6 +130,10 @@ assert.equal(achievementProgress(badges).find(badge=>badge.id==='seven-day-drive
 
 const resumed=beginSession(lesson,{day});recordAnswer(emptyProgress(),resumed,first,first.correct,day);
 assert.deepEqual(restoreSession(JSON.parse(JSON.stringify(resumed)),lesson,{day}),resumed,'First attempts and resolved questions survive a quiz refresh');
+const revisedLesson={...lesson,questions:lesson.questions.map(q=>({...q,assessmentVersion:2}))};
+const oldPending=structuredClone(resumed);delete oldPending.assessmentVersion;
+assert.equal(restoreSession(oldPending,revisedLesson,{day}),null,'A new question version invalidates unfinished old answers');
+const revisedSession=beginSession(revisedLesson,{day});assert.equal(restoreSession(revisedSession,revisedLesson,{day}).assessmentVersion,2);
 assert.equal(restoreSession({...resumed,questionIds:[...resumed.questionIds].reverse()},lesson,{day}),null,'A changed published question set cannot resume stale answers');
 assert.equal(restoreSession({...resumed,resolved:[first.id,first.id]},lesson,{day}),null);
 assert.equal(restoreSession({...resumed,first:{[first.id]:'true'}},lesson,{day}),null);

@@ -1,48 +1,234 @@
-.bmw-academy .ac-objectives-panel{border:1px solid var(--ac-line);border-radius:9px;padding:22px;margin:25px 0;background:color-mix(in srgb,var(--ac-blue) 4%,var(--ac-bg))}
-.bmw-academy .ac-objectives-panel h2,.bmw-academy .ac-vehicle-examples h2{font-size:15px;font-weight:500;letter-spacing:-.2px;line-height:1.5;margin:0 0 12px}
-.bmw-academy .ac-objectives-panel ul{padding-left:20px;margin:0;color:var(--ac-muted);font-size:13px;line-height:1.9;display:grid;gap:8px}
-.bmw-academy .ac-objectives-panel li::marker{color:var(--ac-blue)}
-.bmw-academy .ac-advanced-explanation{border-block:1px solid var(--ac-line);margin:25px 0}
-.bmw-academy .ac-advanced-explanation>summary{min-height:52px;padding:17px 0;cursor:pointer;color:var(--ac-blue);font-size:13px}
-.bmw-academy .ac-advanced-explanation .ac-teaching-notes{margin-top:6px}
-.bmw-academy .ac-vehicle-examples{padding:22px 0;margin:22px 0;border-block:1px solid var(--ac-line)}
-.bmw-academy .ac-vehicle-examples>p{font-size:11px;line-height:1.8;color:var(--ac-muted);margin-bottom:15px}
-.ac-vehicle-examples>a{display:flex;align-items:center;gap:12px;padding:13px 0;min-height:48px;color:var(--ac-text);border-top:1px solid var(--ac-line);font-size:13px}
-.ac-vehicle-examples>a>strong{font-weight:500;flex:1}
-.ac-vehicle-examples>a>span{font-size:11px;color:var(--ac-muted)}
-.ac-vehicle-examples>a>b{font-size:18px;color:var(--ac-blue);font-weight:400}
-.ac-resume-card{border:1px solid var(--ac-blue);background:color-mix(in srgb,var(--ac-blue) 6%,var(--ac-bg));border-radius:10px;padding:23px;margin-bottom:24px}
-.ac-resume-card>div:first-child{display:flex;flex-direction:column;gap:10px}
-.ac-resume-card strong{font-size:22px;font-weight:450;letter-spacing:-.5px;line-height:1.4}
-.ac-resume-card p{font-size:12px;line-height:1.8;color:var(--ac-muted)}
-.ac-resume-card>div:last-child{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:22px}
-.ac-resume-card .ac-text-button{font-size:10px;max-width:150px;text-align:right}
-.bmw-academy .ac-unlock-date{font-size:10px!important;line-height:1.7;color:var(--ac-green);margin-top:14px}
-.ac-streak-facts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:22px 0 14px}
-.ac-streak-facts>span{border:1px solid var(--ac-line);border-radius:7px;padding:17px;font-size:10px;color:var(--ac-muted);display:flex;flex-direction:column;gap:12px}
-.ac-streak-facts strong{font-size:20px;font-weight:450;color:var(--ac-text)}
-.bmw-academy .ac-rank-note{font-size:10px;color:var(--ac-muted);line-height:1.8;margin:12px 0}
-.ac-key-terms{margin:22px 0;font-size:12px}
-.ac-key-terms h2{font-size:12px;font-weight:500;margin-bottom:12px}
-.ac-key-terms>div{display:flex;flex-wrap:wrap;gap:8px}
-.bmw-academy .ac-key-terms button{font-size:12px;min-height:44px;border:1px solid var(--ac-line);border-radius:20px;padding:8px 15px;color:var(--ac-blue)}
-.ac-reward-breakdown{font-size:11px!important;color:var(--ac-muted);line-height:1.9;margin-top:20px!important}
-.bmw-academy .acg-inline{display:inline;padding:0 2px;border:0;border-bottom:1px dotted currentColor;border-radius:0;min-height:0;font:inherit;line-height:inherit;color:var(--ac-blue);vertical-align:baseline;background:transparent}
-.bmw-academy .acg-inline>span{font-size:.7em}
-.bmw-academy .ac-matching button strong{min-width:0;overflow-wrap:anywhere}
-.bmw-academy .ac-stats .ac-profile-mini strong[data-no-i18n]{overflow:hidden;text-overflow:ellipsis}
-@media(max-width:760px){
-  .ac-resume-card{padding:20px}
-  .ac-resume-card>div:last-child{align-items:stretch;flex-direction:column}
-  .ac-resume-card .ac-text-button{max-width:none;text-align:center;font-size:12px}
-  .bmw-academy .ac-objectives-panel{padding:20px 17px}
-  .bmw-academy .ac-objectives-panel ul{font-size:13px}
-  .bmw-academy .ac-vehicle-examples>p{font-size:12px}
-  .ac-vehicle-examples>a{flex-wrap:wrap;min-height:54px;font-size:13px}
-  .ac-vehicle-examples>a>strong{flex-basis:65%}
-  .ac-streak-facts strong{font-size:17px}
-  html[lang=ka] .bmw-academy h1{letter-spacing:-.02em;font-size:clamp(24px,6.5vw,32px);line-height:1.4}
-  html[lang=ka] .bmw-academy .ac-primary{line-height:1.6}
-  html[lang=ka] .ac-challenge-copy>strong{letter-spacing:-.02em;font-size:23px;line-height:1.4}
-  html[lang=ru] .bmw-academy .ac-mobile-shortcuts button{font-size:11px}
+/* One readable, responsive learning layer over the Academy's shared components. */
+.bmw-academy { --ac-radius: 14px; }
+.bmw-academy .ac-kicker { font-size: 10px; letter-spacing: 1.3px; line-height: 1.7; }
+.bmw-academy .ac-view-heading h1 { font-size: clamp(30px, 3vw, 43px); line-height: 1.15; }
+.bmw-academy .ac-view-heading p { font-size: 14px; max-width: 560px; }
+.bmw-academy .ac-navigation nav button { font-size: 12px; }
+.bmw-academy .ac-primary { min-height: 50px; border-radius: 9px; font-size: 14px; }
+.bmw-academy .ac-primary:disabled { opacity: .55; }
+.bmw-academy :is(button, a, summary) { -webkit-tap-highlight-color: transparent; }
+.bmw-academy summary { cursor: pointer; }
+.bmw-academy summary:focus-visible { outline: 2px solid var(--ac-blue); outline-offset: 4px; }
+.bmw-academy .ac-path-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 28px; }
+.bmw-academy .ac-path-metrics > div { display: flex; flex-direction: column; gap: 8px; border: 1px solid var(--ac-line); border-radius: 10px; padding: 17px; background: var(--ac-bg); }
+.bmw-academy .ac-path-metrics strong { font-size: 27px; font-weight: 500; line-height: 1.2; color: var(--ac-text); }
+.bmw-academy .ac-path-metrics strong small { font-size: 12px; color: var(--ac-muted); font-weight: 400; }
+.bmw-academy .ac-path-metrics span { font-size: 11px; line-height: 1.6; color: var(--ac-muted); }
+.bmw-academy .ac-unit-picker button { font-size: 12px; padding: 13px 10px; border-radius: 9px; }
+.bmw-academy .ac-unit-picker button small { font-size: 10px; line-height: 1.6; }
+.bmw-academy .ac-unit-banner { border-radius: var(--ac-radius); padding: 25px; }
+.bmw-academy .ac-unit-banner h2 { font-size: 26px; margin: 10px 0; line-height: 1.25; }
+.bmw-academy .ac-unit-banner p { font-size: 13px; line-height: 1.75; }
+.bmw-academy .ac-unit-banner .ac-kicker { font-size: 10px; }
+.bmw-academy .ac-next-lesson { display: flex; align-items: center; gap: 17px; text-align: left; width: 100%; padding: 24px; margin: 18px 0; background: color-mix(in srgb, var(--ac-blue) 8%, var(--ac-bg)); border: 1px solid color-mix(in srgb, var(--ac-blue) 55%, var(--ac-line)); border-radius: var(--ac-radius); }
+.bmw-academy .ac-next-icon { display: grid; place-items: center; flex: none; width: 45px; height: 45px; color: var(--ac-blue); background: color-mix(in srgb, var(--ac-blue) 10%, var(--ac-bg)); border-radius: 12px; font-size: 25px; }
+.bmw-academy .ac-next-lesson > span:nth-child(2) { display: flex; flex: 1; flex-direction: column; gap: 8px; min-width: 0; }
+.bmw-academy .ac-next-lesson small { color: var(--ac-blue); font-size: 10px; letter-spacing: .9px; line-height: 1.6; }
+.bmw-academy .ac-next-lesson strong { font-size: 20px; font-weight: 500; line-height: 1.4; color: var(--ac-text); }
+.bmw-academy .ac-next-lesson span > span { font-size: 12px; color: var(--ac-muted); }
+.bmw-academy .ac-next-lesson > b { color: var(--ac-blue); font-size: 24px; font-weight: 400; }
+.bmw-academy .ac-journey { list-style: none; padding: 0; margin: 0 0 22px; display: grid; gap: 10px; }
+.bmw-academy .ac-journey li { position: relative; min-width: 0; }
+.bmw-academy .ac-journey button { display: flex; align-items: center; width: 100%; gap: 17px; text-align: left; padding: 18px; border: 1px solid var(--ac-line); border-radius: 11px; background: var(--ac-bg); }
+.bmw-academy .ac-journey-number { display: grid; place-items: center; flex: none; width: 42px; height: 42px; border: 1px solid var(--ac-line); border-radius: 50%; font-size: 14px; font-variant-numeric: tabular-nums; color: var(--ac-muted); }
+.bmw-academy .ac-journey-copy { display: flex; flex: 1; flex-direction: column; gap: 6px; min-width: 0; }
+.bmw-academy .ac-journey-copy small { font-size: 9px; color: var(--ac-muted); letter-spacing: .6px; line-height: 1.5; }
+.bmw-academy .ac-journey-copy strong { font-size: 15px; line-height: 1.45; color: var(--ac-text); font-weight: 500; }
+.bmw-academy .ac-journey-copy > span { font-size: 11px; color: var(--ac-muted); }
+.bmw-academy .ac-journey button > b { color: var(--ac-muted); font-size: 20px; font-weight: 400; }
+.bmw-academy .ac-journey .is-current button { border-color: var(--ac-blue); }
+.bmw-academy .ac-journey .is-current :is(.ac-journey-number, small) { color: var(--ac-blue); }
+.bmw-academy .ac-journey .is-done .ac-journey-number { color: var(--ac-green); border-color: var(--ac-green); background: color-mix(in srgb, var(--ac-green) 8%, var(--ac-bg)); }
+.bmw-academy .ac-journey .is-locked button { opacity: .65; }
+.bmw-academy .ac-road-note { font-size: 12px; max-width: 520px; margin-bottom: 28px; }
+.bmw-academy .ac-shell.has-player { display: block; max-width: 920px; margin-inline: auto; }
+.bmw-academy .ac-shell.has-player > .ac-navigation { display: none; }
+.bmw-academy .ac-player { max-width: none; border-radius: var(--ac-radius); overflow: visible; }
+.bmw-academy .ac-player-top { border-radius: var(--ac-radius) var(--ac-radius) 0 0; padding: 17px 24px; background: var(--ac-card); gap: 14px; }
+.bmw-academy .ac-player-top > button { min-width: 44px; min-height: 44px; }
+.bmw-academy .ac-player-top > button > span { font-size: 12px; }
+.bmw-academy .ac-player-top > span { font-size: 10px; letter-spacing: .8px; line-height: 1.6; }
+.bmw-academy .ac-player-top > strong { font-size: 12px; white-space: nowrap; }
+.bmw-academy .ac-player-body { padding: 36px clamp(22px, 5vw, 58px); }
+.bmw-academy .ac-player-body h1 { font-size: clamp(27px, 3.1vw, 38px); letter-spacing: -.035em; line-height: 1.28; margin: 14px 0 24px; }
+.bmw-academy .ac-player-lead { font-size: 16px; line-height: 1.85; margin-bottom: 25px; }
+.bmw-academy .ac-lesson-meta { display: flex; flex-wrap: wrap; gap: 8px; margin: -7px 0 24px; }
+.bmw-academy .ac-lesson-meta span { font-size: 11px; line-height: 1.6; color: var(--ac-muted); border: 1px solid var(--ac-line); border-radius: 20px; padding: 6px 12px; }
+.bmw-academy .ac-study-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 26px 0 18px; }
+.bmw-academy .ac-study-card { border: 1px solid color-mix(in srgb, var(--ac-blue) 30%, var(--ac-line)); border-radius: 12px; padding: 23px; background: color-mix(in srgb, var(--ac-blue) 5%, var(--ac-bg)); }
+.bmw-academy .ac-study-card.is-example { border-color: var(--ac-line); background: var(--ac-card); }
+.bmw-academy .ac-study-card p { font-size: 14px; line-height: 1.85; margin-top: 12px; color: var(--ac-text); }
+.bmw-academy .ac-objectives-panel { border: 1px solid var(--ac-line); border-radius: 10px; padding: 0 20px; margin: 18px 0; background: var(--ac-bg); }
+.bmw-academy .ac-objectives-panel summary { padding: 16px 0; min-height: 52px; font-size: 13px; color: var(--ac-muted); }
+.bmw-academy .ac-objectives-panel ul { padding: 0 0 20px 20px; margin: 0; color: var(--ac-muted); font-size: 14px; line-height: 1.8; display: grid; gap: 8px; }
+.bmw-academy .ac-objectives-panel li::marker { color: var(--ac-blue); }
+.bmw-academy .ac-key-terms { margin: 22px 0; }
+.bmw-academy .ac-key-terms h2 { font-size: 13px; font-weight: 500; letter-spacing: 0; margin-bottom: 12px; }
+.bmw-academy .ac-key-terms > div { display: flex; flex-wrap: wrap; gap: 8px; }
+.bmw-academy .ac-key-terms button { font-size: 12px; min-height: 44px; border: 1px solid var(--ac-line); border-radius: 22px; padding: 8px 15px; color: var(--ac-blue); }
+.bmw-academy .ac-steps { gap: 8px; }
+.bmw-academy .ac-steps button { min-height: 48px; font-size: 12px; line-height: 1.5; padding: 12px; border-radius: 8px; }
+.bmw-academy .ac-step-detail { font-size: 14px; line-height: 1.85; }
+.bmw-academy .ac-advanced-explanation { border-block: 1px solid var(--ac-line); margin: 25px 0; }
+.bmw-academy :is(.ac-advanced-explanation, .ac-lesson-sources) > summary { min-height: 52px; padding: 16px 0; color: var(--ac-blue); font-size: 13px; line-height: 1.6; }
+.bmw-academy .ac-teaching-notes p { font-size: 14px; line-height: 1.85; }
+.bmw-academy .ac-lesson-sources { margin: 20px 0; border-top: 1px solid var(--ac-line); }
+.bmw-academy .ac-lesson-sources .ac-source { font-size: 12px; padding-bottom: 14px; gap: 10px; overflow-wrap: anywhere; }
+.bmw-academy .ac-vehicle-examples { padding: 22px 0; margin: 22px 0; border-block: 1px solid var(--ac-line); }
+.bmw-academy .ac-vehicle-examples h2 { font-size: 16px; letter-spacing: -.2px; line-height: 1.5; margin-bottom: 12px; }
+.bmw-academy .ac-vehicle-examples > p { font-size: 13px; line-height: 1.8; margin-bottom: 15px; }
+.bmw-academy .ac-vehicle-examples > a { display: flex; align-items: center; gap: 12px; min-height: 54px; padding: 13px 0; color: var(--ac-text); border-top: 1px solid var(--ac-line); font-size: 14px; }
+.bmw-academy .ac-vehicle-examples > a > strong { font-weight: 500; flex: 1; }
+.bmw-academy .ac-vehicle-examples > a > span { font-size: 12px; color: var(--ac-muted); }
+.bmw-academy .ac-vehicle-examples > a > b { font-size: 18px; color: var(--ac-blue); font-weight: 400; }
+.bmw-academy .ac-earned-rewards { border-left: 2px solid var(--ac-green); padding: 5px 0 5px 17px; margin: 26px 0; }
+.bmw-academy .ac-earned-rewards strong { color: var(--ac-green); font-size: 13px; font-weight: 500; }
+.bmw-academy .ac-earned-rewards p { font-size: 13px; line-height: 1.8; margin: 8px 0; }
+.bmw-academy .ac-earned-rewards > span { font-size: 12px; color: var(--ac-muted); line-height: 1.8; }
+.bmw-academy .ac-question-meta { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; }
+.bmw-academy .ac-first-attempt { color: var(--ac-muted); font-size: 11px; line-height: 1.6; }
+.bmw-academy .ac-player .ac-answers { gap: 12px; }
+.bmw-academy .ac-answers button { font-size: 15px; min-height: 66px; line-height: 1.65; border-radius: 10px; padding: 17px; gap: 14px; }
+.bmw-academy .ac-answers button > span { width: 28px; min-width: 28px; height: 28px; border-radius: 7px; font-size: 11px; }
+.bmw-academy .ac-answers button:disabled { opacity: .75; }
+.bmw-academy .ac-answers button.is-correct:disabled { opacity: 1; }
+.bmw-academy .ac-feedback { margin-top: 23px; padding: 22px; border: 1px solid var(--ac-line); border-left: 3px solid var(--ac-blue); border-radius: 10px; }
+.bmw-academy .ac-feedback.is-correct { border-left-color: var(--ac-green); background: color-mix(in srgb, var(--ac-green) 6%, var(--ac-bg)); }
+.bmw-academy .ac-feedback.is-incorrect { border-left-color: #e5a481; background: color-mix(in srgb, #e5a481 5%, var(--ac-bg)); }
+.bmw-academy .ac-feedback > strong { font-size: 15px; line-height: 1.6; }
+.bmw-academy .ac-feedback p { font-size: 14px; line-height: 1.85; margin-top: 10px; }
+.bmw-academy .ac-feedback > small { font-size: 12px; line-height: 1.8; margin-top: 13px; }
+.bmw-academy .ac-question-context { padding: 20px; border-radius: 10px; }
+.bmw-academy .ac-question-context > strong { font-size: 13px; }
+.bmw-academy .ac-question-context > p, .bmw-academy .ac-question-context > ul { font-size: 14px; line-height: 1.85; }
+.bmw-academy .ac-player-bottom { padding-top: 24px; margin-top: 28px; gap: 20px; }
+.bmw-academy .ac-player-hint { font-size: 12px; line-height: 1.75; max-width: 340px; }
+.bmw-academy .ac-puzzle-instruction { font-size: 14px; line-height: 1.8; }
+.bmw-academy .ac-order-options > button { min-height: 48px; font-size: 13px; line-height: 1.6; border-radius: 8px; }
+.bmw-academy .ac-order-slots > li { font-size: 14px; min-height: 56px; border-radius: 8px; }
+.bmw-academy .ac-puzzle-tools button { min-height: 44px; font-size: 12px; }
+.bmw-academy .ac-matching { gap: 14px; }
+.bmw-academy .ac-matching button { flex-wrap: wrap; align-content: center; min-height: 86px; font-size: 13px; line-height: 1.65; padding: 14px; border-radius: 9px; }
+.bmw-academy .ac-matching button strong { min-width: 0; overflow-wrap: anywhere; font-size: inherit; flex: 1; }
+.bmw-academy .ac-matching button small { font-size: 11px; }
+.bmw-academy .ac-results { max-width: 920px; border-radius: var(--ac-radius); padding: 40px; }
+.bmw-academy .ac-results > p { font-size: 14px; line-height: 1.85; }
+.bmw-academy .ac-result-stats span { font-size: 12px; line-height: 1.7; }
+.bmw-academy .ac-result-actions > button { min-height: 50px; font-size: 13px; border-radius: 8px; }
+.bmw-academy .ac-result-review { text-align: left; margin: 25px 0; padding: 0 20px; border: 1px solid var(--ac-line); border-radius: 10px; }
+.bmw-academy .ac-result-review > summary { font-size: 14px; padding-block: 18px; color: var(--ac-blue); line-height: 1.7; }
+.bmw-academy .ac-result-review article { padding: 20px 0; border-top: 1px solid var(--ac-line); }
+.bmw-academy .ac-result-review h2 { font-size: 15px; letter-spacing: -.1px; line-height: 1.7; margin-bottom: 10px; }
+.bmw-academy .ac-result-review p { font-size: 14px; line-height: 1.85; }
+.bmw-academy .ac-resume-card { border: 1px solid var(--ac-blue); background: color-mix(in srgb, var(--ac-blue) 6%, var(--ac-bg)); border-radius: var(--ac-radius); padding: 24px; margin-bottom: 24px; }
+.bmw-academy .ac-resume-card > div:first-child { display: flex; flex-direction: column; gap: 10px; }
+.bmw-academy .ac-resume-card strong { font-size: 22px; font-weight: 500; line-height: 1.4; letter-spacing: -.5px; }
+.bmw-academy .ac-resume-card p { font-size: 13px; line-height: 1.8; }
+.bmw-academy .ac-resume-card > div:last-child { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 22px; }
+.bmw-academy .ac-resume-card .ac-text-button { font-size: 12px; max-width: 160px; text-align: right; }
+.bmw-academy .ac-course-card { border-radius: 12px; }
+.bmw-academy .ac-card-copy > small { font-size: 10px; line-height: 1.6; }
+.bmw-academy .ac-card-copy > span { font-size: 13px; line-height: 1.8; }
+.bmw-academy .ac-card-copy > b { font-size: 12px; }
+.bmw-academy .ac-collectible :is(p, button), .bmw-academy .ac-achievements p { font-size: 12px; line-height: 1.8; }
+.bmw-academy .ac-credit-pill { font-size: 12px; line-height: 1.6; }
+.bmw-academy .ac-unlock-date { font-size: 11px; line-height: 1.7; color: var(--ac-green); margin-top: 14px; }
+.bmw-academy .ac-streak-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 22px 0 14px; }
+.bmw-academy .ac-streak-facts > span { border: 1px solid var(--ac-line); border-radius: 9px; padding: 17px; font-size: 12px; color: var(--ac-muted); display: flex; flex-direction: column; gap: 12px; }
+.bmw-academy .ac-streak-facts strong { font-size: 20px; font-weight: 500; color: var(--ac-text); }
+.bmw-academy .ac-rank-note { font-size: 12px; color: var(--ac-muted); line-height: 1.8; margin: 12px 0; }
+.bmw-academy .acg-inline { display: inline; padding: 0 2px; border: 0; border-bottom: 1px dotted currentColor; border-radius: 0; min-height: 0; font: inherit; line-height: inherit; color: var(--ac-blue); vertical-align: baseline; background: transparent; }
+.bmw-academy .acg-inline > span { font-size: .7em; }
+.bmw-academy .ac-stats .ac-profile-mini strong[data-no-i18n] { overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 1200px) and (min-width: 761px) {
+  .bmw-academy .ac-shell { grid-template-columns: 170px minmax(0, 1fr); gap: 25px; }
+  .bmw-academy .ac-stats { position: static; grid-column: 2; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding-top: 25px; border-top: 1px solid var(--ac-line); }
+  .bmw-academy .ac-stats > * { margin: 0; }
+  .bmw-academy .ac-stats .ac-profile-mini { grid-column: 1 / -1; }
+}
+@media (max-width: 760px) {
+  .bmw-academy .ac-main { padding-top: 0; }
+  .bmw-academy .ac-navigation { margin-bottom: 24px; }
+  .bmw-academy .ac-mobile-shortcuts { gap: 7px; }
+  .bmw-academy .ac-mobile-shortcuts button { min-height: 48px; font-size: 13px; }
+  .bmw-academy .ac-mobile-navigation label { font-size: 12px; }
+  .bmw-academy .ac-view-heading { margin-bottom: 24px; }
+  .bmw-academy .ac-view-heading h1 { font-size: 32px; line-height: 1.2; letter-spacing: -.04em; }
+  .bmw-academy .ac-view-heading p { font-size: 14px; line-height: 1.85; }
+  .bmw-academy .ac-path-metrics { gap: 7px; margin-bottom: 24px; }
+  .bmw-academy .ac-path-metrics > div { padding: 14px 10px; gap: 8px; }
+  .bmw-academy .ac-path-metrics strong { font-size: 25px; }
+  .bmw-academy .ac-path-metrics span { font-size: 10px; }
+  .bmw-academy .ac-unit-picker { display: flex; overflow-x: auto; scrollbar-width: thin; scroll-snap-type: x proximity; padding-bottom: 12px; margin-bottom: 14px; gap: 8px; }
+  .bmw-academy .ac-unit-picker button { flex: 0 0 155px; scroll-snap-align: start; font-size: 12px; padding: 14px 12px; min-height: 76px; }
+  .bmw-academy .ac-unit-picker button > span:first-child { font-size: 10px; }
+  .bmw-academy .ac-unit-banner { padding: 22px 20px; }
+  .bmw-academy .ac-unit-banner h2 { font-size: 25px; }
+  .bmw-academy .ac-unit-banner p { font-size: 13px; }
+  .bmw-academy .ac-next-lesson { padding: 20px 17px; gap: 12px; }
+  .bmw-academy .ac-next-icon { width: 36px; height: 40px; font-size: 22px; }
+  .bmw-academy .ac-next-lesson strong { font-size: 18px; }
+  .bmw-academy .ac-next-lesson small { font-size: 9px; }
+  .bmw-academy .ac-journey button { gap: 13px; padding: 17px 14px; }
+  .bmw-academy .ac-journey-number { width: 36px; height: 36px; font-size: 12px; }
+  .bmw-academy .ac-journey-copy strong { font-size: 15px; }
+  .bmw-academy .ac-player { border-radius: 12px; }
+  .bmw-academy .ac-player-top { padding: 11px; gap: 8px; border-radius: 12px 12px 0 0; }
+  .bmw-academy .ac-player-top > span { font-size: 9px; letter-spacing: .4px; }
+  .bmw-academy .ac-player-top > strong { font-size: 11px; }
+  .bmw-academy .ac-player-body { padding: 26px 18px calc(150px + env(safe-area-inset-bottom)); }
+  .bmw-academy .ac-player-body h1 { font-size: 27px; letter-spacing: -.025em; line-height: 1.3; }
+  .bmw-academy .ac-player-lead { font-size: 15px; line-height: 1.85; }
+  .bmw-academy .ac-study-grid { grid-template-columns: 1fr; gap: 12px; }
+  .bmw-academy .ac-study-card { padding: 20px; }
+  .bmw-academy .ac-study-card p { font-size: 14px; }
+  .bmw-academy .ac-objectives-panel { padding-inline: 16px; }
+  .bmw-academy .ac-objectives-panel ul { font-size: 14px; }
+  .bmw-academy .ac-key-terms button { min-height: 44px; font-size: 12px; }
+  .bmw-academy .ac-player .ac-steps { grid-template-columns: 1fr 1fr; }
+  .bmw-academy .ac-step-detail, .bmw-academy .ac-teaching-notes p { font-size: 14px; }
+  .bmw-academy .ac-vehicle-examples > a { flex-wrap: wrap; font-size: 13px; gap: 8px; }
+  .bmw-academy .ac-vehicle-examples > a > strong { flex-basis: 60%; }
+  .bmw-academy .ac-answers:not(.ac-photo-answers) button { font-size: 15px; min-height: 66px; line-height: 1.65; padding: 15px 13px; gap: 10px; }
+  .bmw-academy .ac-photo-answers button { font-size: 16px; min-height: 68px; line-height: 1.5; padding: 14px 10px; }
+  .bmw-academy .ac-answers button > span { width: 25px; min-width: 25px; height: 25px; }
+  .bmw-academy .ac-feedback { padding: 19px 16px; }
+  .bmw-academy .ac-feedback p { font-size: 14px; }
+  .bmw-academy .ac-photo figcaption { font-size: 10px; line-height: 1.8; overflow-wrap: anywhere; }
+  .bmw-academy .ac-player-bottom { position: fixed; z-index: 50; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: stretch; gap: 9px; margin: 0; min-height: 0; padding: 12px max(18px, env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left)); border: 1px solid var(--ac-line); border-bottom: 0; border-radius: 15px 15px 0 0; background: var(--ac-bg); box-shadow: 0 -12px 45px #0003; }
+  .bmw-academy .ac-player-bottom .ac-player-hint { max-width: none; font-size: 11px; line-height: 1.7; text-align: center; }
+  .bmw-academy .ac-player-bottom .ac-primary { min-width: 0; width: 100%; min-height: 50px; font-size: 14px; justify-content: space-between; }
+  .bmw-academy .ac-matching { gap: 9px; }
+  .bmw-academy .ac-matching button { padding: 13px 10px; min-height: 104px; font-size: 12px; gap: 8px; }
+  .bmw-academy .ac-matching button strong { flex-basis: calc(100% - 30px); }
+  .bmw-academy .ac-matching button small { margin-left: 28px; font-size: 11px; }
+  .bmw-academy .ac-results { padding: 32px 18px; }
+  .bmw-academy .ac-result-stats { gap: 7px; }
+  .bmw-academy .ac-result-stats strong { font-size: 26px; }
+  .bmw-academy .ac-result-stats span { font-size: 11px; }
+  .bmw-academy .ac-result-review { padding-inline: 16px; }
+  .bmw-academy .ac-result-actions { gap: 10px; }
+  .bmw-academy .ac-resume-card { padding: 20px; }
+  .bmw-academy .ac-resume-card > div:last-child { align-items: stretch; flex-direction: column; }
+  .bmw-academy .ac-resume-card .ac-text-button { max-width: none; text-align: center; }
+  .bmw-academy .ac-card-copy { padding: 18px; }
+  .bmw-academy .ac-card-copy > strong { font-size: 20px; }
+  .bmw-academy .ac-card-copy > span { font-size: 13px; }
+  .bmw-academy .ac-stats { gap: 18px; }
+  .bmw-academy .ac-stats .ac-device-note { grid-column: 1 / -1; font-size: 12px !important; }
+  .bmw-academy .ac-streak-facts strong { font-size: 18px; }
+  html[lang=ka] .bmw-academy h1 { letter-spacing: -.02em; line-height: 1.4; font-size: clamp(25px, 6.5vw, 32px); }
+  html[lang=ka] .bmw-academy .ac-primary { line-height: 1.6; }
+  html[lang=ka] .ac-challenge-copy > strong { letter-spacing: -.02em; font-size: 23px; line-height: 1.4; }
+  html[lang=ru] .bmw-academy .ac-mobile-shortcuts button { font-size: 11px; }
+}
+@media (max-width: 360px) {
+  .bmw-academy .ac-player-body { padding-inline: 14px; }
+  .bmw-academy .ac-player-top > strong { display: none; }
+  .bmw-academy .ac-next-icon { display: none; }
+  .bmw-academy .ac-photo-answers { grid-template-columns: 1fr; }
+  .bmw-academy .ac-matching button { font-size: 11px; padding-inline: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bmw-academy *, .bmw-academy *::before, .bmw-academy *::after { animation: none !important; transition: none !important; }
 }

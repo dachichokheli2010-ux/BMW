@@ -38,6 +38,10 @@ assert.equal(utcDay(new Date('2026-10-20T23:59:59Z')),'2026-10-20');
 assert.deepEqual(dailyQuestionIds(bank,'2026-10-20'),dailyQuestionIds([...bank].reverse(),'2026-10-20'),'Every player gets identical daily order regardless of catalogue order');
 assert.notDeepEqual(dailyQuestionIds(bank,'2026-10-20'),dailyQuestionIds(bank,'2026-10-21'));
 assert.equal(new Set(dailyQuestionIds(bank,'2026-10-20')).size,10);
+for(const mode of ['practice','daily','engines'])assert.ok(poolForMode(bank,mode).every(question=>question.assessmentKind==='understanding'),mode+' prioritizes applied learning rather than catalogue recall');
+assert.equal(new Set(dailyQuestionIds(bank,'2026-10-20').map(id=>byId.get(id).sourceGroup)).size,10,'Daily covers ten different lessons');
+const publishedDeck=bank.filter(question=>question.type==='choice').slice(0,10).map(question=>question.id);
+assert.deepEqual(restorePlayState({...emptyPlayState(),daily:{'2026-10-19':{ids:publishedDeck,results:[{id:publishedDeck[0],correct:true,skipped:false,points:100}],score:100,completed:false}}},bank).daily['2026-10-19'].ids,publishedDeck,'Previously published daily progress survives a question-selection update');
 assert.deepEqual(seededShuffle([1,2,3,4],'test'),seededShuffle([1,2,3,4],'test'));
 const deckState=emptyPlayState(),smallPool=bank.slice(0,13),first=takeQuestions(deckState,smallPool,'practice:all',10,'a'),last=takeQuestions(deckState,smallPool,'practice:all',10,'b');
 assert.equal(first.length,10);assert.equal(last.length,3);assert.equal(new Set([...first,...last]).size,13,'No repeats before the pool is exhausted');
@@ -64,7 +68,7 @@ let instance=mountPlay(container,{storage,accountController:account});
 function start(mode){if(!container.querySelector('[data-play-mode]'))click('[data-play-action="home"]');click(`[data-play-mode="${mode}"]`);assert.ok(container.textContent.includes('HOW TO PLAY'));click('[data-play-action="start"]');if(container.querySelector('[data-play-action="ready"]'))click('[data-play-action="ready"]');}
 function answer(right=true){
   const question=currentQuestion();assert.ok(question);
-  if(question.type==='choice')click(`[data-play-answer="${right?question.correct:(question.correct+1)%question.answers.length}"]`);
+  if(question.type==='choice'){click(`[data-play-answer="${right?question.correct:(question.correct+1)%question.answers.length}"]`);assert.ok(!container.querySelector('.play-feedback'),'Selection is reversible until confirmed');click('[data-play-action="check"]');}
   else if(question.type==='order'){for(const id of (right?question.correct:[...question.correct].reverse()))click(`[data-play-order="${id}"]`);click('[data-play-action="check"]');}
   else if(question.type==='match'){
     for(let index=0;index<question.pairs.length;index++){const select=container.querySelector(`[data-play-match="${index}"]`);Object.defineProperty(select,'value',{value:String(right?index:(index+1)%question.pairs.length),writable:true});select.dispatchEvent(new window.Event('change',{bubbles:true}));}
