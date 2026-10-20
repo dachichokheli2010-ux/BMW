@@ -16,7 +16,7 @@ const neonConnection=databaseURL();
 let database=neonConnection?null:await createLocalDatabase(path.resolve(project,process.env.DATABASE_PATH||'.data/bmw-garage.sqlite'));
 const env={AUTH_PROVIDER:'password',PUBLIC_ORIGIN:process.env.PUBLIC_ORIGIN,RESEND_API_KEY:process.env.RESEND_API_KEY,ACCOUNT_MAIL_FROM:process.env.ACCOUNT_MAIL_FROM,ADMIN_LOGIN_EMAIL:process.env.ADMIN_LOGIN_EMAIL,ADMIN_PASSWORD_HASH:process.env.ADMIN_PASSWORD_HASH};
 const maxBodyBytes=1024*1024;
-const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.png':'image/png','.svg':'image/svg+xml','.woff2':'font/woff2','.json':'application/json'};
+const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.png':'image/png','.mp3':'audio/mpeg','.ogg':'audio/ogg','.svg':'image/svg+xml','.woff2':'font/woff2','.json':'application/json'};
 function securityHeaders(res){res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');res.setHeader('X-Frame-Options','SAMEORIGIN');}
 function fail(res,status,message){res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify({error:message}));}
 async function apiRequest(req,res,url){

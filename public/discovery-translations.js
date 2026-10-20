@@ -1,0 +1,27 @@
+import {registerTranslations} from './preferences.js';
+export const discoveryTranslations=[
+  ['Buyer guide & running costs','მყიდველის გზამკვლევი და წლიური ხარჯები','Гид покупателя и годовые расходы'],
+  ['Spotted.','შემჩნეული.','Замечено.'],
+  ['Your question','შენი კითხვა','Твой вопрос'],
+  ['Ask APEX ↗','ჰკითხე APEX-ს ↗','Спросить APEX ↗'],
+  ['Ask the site','ჰკითხე საიტს','Спросить сайт'],
+  ['What are you curious about?','რის გაგება გსურს?','Что тебе интересно?'],
+  ['Close site helper','საიტის დამხმარის დახურვა','Закрыть помощника сайта'],
+  ['Explain like I’m 12','ამიხსენი, როგორც 12 წლისას','Объясни, как двенадцатилетнему'],
+  ['Looking in the published reference…','გამოქვეყნებულ მასალაში ვეძებთ…','Ищем в опубликованном справочнике…'],
+  ['Sound library','ხმების ბიბლიოთეკა','Библиотека звуков'],
+  ['Guess the recording','გამოიცანი ჩანაწერი','Угадай запись'],
+  ['Choose a recording','აირჩიე ჩანაწერი','Выбери запись'],
+  ['Recording coverage','ხელმისაწვდომი ჩანაწერები','Доступные записи'],
+  ['Your real-world collection','შენი რეალური კოლექცია','Твоя коллекция из реальной жизни'],
+  ['Find a generation','მოძებნე თაობა','Найти поколение'],
+  ['All generations','ყველა თაობა','Все поколения'],
+  ['Spotted','შემჩნეული','Замечено'],
+  ['Still to spot','ჯერ მოსაძებნი','Ещё предстоит увидеть'],
+  ['I spotted this generation','ეს თაობა შევნიშნე','Я заметил это поколение'],
+  ['View sighting','ნახე ჩანაწერი','Посмотреть отметку'],
+  ['Save sighting','შეინახე ჩანაწერი','Сохранить отметку'],
+  ['Remove sighting','წაშალე ჩანაწერი','Удалить отметку'],
+  ['Optional note','არასავალდებულო შენიშვნა','Необязательная заметка'],
+];
+registerTranslations(discoveryTranslations);

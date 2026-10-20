@@ -87,16 +87,16 @@ try{
     assert.equal(dailyCar(allModels,'2026-10-20').id,dailyCar([...allModels].reverse(),'2026-10-20').id);
   });
 
-  await check('daily claims and color-studio changes persist without clobbering existing favorites',()=>{
+  await check('earned daily packs replace free claims while color-studio changes preserve favorites',()=>{
     setUser(null);const {host,storage}=fixture('/my-garage');const favorites='["e92","f10-m5"]';storage.setItem('apex-favorites',favorites);const instance=mountGarageHub(host,{catalog:allModels});
-    host.querySelector('[data-claim]').click();const first=JSON.parse(storage.getItem('apex-collection-v1:guest'));assert.equal(first.cards.length,1);assert.equal(first.claimedDays.length,1);assert.equal(host.querySelector('[data-claim]').disabled,true);host.querySelector('[data-claim]').click();assert.equal(JSON.parse(storage.getItem('apex-collection-v1:guest')).cards.length,1);
+    assert.equal(host.querySelector('[data-claim]'),null,'The old free daily card cannot bypass earned coins');assert.ok(host.querySelector('.garage-career-road'));host.querySelector('[data-game-view=pack]').click();assert.equal(host.querySelector('[data-game-pack]').disabled,true,'A new player must earn the pack price');
     host.querySelector('[data-hub-tab=studio]').click();host.querySelector('[data-paint="Interlagos Blue"]').click();assert.equal(host.querySelector('[data-paint="Interlagos Blue"]').getAttribute('aria-pressed'),'true');assert.match(host.querySelector('.paint-preview svg').getAttribute('aria-label'),/Interlagos Blue/);
     host.querySelector('[data-wheel=bronze]').click();const final=JSON.parse(storage.getItem('apex-collection-v1:guest'));assert.equal(final.paint,'Interlagos Blue');assert.equal(final.wheel,'bronze');assert.equal(storage.getItem('apex-favorites'),favorites);instance.destroy();
   });
 
-  await check('failed browser storage remains visible after daily claims and service saves',()=>{
+  await check('failed browser storage remains visible after service saves',()=>{
     const storage=new MemoryStorage();storage.setItem=()=>{throw new Error('Storage unavailable');};
-    const {host,window}=fixture('/my-garage',storage);const instance=mountGarageHub(host,{catalog:allModels});host.querySelector('[data-claim]').click();assert.match(host.querySelector('.hub-status').textContent,/could not save/);
+    const {host,window}=fixture('/my-garage',storage);const instance=mountGarageHub(host,{catalog:allModels});
     host.querySelector('[data-hub-tab=care]').click();const service=host.querySelector('[data-service]');for(const [name,value]of Object.entries({date:'2026-10-01',mileage:'1000',cost:'0',note:'Oil checked'}))service.querySelector(`[name=${name}]`).value=value;service.dispatchEvent(new window.Event('submit',{bubbles:true,cancelable:true}));
     assert.match(host.querySelector('.hub-status').textContent,/could not save/,'A success message must not replace the storage failure');instance.destroy();
   });

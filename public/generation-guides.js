@@ -1,5 +1,6 @@
 import {t} from './preferences.js';
 import {generationGuideSources} from './generation-guide-sources.js';
+import {mountBuyerResearch} from './buyer-research.js';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -60,7 +61,7 @@ function renderGuide(container,group,groups) {
     <div class="generation-guide-sections">
       <section class="generation-guide-section"><span class="eyebrow">01 / ${esc(t('OVERVIEW'))}</span><h3>${esc(t('Catalog overview'))}</h3><p>${esc(t('This page groups the models currently represented in APEX under this chassis code. It does not claim to list every engine, trim, year or market variant.'))}</p><div class="generation-guide-models">${modelCards}</div></section>
       <section class="generation-guide-section"><span class="eyebrow">02 / ${esc(t('ENGINES'))}</span><h3>${esc(t('Engines represented in this catalog'))}</h3><p class="generation-guide-engine-codes">${codes.map(code=>`<span>${esc(code)}</span>`).join('')}</p><p>${esc(t('These engine codes are only the sourced examples linked above, not a complete list of engines offered for this generation.'))}</p></section>
-      <section class="generation-guide-section"><span class="eyebrow">03 / ${esc(t('RESEARCH STATUS'))}</span><h3>${esc(t('Known issues'))}</h3><p class="guide-unavailable">${esc(t('Not available: no generation-specific issue claims are included without a verified source.'))}</p></section>
+      <section class="generation-guide-section"><span class="eyebrow">03 / ${esc(t('RESEARCH STATUS'))}</span><h3>${esc(t('Engine concerns & evidence'))}</h3><a class="guide-source-link" href="#buyer-research">${esc(t('Choose your exact BMW'))} ↓</a></section>
       <section class="generation-guide-section"><span class="eyebrow">04 / ${esc(t('BEFORE YOU BUY'))}</span><h3>${esc(t('Pre-purchase checks'))}</h3><ul class="generation-guide-checks">${references('prePurchase')}</ul></section>
       <section class="generation-guide-section"><span class="eyebrow">05 / ${esc(t('MAINTENANCE'))}</span><h3>${esc(t('Typical maintenance items'))}</h3><p class="guide-unavailable">${esc(t('Not available: consult the service schedule for the exact vehicle, market and VIN.'))}</p></section>
       <section class="generation-guide-section generation-georgia-section"><span class="eyebrow">06 / ${esc(t('GEORGIA BUYER NOTES'))}</span><h3>${esc(t('If you are buying in Georgia'))}</h3><div class="generation-guide-import-grid"><article><h4>${esc(t('Cars imported from the US'))}</h4><ul class="generation-guide-checks">${references('georgiaUS')}</ul></article><article><h4>${esc(t('Cars imported from Europe'))}</h4><ul class="generation-guide-checks">${references('georgiaEurope')}</ul></article></div><h4>${esc(t('Clearance and inspection in Georgia'))}</h4><ul class="generation-guide-checks">${references('georgiaImport')}</ul></section>
@@ -80,5 +81,7 @@ export function mountGenerationGuides(container,{catalog}) {
     window.addEventListener('apex:languagechange',updateTitle);
   }
   else{renderCatalog(container,groups);if(selected)container.insertAdjacentHTML('afterbegin',`<p class="generation-guide-not-found" role="status">${esc(t('No catalog generation matches {chassis}.',{chassis:selected}))}</p>`);}
-  return {groups:groups.length};
+  const research=document.createElement('div');research.id='buyer-research';container.append(research);
+  const buyer=mountBuyerResearch(research,{catalog:group?.models||catalog,initialModel:new URLSearchParams(location.search).get('model')});
+  return {groups:groups.length,destroy(){buyer.destroy();}};
 }

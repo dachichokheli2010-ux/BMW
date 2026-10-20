@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node scripts/check.mjs && node scripts/check-academy.mjs && node scripts/check-academy-session.mjs && node scripts/check-academy-journey.mjs && node scripts/check-academy-translations.mjs && node scripts/check-backend.mjs && node scripts/check-admin-auth.mjs && node scripts/check-http-accounts.mjs && node scripts/check-account-sync.mjs && node scripts/check-account-ui.mjs && node scripts/check-admin-ui.mjs && node scripts/check-postgres.mjs && node scripts/check-vercel-routing.mjs && npm run check:translations && npm run check:profiles && npm run check:icons && node scripts/check-explorer-data.mjs && node scripts/check-parts-encyclopedia.mjs && node scripts/check-play.mjs && node scripts/check-experience.mjs && node scripts/check-platform-upgrade.mjs && node scripts/check-app-navigation.mjs && node scripts/check-overlays.mjs && node scripts/check-community-backend.mjs && node scripts/check-community-ui.mjs && node scripts/check-responsive-navigation.mjs",
+    "check": "node scripts/check.mjs && node scripts/check-academy.mjs && node scripts/check-academy-session.mjs && node scripts/check-academy-content.mjs && node scripts/check-academy-journey.mjs && node scripts/check-academy-translations.mjs && node scripts/check-backend.mjs && node scripts/check-admin-auth.mjs && node scripts/check-http-accounts.mjs && node scripts/check-account-sync.mjs && node scripts/check-account-ui.mjs && node scripts/check-admin-ui.mjs && node scripts/check-postgres.mjs && node scripts/check-vercel-routing.mjs && npm run check:translations && npm run check:profiles && npm run check:icons && node scripts/check-explorer-data.mjs && node scripts/check-parts-encyclopedia.mjs && node scripts/check-play.mjs && node scripts/check-experience.mjs && node scripts/check-platform-upgrade.mjs && node scripts/check-app-navigation.mjs && node scripts/check-overlays.mjs && node scripts/check-community-backend.mjs && node scripts/check-community-ui.mjs && node scripts/check-responsive-navigation.mjs && node scripts/check-site-discovery.mjs && node scripts/check-sound-library.mjs && node scripts/check-garage-game.mjs && node scripts/check-learning-discovery.mjs && node scripts/check-buyer-legends.mjs",
     "build": "node scripts/build.mjs",
     "db:generate": "drizzle-kit generate",
     "start": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/preview-local.mjs",
@@ -17,13 +17,15 @@
     "audit:models": "node scripts/audit-models.mjs --write",
     "audit:models:strict": "node scripts/audit-models.mjs --strict",
     "photos:prepare": "node scripts/prepare-model-photos.mjs",
-    "prebuild": "npm run check:translations && npm run check:profiles && npm run generate:discovery && npm run audit:completeness",
+    "prebuild": "npm run generate:knowledge && npm run check:translations && npm run check:profiles && npm run generate:discovery && npm run audit:completeness",
     "check:icons": "node scripts/check-icons.mjs",
     "audit:completeness": "node scripts/check-completeness.mjs --write",
     "audit:completeness:strict": "node scripts/check-completeness.mjs --strict",
     "generate:discovery": "node scripts/generate-discovery.mjs",
     "admin:check": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/admin-access.mjs",
-    "admin:configure": "node scripts/configure-admin.mjs"
+    "admin:configure": "node scripts/configure-admin.mjs",
+    "generate:knowledge": "node scripts/generate-site-knowledge.mjs",
+    "prebuild:vercel": "npm run generate:knowledge"
   },
   "engines": {
     "node": ">=24.0.0"

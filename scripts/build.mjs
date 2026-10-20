@@ -8,8 +8,8 @@ const output=path.join(project,'dist');
 if(path.relative(project,output)!=='dist'||fs.lstatSync(output,{throwIfNoEntry:false})?.isSymbolicLink())throw new Error('Build output must be the project’s own dist directory.');
 fs.rmSync(output,{recursive:true,force:true});
 const assets={};
-const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.png':'image/png','.avif':'image/avif','.gif':'image/gif','.ico':'image/x-icon','.woff':'font/woff','.woff2':'font/woff2'};
-const binaryTypes=new Set(['.jpg','.jpeg','.webp','.png','.avif','.gif','.ico','.woff','.woff2']);
+const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.mp3':'audio/mpeg','.ogg':'audio/ogg','.svg':'image/svg+xml','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.png':'image/png','.avif':'image/avif','.gif':'image/gif','.ico':'image/x-icon','.woff':'font/woff','.woff2':'font/woff2'};
+const binaryTypes=new Set(['.mp3','.ogg','.jpg','.jpeg','.webp','.png','.avif','.gif','.ico','.woff','.woff2']);
 function collect(directory){
   for(const entry of fs.readdirSync(directory,{withFileTypes:true})){
     const filename=path.join(directory,entry.name);
@@ -50,7 +50,7 @@ fs.writeFileSync(path.join(server,'assets.js'),chunks.map((filename,index)=>`imp
 fs.writeFileSync(path.join(server,'index.js'),fs.readFileSync('worker/index.js','utf8').replace("'../server/api.js'","'./backend/api.js'"));
 fs.copyFileSync('public/routes.js',path.join(server,'routes.js'));
 fs.mkdirSync(path.join(server,'backend'),{recursive:true});
-for(const filename of ['api.js','passwords.js','validation.js','catalog-meta.js','academy-policy.js','account-mail.js','admin-policy.js','admin-auth.js','community-api.js','community-questions.js','community-photos.js'])fs.copyFileSync(path.join('server',filename),path.join(server,'backend',filename));
+for(const filename of ['api.js','site-helper.js','site-knowledge.js','passwords.js','validation.js','catalog-meta.js','academy-policy.js','account-mail.js','admin-policy.js','admin-auth.js','community-api.js','community-questions.js','community-question-locales.js','community-photos.js'])fs.copyFileSync(path.join('server',filename),path.join(server,'backend',filename));
 // Shared reward definitions stay identical in browser, Node and Worker runtimes.
 fs.mkdirSync(path.join(server,'public'),{recursive:true});
 for(const filename of ['academy-rewards.js','academy-achievements.js'])fs.copyFileSync(path.join('public',filename),path.join(server,'public',filename));

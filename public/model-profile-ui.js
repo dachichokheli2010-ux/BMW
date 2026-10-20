@@ -1,3 +1,4 @@
+import './discovery-translations.js';
 import {t,getLanguage} from './preferences.js';
 import './model-profile-translations.js';
 import './car-detail-translations.js';
@@ -22,7 +23,7 @@ function sourceMeasurements(model){
 
 function renderStory(model){
   const story=storyFor(model);if(!story)return '';
-  return `<section class="car-story" aria-labelledby="car-story-title"><span class="eyebrow">${esc(t('The story behind the badge'))}</span><h2 id="car-story-title">${esc(story.tagline)}</h2><p class="car-story-lead">${esc(story.story)}</p><div class="car-story-grid"><section><h3>${esc(t('Who is it for?'))}</h3><p>${esc(story.bestFor)}</p></section><section><h3>${esc(t('Before you choose'))}</h3><p>${esc(story.tradeOff)}</p></section></div><div class="car-facts">${story.facts.map((fact,index)=>`<p><strong>${esc(t('Did you know?'))} / 0${index+1}</strong>${esc(fact)}</p>`).join('')}</div><details class="car-story-sources"><summary>${esc(t('Read the factory story'))} ↗</summary><a href="${esc(story.source)}" target="_blank" rel="noopener noreferrer">${esc(model.name)} · ${esc(t('BMW reference'))}</a><p>${esc(t('Introduction and buying considerations by APEX. Exact specifications and their sources follow below.'))}</p></details></section>`;
+  return `<section class="car-story" aria-labelledby="car-story-title"><span class="eyebrow">${esc(t('The story behind the badge'))}</span><h2 id="car-story-title">${esc(story.tagline)}</h2><p class="car-story-lead">${esc(story.story)}</p><div class="car-story-grid"><section><h3>${esc(t('Who is it for?'))}</h3><p>${esc(story.bestFor)}</p></section><section><h3>${esc(t('Before you choose'))}</h3><p>${esc(story.tradeOff)}</p></section></div><div class="car-facts">${story.facts.map((fact,index)=>`<p><strong>${esc(t('Did you know?'))} / 0${index+1}</strong>${esc(fact)}</p>`).join('')}</div><a class="car-buyer-guide" href="/generation-guides?model=${encodeURIComponent(model.id)}">${esc(t('Buyer guide & running costs'))} ↗</a><details class="car-story-sources"><summary>${esc(t('Read the factory story'))} ↗</summary><a href="${esc(story.source)}" target="_blank" rel="noopener noreferrer">${esc(model.name)} · ${esc(t('BMW reference'))}</a><p>${esc(t('Introduction and buying considerations by APEX. Exact specifications and their sources follow below.'))}</p></details></section>`;
 }
 
 function renderField(field){

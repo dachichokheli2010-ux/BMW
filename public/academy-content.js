@@ -1,4 +1,5 @@
 import {createMChallenges} from './academy-recognition.js';
+import {applyAuthoredAssessments} from './academy-assessments.js';
 const choice=(id,prompt,answers,correct,explanation)=>({id,type:'choice',prompt,answers,correct,explanation});
 const order=(id,prompt,items,explanation)=>({id,type:'order',prompt,items:items.map((text,i)=>({id:i,text})),correct:items.map((_,i)=>i),explanation});
 const match=(id,prompt,pairs,explanation)=>({id,type:'match',prompt,pairs,explanation});
@@ -84,6 +85,7 @@ export function createCurriculum(legacy,sources,parts,catalog,scenarios){
     choice('diagnosis-'+s.id+'-2','Can this simplified exercise prove a specific fault on a real vehicle?',['Yes, symptoms are unique','No, vehicle-specific diagnosis needs more evidence','Yes, if the vehicle is a BMW'],1,'The simulator intentionally limits the possibilities. Real vehicle systems require appropriate checks and specific documentation.')
   ]}));
   const mChallenges=createMChallenges(catalog);for(const challenge of mChallenges)add(challenge);
+  applyAuthoredAssessments(lessons);
   for(const [id,title,type,intro] of [
     ['puzzle-sequences','Build the sequence','order','Tap the steps in order. Change your mind? Tap a filled slot to remove it, or undo your last step.'],
     ['puzzle-connections','Make the connection','match','Match each part or quantity to its role. Tap a card on the left, then its partner on the right.'],

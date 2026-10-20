@@ -1,0 +1,42 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {parseHTML} from 'linkedom';
+import {allModels} from '../public/catalog.js';
+import {buyerEvidenceFor,buyerReadiness,estimateAnnualCosts,DEFAULT_RUNNING_COSTS,mountBuyerResearch} from '../public/buyer-research.js';
+import {legendStories,legendPhoto,mountBMWLegends,legendsTranslations} from '../public/bmw-legends.js';
+import {hasTranslation} from '../public/preferences.js';
+
+assert.equal(buyerReadiness({}),'amber','Missing evidence must never appear as a green reliability rating.');
+assert.equal(buyerReadiness({service:true,inspection:true,recalls:true,reserve:true}),'green');
+assert.equal(buyerReadiness({service:true,inspection:true,recalls:true,reserve:true,concern:true}),'red','An unresolved concern overrides completed checks.');
+assert.equal(buyerReadiness({service:'true',inspection:true,recalls:true,reserve:true}),'amber');
+for(const model of allModels){const evidence=buyerEvidenceFor(model);assert.ok(evidence.family);assert.ok(['fuel','electric','hybrid'].includes(evidence.powertrain));for(const issue of evidence.issues){assert.match(issue.source.url,/^https:\/\//);assert.ok(issue.scope&&issue.claim);}}
+assert.equal(buyerEvidenceFor(allModels.find(model=>model.code==='S63')).issues.some(issue=>issue.id==='n63-oil'),false,'N63 evidence must not be generalized to S63.');
+const inputs={...DEFAULT_RUNNING_COSTS,service:0,wear:0,reserve:0,fixed:0,depreciation:0};
+assert.equal(estimateAnnualCosts(inputs,'fuel').total,3000);
+assert.ok(Math.abs(estimateAnnualCosts(inputs,'electric').total-666.6666666666666)<1e-8,'Charging losses require more grid energy than battery energy.');
+assert.ok(Math.abs(estimateAnnualCosts(inputs,'hybrid').total-1833.3333333333333)<1e-8,'PHEV distance shares must not charge both fuels over the full distance.');
+for(const invalid of [NaN,Infinity,-1,'',null])assert.equal(estimateAnnualCosts({...inputs,fuelPrice:invalid}),null);
+assert.equal(estimateAnnualCosts({...inputs,electricShare:101}),null);
+assert.equal(estimateAnnualCosts({...inputs,chargingLoss:100}),null);
+assert.equal(estimateAnnualCosts({...inputs,distance:0}).total,0);
+assert.equal(legendStories.length,6);
+for(const story of legendStories){const photo=legendPhoto(story,allModels);assert.ok(photo?.author&&photo?.license&&photo?.url&&photo?.page,story.id+' needs photo attribution.');assert.ok(fs.existsSync('public/'+photo.src));assert.match(story.source.url,/^https:\/\/(?:www\.)?(?:bmwgroup|bmw-m|press.bmwgroup|bmwgroup-classic)\.com\//);assert.ok(story.paragraphs.length>=2);}
+for(const [english]of legendsTranslations)for(const locale of ['ka','ru'])assert.equal(hasTranslation(english,locale),true,english);
+
+const {window,document}=parseHTML('<html lang="en"><head></head><body><main></main></body></html>'),values=new Map();
+Object.assign(globalThis,{window,document,location:new URL('https://apex.test/generation-guides'),localStorage:{getItem:key=>values.get(key)||null,setItem:(key,value)=>values.set(key,String(value))},HTMLElement:window.HTMLElement,Element:window.Element,MutationObserver:window.MutationObserver,CustomEvent:window.CustomEvent});
+window.matchMedia=()=>({matches:false,addEventListener(){}});window.HTMLElement.prototype.focus=function(){};
+const host=document.querySelector('main'),buyer=mountBuyerResearch(host,{catalog:allModels,initialModel:'f10'});
+assert.equal(host.querySelectorAll('[data-buyer-model] option').length,allModels.length,'Every catalog car must have a buyer research entry.');
+assert.ok(host.querySelector('[data-buyer-status]').textContent.includes('Amber'));
+const concern=host.querySelector('[data-review=concern]');concern.checked=true;concern.dispatchEvent(new window.Event('change'));
+assert.ok(host.querySelector('[data-buyer-status]').textContent.includes('Red'));
+const annual=host.querySelector('[name=distance]');annual.value='';annual.dispatchEvent(new window.Event('input'));
+assert.ok(host.querySelector('[data-buyer-cost-output]').textContent.includes('Enter valid'));
+buyer.destroy();
+const restored=mountBuyerResearch(host,{catalog:allModels,initialModel:'f10'});assert.ok(host.querySelector('[data-review=concern]').hasAttribute('checked'),'The vehicle-specific review must survive navigation.');restored.destroy();
+const museum=mountBMWLegends(host,{catalog:allModels});assert.equal(host.querySelectorAll('.legend-card').length,6);
+host.querySelector('[data-legend-filter=film]').click();assert.equal(host.querySelectorAll('.legend-card').length,2);assert.ok(host.querySelectorAll('.legend-card').every(card=>card.id.includes('bond')));
+host.querySelector('[data-legend-filter=racing]').click();assert.equal(host.querySelectorAll('.legend-card').length,2);museum.destroy();assert.equal(host.childNodes.length,0);
+console.log(`PASS Buyer research and legends: ${allModels.length} model entries, scoped evidence, honest traffic lights, fuel/EV/PHEV budgets, persistence, six sourced stories, photo licences and filters.`);

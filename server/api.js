@@ -5,6 +5,7 @@ import {accountMailConfigured,sendAccountMail} from './account-mail.js';
 import {COMMUNITY_PATHS,handleCommunity} from './community-api.js';
 import {administratorUser} from './admin-policy.js';
 import {ADMIN_AUTH_PATHS,getAdminSession,handleAdminAuth} from './admin-auth.js';
+import {handleSiteAsk} from './site-helper.js';
 
 const SESSION_MS=7*24*60*60*1000;
 export const AUTH_PATHS=new Set(['/api/auth/session','/api/auth/signup','/api/auth/login','/api/auth/logout','/api/auth/forgot-password','/api/auth/reset-password','/api/auth/verify-email','/api/auth/resend-verification','/api/account/profile','/api/garage',...COMMUNITY_PATHS,...ADMIN_AUTH_PATHS]);
@@ -106,6 +107,7 @@ async function garageSnapshot(env,userId,{internal=false}={}){
 // platform garage endpoint and static-asset router can continue to handle them.
 export async function handleApi(request,env={}){
   const pathname=new URL(request.url).pathname;
+  if(pathname==='/api/ask')return handleSiteAsk(request);
   if(!AUTH_PATHS.has(pathname))return pathname.startsWith('/api/auth/')||pathname.startsWith('/api/account/')||pathname.startsWith('/api/admin/')?json({error:'Not found.'},404):null;
   if(!env.DB)return json({error:'Account storage is unavailable. Please try again later.'},503);
   let session;

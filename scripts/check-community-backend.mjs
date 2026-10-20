@@ -7,7 +7,7 @@ import {PGlite} from '@electric-sql/pglite';
 import {createLocalDatabase} from '../server/local-db.mjs';
 import {initializePostgres,createPostgresAdapter} from '../server/postgres-db.js';
 import {handleApi} from '../server/api.js';
-import {communityQuestions,masteryExpiry} from '../server/community-questions.js';
+import {communityQuestions,masteryExpiry,publicMasteryQuestions,gradeMasteryQuestions} from '../server/community-questions.js';
 import {validateCommunityPhoto,encodePhotoBytes,decodePhotoBytes} from '../server/community-photos.js';
 import {emptyGarage} from '../server/validation.js';
 import {createRoutedVercelHandler} from '../server/vercel-router.js';
@@ -16,6 +16,7 @@ import {hashPassword,randomToken} from '../server/passwords.js';
 let checks=0;const check=(v,m)=>{assert.ok(v,m);checks++;};
 check(masteryExpiry(Date.parse('2026-10-20T23:59:00Z'))===Date.parse('2026-10-21T00:00:00Z'),'A round cannot carry yesterday’s reward budget past UTC midnight.');
 check(masteryExpiry(Date.parse('2026-10-21T00:00:00Z'))===Date.parse('2026-10-21T00:15:00Z'),'A round normally allows fifteen minutes without speed rewards.');
+for(const language of ['ka','ru'])for(const question of communityQuestions){const item={id:question.id,order:[3,2,1,0]},shown=publicMasteryQuestions([item],language)[0],result=gradeMasteryQuestions([item],[item.order.indexOf(question.answer)],language)[0];check(shown.prompt!==question.prompt&&shown.options.length===4&&result.correct&&result.explanation!==question.explanation,'Localized question and shuffled answer preserve grading: '+question.id+'/'+language);}
 const jpg=await sharp({create:{width:320,height:200,channels:3,background:'#35618c'}}).jpeg().withExif({IFD0:{Artist:'PRIVATE PHOTO METADATA'}}).toBuffer();
 const webp=await sharp({create:{width:320,height:200,channels:3,background:'#35618c'}}).webp().toBuffer();
 const photo={data:'data:image/jpeg;base64,'+jpg.toString('base64'),caption:'My BMW on a closed driveway'};

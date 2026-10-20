@@ -100,7 +100,7 @@ export function mountCommunity(container,{view='community',id='',catalog=[],acco
       else if(kind==='challenge'){
         if(!challenge||challengeAnswers.length!==challenge.questions.length||challengeAnswers.some(answer=>!Number.isInteger(answer)))throw new Error(t('Choose an answer to continue.'));
         let result;try{result=await request('/api/community/challenge',{method:'POST',body:{id:challenge.id,answers:challengeAnswers}});}catch(error){if(error.status===409){setChallenge(null);renderChallenge();}throw error;}
-        overview.credits=result.credits||overview.credits;setChallenge(null);challengeResult=result;render();const target=content.querySelector('#earn-credits h2');if(target){target.tabIndex=-1;focusLearningTarget(target);}announce(t('{score}/{total} correct ? +{credits} credits',{score:result.score,total:result.total,credits:result.awarded}));
+        overview.credits=result.credits||overview.credits;setChallenge(null);challengeResult=result;render();const target=content.querySelector('#earn-credits h2');if(target){target.tabIndex=-1;focusLearningTarget(target);}announce(t('{score}/{total} correct · +{credits} credits',{score:result.score,total:result.total,credits:result.awarded}));
       }
       else if(kind==='submission'){
         const photos=photoDrafts.length?photoDrafts:editing?.photos||[];for(const caption of form.querySelectorAll('[data-community-caption]'))if(photos[Number(caption.dataset.communityCaption)])photos[Number(caption.dataset.communityCaption)].caption=caption.value;

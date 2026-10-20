@@ -4,6 +4,7 @@ import {createPostgresDatabase,databaseURL} from './postgres-db.js';
 const json=(body,status)=>Response.json(body,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
 export function createVercelHandler({environment=process.env,connect=createPostgresDatabase,api=handleApi}={}){
  return async request=>{
+  if(new URL(request.url).pathname==='/api/ask')return api(request,{});
   if(!AUTH_PATHS.has(new URL(request.url).pathname))return json({error:'Not found.'},404);
   const connectionString=databaseURL(environment);
   if(!connectionString)return json({error:'Account sign-in is not configured yet. Connect a Neon Postgres database and set DATABASE_URL for this deployment.'},503);

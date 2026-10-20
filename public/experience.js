@@ -4,8 +4,10 @@ import {loadStyle,readJSON,saveJSON} from './experience-common.js';
 import {mountGuideTools} from './guide-tools.js';
 import {arcadeLevel} from './play-data.js';
 import {icon} from './icons.js';
+import {mountSiteHelper} from './site-helper.js';
 
 export function mountExperience({catalog,getCurrent}={}){
+  const siteHelper=mountSiteHelper();
   loadStyle('./experience.css');loadStyle('./liquid-glass.css');const abort=new AbortController(),header=document.querySelector('.site-header'),tools=header.querySelector('.header-tools'),instances=[];
   delete document.documentElement.dataset.detail;
   const xp=document.createElement('a');xp.href='/play';xp.className='header-xp';xp.setAttribute('aria-label','Your learning level and experience');tools.prepend(xp);
@@ -26,7 +28,7 @@ export function mountExperience({catalog,getCurrent}={}){
   header.addEventListener('pointermove',event=>{if(event.pointerType==='touch')return;const r=header.getBoundingClientRect();header.style.setProperty('--shine-x',((event.clientX-r.left)/r.width*100).toFixed(1)+'%');},{signal:abort.signal});
   const scroll=()=>header.classList.toggle('glass-scrolled',window.scrollY>50);window.addEventListener('scroll',scroll,{passive:true,signal:abort.signal});scroll();
   const bottom=document.createElement('nav');bottom.className='glass-bottom-nav';bottom.setAttribute('aria-label','Quick navigation');bottom.innerHTML=[['/models','Cars','grid'],['/engines','Engines','engine'],['/learn','Learn','book'],['/play','Play','quiz'],['/my-garage','Garage','garage']].map(([url,label,glyph])=>`<a href="${url}">${icon(glyph)}<span>${label}</span></a>`).join('');document.body.append(bottom);
-  function syncNavigation(){const path=location.pathname,section=/^\/(?:models|cars|electric)(?:\/|$)/.test(path)?'/models':/^\/(?:engines|engine-lab)(?:\/|$)/.test(path)?'/engines':/^\/(?:learn|lessons|glossary)(?:\/|$)/.test(path)?'/learn':/^\/(?:play|questions|badges)(?:\/|$)/.test(path)?'/play':/^\/(?:my-garage|tuning-garage|community|friends|submit-car|garage|admin)(?:\/|$)/.test(path)?'/my-garage':null;for(const link of bottom.querySelectorAll('a')){if(link.getAttribute('href')===section)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');}unitsControl.open=false;requestAnimationFrame(move);}
+  function syncNavigation(){const path=location.pathname,section=/^\/(?:models|cars|electric)(?:\/|$)/.test(path)?'/models':/^\/(?:engines|engine-lab)(?:\/|$)/.test(path)?'/engines':/^\/(?:learn|lessons|glossary|timeline|legends)(?:\/|$)/.test(path)?'/learn':/^\/(?:play|questions|badges|sounds|personality)(?:\/|$)/.test(path)?'/play':/^\/(?:my-garage|tuning-garage|community|friends|submit-car|garage|spotter|admin)(?:\/|$)/.test(path)?'/my-garage':null;for(const link of bottom.querySelectorAll('a')){if(link.getAttribute('href')===section)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');}unitsControl.open=false;requestAnimationFrame(move);}
   for(const event of ['apex:modelselected','apex:collection','popstate'])window.addEventListener(event,syncNavigation,{signal:abort.signal});syncNavigation();
   if(location.pathname==='/'){
     const welcome=document.createElement('section');welcome.className='home-feature welcome-section';welcome.id='start-here';document.querySelector('.hero')?.after(welcome);instances.push(mountGuideTools(welcome,{catalog,onboarding:true}));
@@ -36,5 +38,5 @@ export function mountExperience({catalog,getCurrent}={}){
   }
   document.querySelector('.footer-brand small').textContent='Unofficial fan site. Not affiliated with BMW AG. BMW names and trademarks belong to BMW AG.';
   document.querySelector('.footer-group:last-child')?.insertAdjacentHTML('beforeend','<a href="/start">Beginner starter kit</a><a href="/engines">Engine directory</a><a href="/play">Games & daily challenge</a>');
-  return {destroy(){abort.abort();unsub();navObserver.disconnect();sizeObserver?.disconnect();instances.forEach(i=>i.destroy());bottom.remove();indicator.remove();unitsControl.remove();xp.remove();}};
+  return {destroy(){siteHelper.destroy();abort.abort();unsub();navObserver.disconnect();sizeObserver?.disconnect();instances.forEach(i=>i.destroy());bottom.remove();indicator.remove();unitsControl.remove();xp.remove();}};
 }

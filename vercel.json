@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/api/ask",
+      "destination": "/api/router?__apex_route=ask"
+    },
+    {
       "source": "/api/admin/:action",
       "destination": "/api/router?__apex_route=admin/:action"
     },
@@ -114,6 +118,26 @@
     },
     {
       "source": "/garage/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/spotter/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/sounds/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/personality/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/timeline/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/legends/:path*",
       "destination": "/index.html"
     }
   ],

@@ -1,3 +1,4 @@
+import {assessmentStudyGuides} from './academy-assessments.js';
 // Lesson structure is separate from UI and reuses the documented catalog.
 const copy = [
   ['What you’ll learn','რას ისწავლით','Чему вы научитесь'],
@@ -54,5 +55,6 @@ const terms={
 export function lessonTeaching(lesson,catalog){
   const family=lesson.id.startsWith('engine-')?lesson.id.slice(7).toUpperCase():null;
   const matches=lesson.modelId?catalog.filter(model=>model.id===lesson.modelId):family&&family!=='CODES'?catalog.filter(model=>model.code===family||model.code.startsWith(family+'TU')):['turbocharging','part-turbocharger'].includes(lesson.id)?catalog.filter(model=>model.code==='B58'):lesson.id==='electrification'?catalog.filter(model=>model.code==='eDrive'):['drivetrain-layouts','m-performance'].includes(lesson.id)?catalog.filter(model=>['f10-m5','g80-m3-cs'].includes(model.id)):lesson.topic==='parts'||['combustion','first-engine','horsepower','torque','transmission','cooling','engine-codes'].includes(lesson.id)?catalog.filter(model=>['f10-m5','e92'].includes(model.id)):[];
-  return {objectives:['horsepower','torque','rpm'].includes(lesson.id)?copy.slice(-3).map(row=>row[0]):objectives[lesson.topic]||objectives.default,terms:terms[lesson.id]||(family?['vanos','ecu']:[]),examples:matches.filter(model=>model.source).slice(0,2)};
+  const guide=assessmentStudyGuides[lesson.id];
+  return {objectives:['horsepower','torque','rpm'].includes(lesson.id)?copy.slice(-3).map(row=>row[0]):objectives[lesson.topic]||objectives.default,terms:terms[lesson.id]||(family?['vanos','ecu']:[]),examples:matches.filter(model=>model.source).slice(0,2),keyIdea:guide?.keyIdea||lesson.intro,workedExample:guide?.workedExample||(lesson.topic==='parts'?lesson.detail[1]:lesson.detail[0])||''};
 }

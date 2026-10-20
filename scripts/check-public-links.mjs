@@ -6,6 +6,8 @@ import {encyclopediaParts} from '../public/parts-encyclopedia-data.js';
 import {createQuestionBank} from '../public/play-data.js';
 import {responsivePhotoData} from '../public/responsive-photo-data.js';
 import {resolvePage} from '../public/routes.js';
+import {licensedAudio} from '../public/licensed-audio.js';
+import {legendStories,legendPhoto} from '../public/bmw-legends.js';
 
 const originIndex=process.argv.indexOf('--origin');
 const origin=new URL(originIndex>=0?process.argv[originIndex+1]:'http://127.0.0.1:3000').origin;
@@ -19,6 +21,7 @@ function collect(value){
 collect(allModels.map(model=>({car:model.car,engine:model.engine,views:model.views,photos:model.approvedPhotos})));
 collect(engineRecords.map(record=>record.photos));collect(carRecords.map(record=>record.photos));
 collect(encyclopediaParts.map(part=>part.photo));collect(createQuestionBank().map(question=>question.photo));
+collect(legendStories.map(story=>legendPhoto(story,allModels)));images.add('/images/garage-isetta.svg');
 for(const path of [...images])collect(responsivePhotoData[path.slice(1)]?.variants);
 for(const name of ['index.html','parts.html','electric.html','about.html','admin.html']){
   const shell=await fs.readFile(new URL('../public/'+name,import.meta.url),'utf8');
@@ -29,26 +32,28 @@ for(const name of ['index.html','parts.html','electric.html','about.html','admin
   }
 }
 for(const file of ['play.js','play-data.js','play.css','engine-directory.js','engine-directory.css','parts-encyclopedia.js','parts-encyclopedia-data.js','parts-encyclopedia.css','guide-tools.js','experience.js','experience.css','reference-pages.js','garage-hub.js','platform.js'])assets.add('/'+file);
+for(const file of ['spotter.js','discovery-games.css','sound-library.js','sound-library.css','licensed-audio.js','garage-game.js','garage-game-state.js','garage-game.css','buyer-research.js','buyer-research.css','bmw-legends.js','bmw-legends.css','personality-quiz.js','generation-timeline.js','learning-discovery.css','site-helper.js','site-helper.css'])assets.add('/'+file);
+const audio=new Set(licensedAudio.flatMap(clip=>[clip.src,clip.mp3].filter(Boolean)));
 const privatePages=['/admin'];
 assert.ok(!manifest.paths.some(path=>/^\/admin(?:\/|$)/.test(path)),'Private administration must stay out of discovery');
-const rows=[...[...manifest.paths,...privatePages].map(path=>({path,kind:'page'})),...[...images].sort().map(path=>({path,kind:'image'})),...[...assets].sort().map(path=>({path,kind:'asset'}))];
+const rows=[...[...manifest.paths,...privatePages].map(path=>({path,kind:'page'})),...[...images].sort().map(path=>({path,kind:'image'})),...[...assets].sort().map(path=>({path,kind:'asset'})),...[...audio].sort().map(path=>({path,kind:'audio'}))];
 let next=0;const results=[];
 async function worker(){
   while(next<rows.length){
     const row=rows[next++];
     try{
       const response=await fetch(origin+row.path,{method:'HEAD',signal:AbortSignal.timeout(10000)}),type=response.headers.get('content-type')||'';
-      const correctType=row.kind==='page'?type.startsWith('text/html'):row.kind==='image'?type.startsWith('image/'):!type.startsWith('text/html');
+      const correctType=row.kind==='page'?type.startsWith('text/html'):row.kind==='image'?type.startsWith('image/'):row.kind==='audio'?type.startsWith('audio/'):!type.startsWith('text/html');
       const resolved=row.kind!=='page'||!!resolvePage(new URL(row.path,origin).pathname);
       results.push({...row,status:response.status,type,passed:response.ok&&correctType&&resolved});
     }catch(error){results.push({...row,status:null,passed:false,error:error.message});}
   }
 }
 await Promise.all(Array.from({length:16},()=>worker()));
-const failures=results.filter(result=>!result.passed),report={origin,checkedAt:new Date().toISOString(),method:'HEAD',pages:manifest.paths.length,privatePages:privatePages.length,images:images.size,assets:assets.size,total:rows.length,passed:results.filter(result=>result.passed).length,failures};
+const failures=results.filter(result=>!result.passed),report={origin,checkedAt:new Date().toISOString(),method:'HEAD',pages:manifest.paths.length,privatePages:privatePages.length,images:images.size,assets:assets.size,audio:audio.size,total:rows.length,passed:results.filter(result=>result.passed).length,failures};
 await fs.mkdir(new URL('../reports/',import.meta.url),{recursive:true});
 await fs.writeFile(new URL('../reports/public-http-qa.json',import.meta.url),JSON.stringify(report,null,2)+'\n');
-const lines=['# Public route and image HTTP check','',`Checked ${report.total} local URLs against ${origin} using HEAD requests and response content types.`,`- Discovery pages: ${report.pages}`,`- Private entry pages: ${report.privatePages}`,`- Referenced images, including responsive variants: ${report.images}`,`- Entry stylesheets and scripts: ${report.assets}`,`- Passed: ${report.passed}`,`- Failed: ${failures.length}`,'','This check verifies route availability and asset responses. Interactive mounting is covered separately by check-platform-upgrade.mjs and check-play.mjs. Missing photographs explicitly listed in the content manifest remain research gaps, rather than broken image requests.'];
+const lines=['# Public route and image HTTP check','',`Checked ${report.total} local URLs against ${origin} using HEAD requests and response content types.`,`- Discovery pages: ${report.pages}`,`- Private entry pages: ${report.privatePages}`,`- Referenced images, including responsive variants: ${report.images}`,`- Entry stylesheets and scripts: ${report.assets}`,`- Licensed audio files: ${report.audio}`,`- Passed: ${report.passed}`,`- Failed: ${failures.length}`,'','This check verifies route availability and asset responses. Interactive mounting is covered separately by check-platform-upgrade.mjs and check-play.mjs. Missing photographs explicitly listed in the content manifest remain research gaps, rather than broken image requests.'];
 if(failures.length)lines.push('','Failures:',...failures.map(row=>`- ${row.path}: ${row.status??row.error} (${row.type||'no response type'})`));
 await fs.writeFile(new URL('../reports/public-http-qa.md',import.meta.url),lines.join('\n')+'\n');
 if(failures.length)console.error(failures.slice(0,25));
