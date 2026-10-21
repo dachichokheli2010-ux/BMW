@@ -3,7 +3,7 @@ export const discoveryTranslations=[
   ['Buyer guide & running costs','მყიდველის გზამკვლევი და წლიური ხარჯები','Гид покупателя и годовые расходы'],
   ['Spotted.','შემჩნეული.','Замечено.'],
   ['Your question','შენი კითხვა','Твой вопрос'],
-  ['Ask APEX ↗','ჰკითხე APEX-ს ↗','Спросить APEX ↗'],
+  ['Ask Motron ↗','ჰკითხე Motron-ს ↗','Спросить Motron ↗'],
   ['Ask the site','ჰკითხე საიტს','Спросить сайт'],
   ['What are you curious about?','რის გაგება გსურს?','Что тебе интересно?'],
   ['Close site helper','საიტის დამხმარის დახურვა','Закрыть помощника сайта'],

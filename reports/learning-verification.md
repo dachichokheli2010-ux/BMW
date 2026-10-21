@@ -2,13 +2,13 @@
 
 Date: 21 October 2026. This report describes the local source and checked build artifacts. A Git push does not establish that the live host has deployed or that its environment is configured.
 
-## Mission road and assessments
+## Motron Learn and assessments
 
-Learn uses a winding mission road with lane markings, numbered stops, checkpoint nodes and prerequisite progression. Normal-flow rows let long mission names expand without overlapping other stops. The road stays visible on narrow screens. Every chapter starts open; later missions require the preceding stops in that chapter. One access policy applies to road nodes, topic and glossary links, direct lesson URLs and recovered drafts. Locked stops explain the prerequisite and offer a route to it. Existing completed lessons remain replayable. Daily challenges and optional practice stay available.
+Motron Learn replaces the previous Academy sidebar and scenic mission road with a new five-area interface: Dashboard, Tracks, Practice lab, Reference and Your progress. A next-step card gives the dashboard a clear starting point. Seven chapter summaries explain the outcome of each track; mission lists show completed, available and locked activities. The new stylesheet is lazy-loaded and scoped to the Motron interface.
 
-The later 21 October visual pass expands this into a scenic route atlas: original SVG mountains/highway, contour and forest scenery, broader curved asphalt, alternating framed mission cards and a car marking the current stop. Desktop progress statistics move below the route to give it more space. Narrow screens keep the curve beside wrapping mission titles. Light-theme contrast and reduced motion are included. This is a code/SVG/CSS redesign; no third-party artwork was added.
+Each track starts open; later missions require the preceding missions in that track. The same access policy applies to track lists, topic and glossary links, direct lesson URLs and recovered drafts. Locked missions explain the prerequisite and offer a route to it. Existing completed lessons remain replayable. Daily challenges and optional practice stay available.
 
-The player focuses on the current study material and question, with explicit answer confirmation, first-attempt scoring and explanation review. Its phone action bar owns the bottom edge while a lesson is open, preventing the global quick navigation from covering the answer button. The outer workspace no longer adds a duplicate Learn heading. Existing completed history remains valid. Changed assessments invalidate stale unfinished answers without resetting completed lessons.
+All 42 published activities have individual coaching guides and contextual self-checks, backed by 301 authored English/Georgian/Russian entries. The seven skill tracks have practical outcome summaries. The new concept-to-challenge player uses a concise takeaway recap, with source-linked diagrams and explanations available for deeper study. The player focuses on the current study material and question, with explicit answer confirmation, first-attempt scoring and explanation review. Its phone action bar owns the bottom edge while a lesson is open, preventing the global quick navigation from covering the answer button. The outer workspace no longer adds a duplicate Learn heading. Existing completed history remains valid. Changed assessments invalidate stale unfinished answers without resetting completed lessons. Account-owner changes suspend the player and rebind unfinished drafts before another account can check answers or save progress. Direct lesson links and requested tabs are retained while account data loads.
 
 The authored assessment bank is applied to the published curriculum. Questions use calculations, plausible misconceptions, operating-point comparisons and constrained diagnosis rather than unrelated distractors. Study cards introduce key ideas and worked examples. Academy teaching and assessments retain English, Georgian and Russian dictionaries.
 
@@ -29,7 +29,7 @@ Academy personal collection credits require at least 80% first-attempt accuracy:
 - `/personality`: a five-question entertainment quiz with a shareable result card.
 - `/timeline`: sourced 3 Series generation examples, keyboard-accessible controls and explicit gaps where a comparable value is unavailable.
 - `/legends`: BMW art, film and motorsport stories with references and image attribution.
-- The Ask APEX bubble queries a small backend containing the published catalogue, glossary and lessons. It shows sources and a simple explanation option. It uses deterministic reference lookup and does not need a third-party API key. It does not read private accounts or invent live prices.
+- The Ask Motron bubble queries a small backend containing the published catalogue, glossary and lessons. It shows sources and a simple explanation option. It uses deterministic reference lookup and does not need a third-party API key. It does not read private accounts or invent live prices.
 - Buyer guides build on the existing catalogue and cited inspection evidence. Running-cost calculations state editable assumptions; evidence labels are not a claim that an individual used car is reliable.
 
 ## Persistence and deployment limits
@@ -40,10 +40,14 @@ Audio licensing documentation is embedded in `public/licensed-audio.js` and disp
 
 ## Verification
 
+Final Motron verification passed: the complete `npm run check` suite inside `npm run build:vercel`, the rebuilt Worker API graph and a built-Worker private-login/analytics smoke check. The new journey regression covers locks, first attempts, replay rewards, recovery, keyboard focus, all three languages, and delayed account switches with separate drafts and coin receipts. All 42 coaching guides, seven track summaries and 301 authored EN/KA/RU entries are checked.
+
+Vercel artifact validation passed for 113 modules, 36 stylesheets, 681 runtime images, 833 asset references and 1,371 deep links. The Worker packages 881 approved assets in 28 modules. Final local HTTP availability passed all 2,132 URLs: 1,371 discovery pages, one private admin entry, 687 images, 61 scripts/styles and 12 licensed audio files. Browser screenshots remain unavailable.
+
 Meaningful reducer/API and DOM checks cover first attempts, replay prevention, caps, ownership, pack purchases, card battles, draft restoration, account changes, source-only helper answers, input limits, escaping, audio failure/skip, cleanup and route imports. Full regression, Worker/Vercel builds and final feature checks are recorded with the completed change. DOM simulation checks behavior and authored responsive rules; no real-browser viewport or screenshot audit is claimed when a browser session is unavailable.
 
 The 21 October audit fixed unsaved Spotter notes lost during filtering, buyer checklist state carried across accounts, hidden cost inputs blocking another powertrain, and newer helper questions overwritten by a pending answer. It also preserves expanded Legends stories and control focus through updates, ignores late personality-sharing results after a restart, and moves sound-quiz focus to feedback. Cross-review added regressions for another tab unlocking an open mission preview and UTC midnight interrupting a pack reveal.
 
 `npm run check` passed the complete regression suite. `npm run build` produced 881 Worker assets in 28 modules. A smoke check against that built Worker verified the mission-access and responsive reel modules, page routes, private admin headers, audio bytes/types and helper response. `npm run build:vercel` reran the complete regression suite and passed release checks for 110 modules, 40 stylesheets, 834 asset references and 1,371 deep links.
 
-Local HTTP verification passed 2,127 URLs: 1,371 discovery pages, one private admin entry, 686 images, 57 scripts/styles and 12 licensed audio files. A separate HTTP smoke check exercised Learn, a lesson URL, Garage, Spotter, the private admin shell and a source-linked helper response. No live-host deployment or browser screenshot pass is implied.
+The earlier local HTTP verification passed 2,127 URLs: 1,371 discovery pages, one private admin entry, 686 images, 57 scripts/styles and 12 licensed audio files. A separate HTTP smoke check exercised Learn, a lesson URL, Garage, Spotter, the private admin shell and a source-linked helper response. No live-host deployment or browser screenshot pass is implied.

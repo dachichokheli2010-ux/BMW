@@ -1,4 +1,4 @@
-# APEX visual and Vercel repair
+# Motron visual and Vercel repair
 
 ## Changes
 
@@ -31,7 +31,7 @@ The previous Vercel command ran checks and published raw `public/`, while the se
 
 `scripts/check-vercel-build.mjs` verifies the generated output's module graph, CSS, exact filename casing, images and deep-link rewrites. This also catches problems hidden by Windows case-insensitive paths or the local preview's legacy JPG fallback.
 
-The user-supplied Vercel preview requires an authenticated browser session. Direct unauthenticated HTTP requests redirect to Vercel login; those redirects were not treated as APEX asset failures. No live deployment was performed by this task.
+The user-supplied Vercel preview requires an authenticated browser session. Direct unauthenticated HTTP requests redirect to Vercel login; those redirects were not treated as Motron asset failures. No live deployment was performed by this task.
 
 ## Verification and limits
 

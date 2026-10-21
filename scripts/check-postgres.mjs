@@ -9,12 +9,17 @@ import {handleApi} from '../server/api.js';
 import {createVercelHandler} from '../server/vercel-api.js';
 import {emptyGarage} from '../server/validation.js';
 import {createLocalDatabase} from '../server/local-db.mjs';
+import {hashPassword} from '../server/passwords.js';
 
 let checks=0;
 const check=(condition,message)=>{assert.ok(condition,message);checks++;};
 assert.equal(postgresSQL("SELECT '?' AS literal, users.* FROM users WHERE email = ? -- ?\nAND name = ?"),"SELECT '?' AS literal, users.* FROM apex.users WHERE email = $1 -- ?\nAND name = $2");checks++;
 assert.equal(postgresSQL('SELECT $$?$$, ? /* ? */'), 'SELECT $$?$$, $1 /* ? */');checks++;
 assert.equal(databaseURL({DATABASE_URL:'postgresql://test:secret@primary.neon.tech/db',POSTGRES_URL:'other'}),'postgresql://test:secret@primary.neon.tech/db');checks++;
+for(const key of ['DATABASE_URL','POSTGRES_URL','NEON_DATABASE_URL','DATABASE_URL_UNPOOLED','POSTGRES_URL_NON_POOLING']){
+ check(databaseURL({[key]:'  "postgresql://test:secret@db.invalid/test"\r\n'})==='postgresql://test:secret@db.invalid/test',key+' accepts a quoted hosting value without exposing or changing the connection string.');
+}
+check(databaseURL({DATABASE_URL:' \r\n',POSTGRES_URL:'postgresql://test:secret@db.invalid/test'})==='postgresql://test:secret@db.invalid/test','An empty primary value does not mask a connected integration alias.');
 assert.throws(()=>validateDatabaseURL('not-a-connection'));checks++;
 const runner=pg=>async(sql,values=[])=>{const result=await pg.query(sql,values);return {rows:result.rows,rowCount:result.affectedRows??result.rows.length};};
 const transact=pg=>async statements=>pg.transaction(async tx=>{const results=[];for(const [sql,values]of statements)results.push(await tx.query(sql,values));return results;});
@@ -116,5 +121,26 @@ try{
  await initializePostgres(runner(manual),transact(manual));
  check((await manual.query('SELECT provider FROM public.users')).rows[0].provider===7,'Lookalike public tables with incompatible types are preserved and ignored.');
  check((await manual.query('SELECT count(*)::int AS count FROM apex.schema_migrations')).rows[0].count===0,'An unrelated source does not receive a completed legacy-import receipt.');
+ await manual.exec('DROP INDEX apex.sessions_expiry_idx');
+ await initializePostgres(runner(manual),transact(manual),{applySchema:true});
+ check((await manual.query("SELECT count(*)::int AS count FROM pg_indexes WHERE schemaname='apex' AND indexname='sessions_expiry_idx'")).rows[0].count===1,'An explicit schema migration still reapplies missing indexes when all required columns already exist.');
+ // Production roles often have row privileges after an owner provisions the
+ // schema, without permission to recreate it on each serverless cold start.
+ const runtimeQuery=runner(manual),runtimeTransaction=transact(manual),runtimeDB=createPostgresAdapter(runtimeQuery,runtimeTransaction);
+ await manual.exec('CREATE ROLE motron_runtime; GRANT USAGE ON SCHEMA apex TO motron_runtime; GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA apex TO motron_runtime; SET ROLE motron_runtime;');
+ try{
+  await assert.rejects(manual.exec('CREATE SCHEMA IF NOT EXISTS apex'),error=>error.code==='42501');checks++;
+  const runtimeReport=await initializePostgres(runtimeQuery,runtimeTransaction);
+  check(Object.values(runtimeReport).every(table=>table.missing.length===0),'A provisioned schema initializes with row privileges and no CREATE permission.');
+  const ownerPassword='a test-only runtime passphrase',ownerEmail='runtime-owner@example.test',ownerHash=await hashPassword(ownerPassword);
+  const runtimeHandler=createVercelHandler({environment:{POSTGRES_URL:'  "postgresql://runtime:test@db.invalid/test"\n',ADMIN_LOGIN_EMAIL:' "'+ownerEmail+'" ',ADMIN_PASSWORD_HASH:" '"+ownerHash+"'\n"},connect:async()=>{await initializePostgres(runtimeQuery,runtimeTransaction);return runtimeDB;}});
+  const runtimeLogin=await runtimeHandler(new Request('https://runtime.test/api/admin/login',{method:'POST',headers:{Origin:'https://runtime.test','Content-Type':'application/json'},body:JSON.stringify({email:ownerEmail,password:ownerPassword})}));
+  const runtimeSession=await runtimeLogin.json(),runtimeCookie=runtimeLogin.headers.get('Set-Cookie')?.split(';')[0];
+  check(runtimeLogin.status===200&&runtimeSession.user.id==='administrator:owner'&&runtimeCookie?.startsWith('__Host-bmw_admin='),'The Vercel adapter signs an administrator in using a provisioned data-only PostgreSQL role.');
+  const restored=await runtimeHandler(new Request('https://runtime.test/api/admin/session',{headers:{Cookie:runtimeCookie}}));
+  check(restored.status===200&&(await restored.json()).csrfToken===runtimeSession.csrfToken,'A later Vercel request recovers the administrator session from PostgreSQL.');
+  const accounts=await runtimeHandler(new Request('https://runtime.test/api/admin/accounts',{headers:{Cookie:runtimeCookie}}));
+  check(accounts.status===200&&(await accounts.json()).stats.accounts===0,'The data-only role reaches protected account analytics without exposing the internal administrator.');
+ }finally{await manual.exec('RESET ROLE');}
  console.log(`Database adapters: ${checks} checks passed (concurrent SQLite startup, batch rows/rollback, real PostgreSQL, seven-table preservation, auth, saves and one-time legacy imports).`);
 }finally{await database.close();await legacy.close();await manual.close();}

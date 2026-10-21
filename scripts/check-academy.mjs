@@ -83,6 +83,7 @@ assert.equal(restoreProgress({version:2,xp:-5,credits:NaN,days:['bad']}).xp,0);
 assert.equal(restoreProgress(null).xp,0);
 assert.deepEqual(restoreProgress({version:2,days:['2026-02-31']}).days,[],'Impossible calendar dates cannot become streak evidence');
 state.selectedPath='engines';assert.equal(restoreProgress(state).selectedPath,'engines');
+for(const unit of units)assert.equal(restoreProgress({...state,selectedPath:unit.id}).selectedPath,unit.id,'Every published track survives save/reload: '+unit.id);
 assert.equal(restoreProgress({...state,selectedPath:'invented'}).selectedPath,'basics');
 assert.equal(currentStreak({...emptyProgress(),days:['2026-10-16','2026-10-17','2026-10-18']},day),3);
 assert.equal(currentStreak({...emptyProgress(),days:['2026-10-17']},day),1,'Yesterday remains active before today’s completion');

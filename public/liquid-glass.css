@@ -419,4 +419,4 @@ html:has(dialog[open]),html:has(dialog[open]) body { overflow:hidden; }
   header.site-header, .glass-bottom-nav, .mobile-navigation { background: var(--surface) !important; }
 }
 /* The mission action bar owns the phone's bottom edge while a lesson is open. */
-body:has(.bmw-academy .ac-player) .glass-bottom-nav { display: none; }
+body:has(.motron-learn .ac-player) .glass-bottom-nav { display: none; }

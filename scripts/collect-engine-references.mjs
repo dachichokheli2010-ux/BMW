@@ -29,7 +29,7 @@ for(const [id,title,author,license,licensePath]of rows){
  let downloaded=false;
  try{
   try{await fs.access(path);}catch{
-   const response=await fetch(original,{headers:{'User-Agent':'APEX-BMW-Education/1.0 (credited engine reference research)'},signal:AbortSignal.timeout(30000)});
+   const response=await fetch(original,{headers:{'User-Agent':'Motron-BMW-Education/1.0 (credited engine reference research)'},signal:AbortSignal.timeout(30000)});
    if(!response.ok)throw new Error('HTTP '+response.status+(response.headers.get('retry-after')?' · Retry-After: '+response.headers.get('retry-after'):''));
    await sharp(Buffer.from(await response.arrayBuffer())).rotate().resize({width:1600,withoutEnlargement:true}).webp({quality:84,effort:5}).toFile(path);
    downloaded=true;

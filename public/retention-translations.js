@@ -1,6 +1,13 @@
 import {registerTranslations} from './preferences.js';
 
 export const retentionTranslationEntries = [
+  ['Motron Learn', 'Motron — სწავლა', 'Motron — обучение'],
+  ['← Motron Learn', '← Motron — სწავლა', '← Motron — обучение'],
+  ['MOTRON LEARN', 'MOTRON — სწავლა', 'MOTRON — ОБУЧЕНИЕ'],
+  ['Understand the car, one idea at a time. Choose a skill track, try an applied challenge and find your next step.', 'გაიცანი მანქანა ნაბიჯ-ნაბიჯ. აირჩიე სასწავლო მიმართულება, სცადე პრაქტიკული ამოცანა და იპოვე შემდეგი ნაბიჯი.', 'Разберись в автомобиле шаг за шагом. Выбери направление, реши практическую задачу и найди следующий шаг.'],
+  ['02 / MOTRON LEARN', '02 / MOTRON — სწავლა', '02 / MOTRON — ОБУЧЕНИЕ'],
+  ['Choose a skill. Understand the idea. Put it into practice.', 'აირჩიე უნარი. გაიგე მთავარი აზრი. გამოიყენე პრაქტიკაში.', 'Выбери навык. Разберись в идее. Примени на практике.'],
+  ['Start with Motron Learn', 'დაიწყე სწავლა Motron-ით', 'Начни учиться с Motron'],
   ['Factory specification source', 'ქარხნული მონაცემების წყარო', 'Источник заводских характеристик'],
   ['BMW M / M1 to today', 'BMW M / M1-დან დღემდე', 'BMW M / от M1 до наших дней'],
   ['Selected milestones in BMW M history, with the year and model scope kept explicit.', 'BMW M-ის ისტორიის რჩეული ეტაპები — მითითებულია წელი და მოდელი.', 'Избранные этапы истории BMW M с указанием года и модели.'],
@@ -28,7 +35,7 @@ export const retentionTranslationEntries = [
   ['Choose a JSON backup file to import.', 'იმპორტისთვის აირჩიეთ JSON ასლის ფაილი.', 'Выберите JSON-файл резервной копии для импорта.'],
   ['This file is larger than 512 KB. Nothing was changed.', 'ფაილის ზომა 512 კბ-ს აღემატება. მონაცემები არ შეცვლილა.', 'Размер файла превышает 512 КБ. Данные не изменены.'],
   ['The file could not be read. Your garage has not been changed.', 'ფაილის წაკითხვა ვერ მოხერხდა. ავტოფარეხის მონაცემები არ შეცვლილა.', 'Не удалось прочитать файл. Данные гаража не изменены.'],
-  ['This is not a supported APEX garage backup. Nothing was changed.', 'ეს APEX-ის მხარდაჭერილი ავტოფარეხის ასლი არ არის. მონაცემები არ შეცვლილა.', 'Это неподдерживаемая резервная копия гаража APEX. Данные не изменены.'],
+  ['This is not a supported Motron garage backup. Nothing was changed.', 'ეს Motron-ის მხარდაჭერილი ავტოფარეხის ასლი არ არის. მონაცემები არ შეცვლილა.', 'Это неподдерживаемая резервная копия гаража Motron. Данные не изменены.'],
   ['Some current garage data could not be read. Import was cancelled to protect it.', 'ავტოფარეხის ზოგიერთი არსებული მონაცემის წაკითხვა ვერ მოხერხდა. დასაცავად იმპორტი გაუქმდა.', 'Не удалось прочитать часть данных гаража. Импорт отменён для их сохранности.'],
   ['The backup would exceed the 20 saved-build limit. Nothing was changed.', 'ასლის იმპორტი 20 შენახული კონფიგურაციის ზღვარს გადააჭარბებდა. მონაცემები არ შეცვლილა.', 'Импорт превысил бы лимит в 20 сохранённых сборок. Данные не изменены.'],
   ['Garage backup imported. Existing data was merged, not replaced.', 'ავტოფარეხის ასლი იმპორტირებულია. არსებული მონაცემები გაერთიანდა და არ ჩანაცვლებულა.', 'Резервная копия импортирована. Данные объединены, а не заменены.'],

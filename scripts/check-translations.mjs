@@ -284,7 +284,7 @@ function writeReports(files, data) {
     finding('public/preferences.js', 'translateNode(document.body)', 'Translation starts at document.body. Head titles and meta descriptions are excluded.'),
     finding('public/index.html', 'Engine family', 'Engine family, All engines, Chassis / generation and All source years have no authored target-language keys.'),
     finding('public/index.html', 'Choose up to 3', 'The comparison-tray instruction has no authored target-language key.'),
-    finding('public/account.js', 'APEX / YOUR ACCOUNT', 'Auth/account story, sign-in and profile prose are mostly outside the authored dictionaries.'),
+    finding('public/account.js', 'Motron / YOUR ACCOUNT', 'Auth/account story, sign-in and profile prose are mostly outside the authored dictionaries.'),
     finding('public/account.js', 'Enter your name to create an account.', 'Sign-up validation messages have no authored Georgian or Russian entries.'),
     finding('public/smart-search.js', 'No exact matches. Related suggestions', 'Search result counts, related suggestions and empty-result templates are assembled from English fragments.'),
     finding('public/viewer.js', "'Select '+text", 'The 3D part selection accessible label is assembled as English Select + part text.'),
@@ -293,7 +293,7 @@ function writeReports(files, data) {
     finding('public/garage.js', "toLocaleString('en'", 'Garage number formatting forces English regardless of the selected application language.'),
     finding('public/tuning-workbench.js', "toLocaleString('en'", 'Workbench number formatting forces English regardless of the selected application language.'),
     finding('public/personal-garage.js', 'new Intl.DateTimeFormat(undefined', 'Saved-build dates use browser locale instead of the selected application language.'),
-    finding('public/platform.js', "document.title='APEX", 'Route titles are assigned as English prose and do not subscribe to language changes.'),
+    finding('public/platform.js', "document.title='Motron", 'Route titles are assigned as English prose and do not subscribe to language changes.'),
   ];
   const report = {schemaVersion: 1, scope: 'Public JS and HTML source, excluding vendor libraries, dictionary implementation files, and candidate photography research.', parser: parser ? `Node bundled Acorn ${parser.version}` : 'Conservative lexical fallback', methodology: 'All exported translation modules and private plain EN/KA/RU objects are checked. The source inventory lists source-copy candidates, not browser-verified defects or semantic translation completeness. Dynamic templates need manual review; factory names, URLs, identifiers and legal attribution may intentionally remain unchanged. Source line numbers refer to the audit snapshot.', authoredDictionaryRows: data.rows.length, uniqueEnglishDictionaryKeys: data.unique.size, objectDictionaries: data.objects.map(item => item.source), parityErrors: data.errors, conflictingDictionaryKeys: data.conflicts, confirmedFindings, counts: {sourceFiles: files.length, candidates: entries.length, untranslatedCandidates: missing.length}, byFile: summary, entries};
   const directory = path.join(root, 'reports'); fs.mkdirSync(directory, {recursive: true});

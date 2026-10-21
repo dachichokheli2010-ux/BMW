@@ -1,6 +1,20 @@
 # Private administration and bug repairs — 21 October 2026
 
-## 21 October update
+## Motron / Vercel repair — 21 October 2026
+
+A read-only check of the current public deployment at `https://apex-theta-khaki.vercel.app` found that `/admin` returned its private page, `/api/auth/session` returned a valid signed-out account response, and `/api/garage` returned the expected signed-out `401`. `/api/admin/session` returned `200` with `configured: false`. This identifies missing or invalid deployed owner settings as the observed administrator blocker; it does not indicate a general account database outage. No credentials were submitted to the live site and no production data was changed.
+
+The private login now explains that GitHub uploads exclude `.env.local`, names the required `ADMIN_LOGIN_EMAIL` and `ADMIN_PASSWORD_HASH` server settings, and explains the required Vercel redeploy. It also switches to this setup state if configuration is removed after the page loads, clearing the password and keeping protected data inaccessible. One pair of dotenv quotes and surrounding whitespace copied into hosting settings are normalized; the exact salted PBKDF2 format, actual password comparison, private cookies and CSRF checks remain enforced.
+
+A separate PostgreSQL cold-start defect was reproduced with a data-only application role: PostgreSQL rejects `CREATE SCHEMA/TABLE IF NOT EXISTS` without creation privileges even when the schema is already provisioned. Runtime initialization now inspects first and skips DDL when all required columns exist, allowing the provisioned role to use administrator sessions and account analytics. Missing app tables still use locked additive initialization. Explicit `npm run db:migrate` retains schema/index application and needs the owner's schema privileges. The app-owned `apex` schema name remains unchanged to preserve existing records.
+
+Vercel responses distinguish an absent connection (`503`, `DATABASE_NOT_CONFIGURED`), unavailable storage (`503`, `DATABASE_UNAVAILABLE`), and a reachable database with missing owner credentials (`200`, `configured: false`). Error bodies contain no connection strings, credential values, SQL text or raw database errors. Supported connection aliases also accept surrounding whitespace or dotenv quotes.
+
+Focused verification passed 202 dedicated administrator checks, 113 private UI checks, 63 adapter checks and 28 Vercel routing checks. The PostgreSQL regression uses a real engine, creates a role without schema-creation privileges, signs in through the Vercel adapter, recovers its persisted session and reads protected account analytics. It also verifies that explicit migration recreates a missing index. Existing SQLite startup, transactions, saved records, legacy imports and public-table preservation remain covered.
+
+The checkout has local owner credentials, but no linked/authenticated Vercel project, deployment token or live Neon connection. Those local credentials cannot be transferred to production through Git, and no hosting settings were changed in this pass. The observed live `configured: false` still requires the two private settings in the Vercel deployment environment. Final verification passed the complete `npm run check` suite within the Vercel build. It includes 202 private auth checks, 113 admin UI checks, 63 adapter checks, 28 Vercel routing checks, 110 real HTTP account checks, 93 account-sync checks and 556 community backend checks. Vercel validated 113 modules, 36 stylesheets, 833 asset references and 1,371 deep links; local HTTP availability passed 2,132 URLs. The rebuilt Worker also passed private login and protected analytics using the packaged environment-normalization module. Browser screenshot verification remains unavailable.
+
+## Earlier 21 October update
 
 The dashboard now has paginated server search, sorting and complete queue/history totals instead of a silent combined 100-record cap. Record summaries expand into a clearer photo/evidence/decision workspace. Notes remain in this tab across searches, pages, failed refreshes and other decisions. Loading, retry, stale-response, expired-session and failed-photo states have explicit recovery controls. Search and filters stay usable on phones.
 
@@ -49,6 +63,6 @@ Nested community and administrator API URLs now use an explicit shared serverles
 
 ## Verification limits
 
-The local owner configuration and real HTTP access were verified. The live Vercel integration is available but unconnected, so its private environment settings could not be updated. The deployment needs the same two private server settings; ignored local files are not uploaded by Git.
+The earlier local owner configuration and real HTTP access were verified. No authenticated Vercel project connection is available in this checkout, so its private environment settings could not be updated. The deployment needs the same two private server settings; ignored local files are not uploaded by Git. The read-only live result and current verification limits are documented at the top of this report.
 
 No browser connection was available for visual inspection. Responsive controller tests, DOM tests, real HTTP tests and deployment-artifact checks provide separate evidence. Existing catalog research and exact-photo gaps remain disclosed in the completeness reports. This work does not claim that every possible defect or content omission has been eliminated.

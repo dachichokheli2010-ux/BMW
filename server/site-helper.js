@@ -33,14 +33,14 @@ export function answerSiteQuestion(question,{simple=false,language='en'}={}){
   if(chosen.length){const paragraphs=chosen.slice(0,3).map(car=>{sources.push(...car.sources);links.push(local(car.name+' · '+car.generation,'/cars/'+car.id));const power=Number.isFinite(car.power)&&car.powerUnit?' Published power: '+car.power+' '+car.powerUnit+'.':'';return `${car.name} · ${car.generation}. ${car.scope||'Catalogue application'}: ${simple?car.layout+'; '+car.powertrain+'.'+power:car.engine+'; '+car.layout+'; '+car.powertrain+'.'+power+' '+car.description}`;});return {answer:(ranked.length>chosen.length?'Several applications match. These are documented examples; specify a generation for a narrower answer.\n\n':'')+paragraphs.join('\n\n'),sources:uniqueSources(sources),links};}
   const lesson=siteKnowledge.lessons.map(item=>({item,score:tokens.reduce((sum,token)=>sum+(normal(item.title+' '+item.summary).split(' ').includes(token)?1:0),0)})).filter(row=>row.score>0).sort((a,b)=>b.score-a.score)[0]?.item;
   if(lesson)return {answer:simple?lesson.summary:lesson.content.slice(0,2).join('\n\n'),sources:uniqueSources(lesson.sources),links:[local(lesson.title,'/learn?lesson='+lesson.id)]};
-  return {answer:'I could not find that in APEX’s published reference data. Try a model or chassis code such as E46, an engine such as S58, or a term such as torque. I do not have live prices, private account details, or a diagnosis for your car.',sources:[],links:[local('Search the collection','/models'),local('Buyer guides','/generation-guides')]};
+  return {answer:'I could not find that in Motron’s published reference data. Try a model or chassis code such as E46, an engine such as S58, or a term such as torque. I do not have live prices, private account details, or a diagnosis for your car.',sources:[],links:[local('Search the collection','/models'),local('Buyer guides','/generation-guides')]};
 }
 
 export async function handleSiteAsk(request){
   const respond=(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
   if(request.method!=='POST')return respond({error:'Use POST to ask a question.'},405);
   const url=new URL(request.url),origin=request.headers.get('Origin');
-  if(origin&&origin!==url.origin||request.headers.get('Sec-Fetch-Site')==='cross-site')return respond({error:'Open APEX directly to use the helper.'},403);
+  if(origin&&origin!==url.origin||request.headers.get('Sec-Fetch-Site')==='cross-site')return respond({error:'Open Motron directly to use the helper.'},403);
   if(!/^application\/json(?:;|$)/i.test(request.headers.get('Content-Type')||''))return respond({error:'Use application/json.'},415);
   if(Number(request.headers.get('Content-Length'))>4096)return respond({error:'Keep the question under 500 characters.'},413);
   const reader=request.body?.getReader();if(!reader)return respond({error:'Ask a question first.'},400);

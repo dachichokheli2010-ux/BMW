@@ -1,8 +1,8 @@
-# APEX expansion — 20 October 2026
+# Motron expansion — 20 October 2026
 
 ## What changed
 
-The existing vanilla JavaScript application, APEX name/logo, saved models/builds, accounts, Academy, galleries, tuning workspace, buyer guides and comparisons are preserved. New functionality is additive. No deployment was performed.
+The existing vanilla JavaScript application, Motron name/logo, saved models/builds, accounts, Academy, galleries, tuning workspace, buyer guides and comparisons are preserved. New functionality is additive. No deployment was performed.
 
 | Phase | Implemented | Still open |
 |---|---|---|

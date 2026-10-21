@@ -258,8 +258,8 @@ export async function handleApi(request,env={}){
     }
   }catch(error){
     if(error instanceof ApiError)return json({error:error.message,...(error.code?{code:error.code}:{})},error.status,{...sessionHeaders(session),...(error.status===429?{'Retry-After':String(error.retryAfter||900)}:{})});
-    console.error('BMW account operation failed.');
-    return json({error:'Account storage is temporarily unavailable. Your current input has been preserved.'},503,sessionHeaders(session));
+    console.error('Motron account operation failed.');
+    return json({error:'Account storage is temporarily unavailable. Your current input has been preserved.',code:'DATABASE_UNAVAILABLE'},503,sessionHeaders(session));
   }
   return null;
 }

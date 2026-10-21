@@ -30,7 +30,7 @@ async function stop(){
 }
 async function start(){
   child=spawn(process.execPath,['scripts/preview-local.mjs'],{cwd:root,env:environment,stdio:['ignore','pipe','pipe'],windowsHide:true});
-  let ready=false;child.stdout.on('data',chunk=>{if(chunk.toString().includes('BMW Garage running'))ready=true;});
+  let ready=false;child.stdout.on('data',chunk=>{if(chunk.toString().includes('Motron running at'))ready=true;});
   // Never forward request diagnostics or credentials into test output.
   child.stderr.resume();
   const deadline=Date.now()+10000;

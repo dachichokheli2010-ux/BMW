@@ -119,7 +119,7 @@ function sourceList(model,{verified=false}={}){
  */
 export function buildModelProfile(model){
   const verified=model.verified||{},electric=model.powertrain==='Electric',hybrid=model.powertrain==='Plug-in hybrid';
-  const story=storyFor(model),editorialNote='APEX editorial guide. The linked factory reference describes the vehicle; this is guidance for exploring it, not a reliability study or a service interval.';
+  const story=storyFor(model),editorialNote='Motron editorial guide. The linked factory reference describes the vehicle; this is guidance for exploring it, not a reliability study or a service interval.';
   const statedDisplacement=model.description?.match(/\b([1-9][\d,]*)\s*cm[³3]/),linkedDisplacement=statedDisplacement?positive(statedDisplacement[1].replaceAll(',','')):null;
   const statedUsableBattery=(electric||hybrid)&&model.induction?.match(/\b(\d+(?:\.\d+)?)\s*kWh\s+usable\b/i);
   const specificationYear=validYear(verified.modelYear)||validYear(model.modelYear);

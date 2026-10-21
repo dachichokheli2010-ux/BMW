@@ -4,7 +4,7 @@ import {reconcileAchievements} from './academy-achievements.js';
 export const localDay = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
 const dayNumber = day => Date.parse(day+'T12:00:00Z') / 86400000;
 const validDay=day=>typeof day==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(day)&&Number.isFinite(dayNumber(day))&&new Date(day+'T12:00:00Z').toISOString().slice(0,10)===day;
-export const LEARNING_PATHS=Object.freeze(['basics','parts','models','engines','systems','mechanic']);
+export const LEARNING_PATHS=Object.freeze(['basics','powertrains','parts','models','engines','systems','mechanic']);
 export function emptyProgress(){return {version:2,xp:0,credits:0,completed:{},attempts:{},review:{},days:[],awards:[],unlocked:[],activity:[],name:'Guest driver',selectedPath:'basics',achievements:{}};}
 export function restoreProgress(value){
   const clean=emptyProgress();

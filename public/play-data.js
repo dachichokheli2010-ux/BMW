@@ -157,5 +157,5 @@ export function scoreAnswer({correct,elapsed=0,combo=0,hintCost=0}={}){
 }
 export function shareResult(round,day=utcDay()){
   const squares=round.results.map(result=>result.skipped?'⬜':result.correct?'🟦':'🟥').join('');
-  return `APEX BMW ${round.mode==='daily'?'Daily '+day:PLAY_MODES.find(mode=>mode.id===round.mode)?.name||'Play'}\n${squares}\n${round.results.filter(result=>result.correct).length}/${round.results.length} · ${round.score} points\n${globalThis.location?.origin||''}/play`;
+  return `Motron BMW ${round.mode==='daily'?'Daily '+day:PLAY_MODES.find(mode=>mode.id===round.mode)?.name||'Play'}\n${squares}\n${round.results.filter(result=>result.correct).length}/${round.results.length} · ${round.score} points\n${globalThis.location?.origin||''}/play`;
 }

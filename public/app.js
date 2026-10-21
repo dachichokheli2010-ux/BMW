@@ -105,7 +105,7 @@ $('#playrecording').onclick=()=>{if($('#recordingplayer iframe')){clearAudioPlay
 document.addEventListener('visibilitychange',()=>{if(document.hidden)clearPlayers();});window.addEventListener('pagehide',clearPlayers);
 $('#modelselect').innerHTML=models.map(m=>`<option value="${m.id}">${esc(m.name)} · ${esc(m.generation.split(' / ')[1].trim())}</option>`).join('');$('#modelselect').onchange=e=>selectModel(e.target.value);
 window.addEventListener('apex:accountprojection',()=>{if(location.pathname!=='/account')location.reload();});
-const startup=document.createElement('div');startup.className='app-loading';startup.setAttribute('role','status');startup.innerHTML='<span class="loading-orbit" aria-hidden="true"></span>Opening APEX…';
+const startup=document.createElement('div');startup.className='app-loading';startup.setAttribute('role','status');startup.innerHTML='<span class="loading-orbit" aria-hidden="true"></span>Opening Motron…';
 if(location.pathname!=='/'){document.documentElement.dataset.booting='true';document.querySelector('main').prepend(startup);}
 try{await account.start();}finally{startup.remove();delete document.documentElement.dataset.booting;}
 const collectionUI=mountCollection({models,catalog:allModels,getCurrent:()=>current,selectModel,showCollection,dialog,toast,threeModels,electricPage:electric});

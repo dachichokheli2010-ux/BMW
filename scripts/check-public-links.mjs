@@ -34,6 +34,7 @@ for(const name of ['index.html','parts.html','electric.html','about.html','admin
 for(const file of ['play.js','play-data.js','play.css','engine-directory.js','engine-directory.css','parts-encyclopedia.js','parts-encyclopedia-data.js','parts-encyclopedia.css','guide-tools.js','experience.js','experience.css','reference-pages.js','garage-hub.js','platform.js'])assets.add('/'+file);
 for(const file of ['spotter.js','discovery-games.css','sound-library.js','sound-library.css','licensed-audio.js','garage-game.js','garage-game-state.js','garage-game.css','buyer-research.js','buyer-research.css','bmw-legends.js','bmw-legends.css','personality-quiz.js','generation-timeline.js','learning-discovery.css','site-helper.js','site-helper.css'])assets.add('/'+file);
 for(const file of ['academy-access.js','generation-timeline-metrics.js'])assets.add('/'+file);
+for(const file of ['brand-mark.js','academy-ui.js','motron-learn-copy.js','motron-learning-guides.js','motron-learn.css'])assets.add('/'+file);
 const audio=new Set(licensedAudio.flatMap(clip=>[clip.src,clip.mp3].filter(Boolean)));
 const privatePages=['/admin'];
 assert.ok(!manifest.paths.some(path=>/^\/admin(?:\/|$)/.test(path)),'Private administration must stay out of discovery');

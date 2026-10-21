@@ -1,5 +1,6 @@
 import {normalizeEmail} from './validation.js';
 import {randomToken,tokenHash,timingSafeEqual,verifyPassword} from './passwords.js';
+import {environmentValue} from './environment-values.js';
 
 export const ADMIN_AUTH_PATHS=new Set(['/api/admin/session','/api/admin/login','/api/admin/logout']);
 const SESSION_MS=8*60*60*1000;
@@ -9,7 +10,7 @@ const validToken=value=>typeof value==='string'&&/^[A-Za-z0-9_-]{43}$/.test(valu
 const only=(body,keys)=>body&&typeof body==='object'&&!Array.isArray(body)&&Object.keys(body).every(key=>keys.includes(key));
 
 export function adminConfiguration(env={}){
- const email=normalizeEmail(env.ADMIN_LOGIN_EMAIL),passwordHash=env.ADMIN_PASSWORD_HASH;
+ const email=normalizeEmail(environmentValue(env.ADMIN_LOGIN_EMAIL)),passwordHash=environmentValue(env.ADMIN_PASSWORD_HASH);
  return email&&typeof passwordHash==='string'&&passwordRecord.test(passwordHash)?{email,passwordHash}:null;
 }
 const secure=request=>new URL(request.url).protocol==='https:';

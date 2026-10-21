@@ -1,4 +1,4 @@
-/* APEX: an editorial garage, built around the cars. */
+/* Motron: an editorial garage, built around the cars. */
 :root{--bg:#111214;--surface:#1a1c1f;--surface-raised:#22252a;--line:#ffffff1c;--muted:#a6a8ae;--white:#f6f5f2;--accent:#f17c50;--blue:#85b9ff;--page-pad:5%;--font:'DM Sans',Arial,sans-serif;color-scheme:dark}
 html[data-theme=light]{--bg:#f5f4f1;--surface:#fff;--surface-raised:#eae9e5;--line:#11121426;--muted:#62656d;--white:#1b1c1f;--accent:#c95129;--blue:#2468bd;color-scheme:light}
 ::view-transition-old(root){animation:apex-theme-out .28s ease both}
@@ -28,3 +28,6 @@ html[lang=ka] .hero h1{font-size:clamp(52px,6.2vw,88px);letter-spacing:-2px}html
 @media(max-width:360px){header.site-header nav{gap:6px}.site-header nav a{font-size:10px}html[lang=de] .hero h1{font-size:50px;letter-spacing:-3px}}
 .collection{scroll-margin-top:0}.turbo-guide{scroll-margin-top:16px}html[data-theme=light] .button-primary{background:#f17c50;color:#151515}
 .model-info small span{display:inline}@media(max-width:500px){.model-info small{font-size:10px}.save-model{min-height:36px;min-width:36px}.compare-model{min-height:36px}}
+
+/* Motron's independent M monogram keeps the established header layout. */
+.apex-symbol{background:transparent;clip-path:none;place-items:center;place-content:normal;color:var(--white)!important;letter-spacing:0!important}.apex-symbol>svg{display:block;width:100%;height:100%}.apex-symbol>span{display:none}

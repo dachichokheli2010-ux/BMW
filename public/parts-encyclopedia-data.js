@@ -278,7 +278,7 @@ for (const part of encyclopediaParts) {
 
 export const partsImageManifest = encyclopediaParts.map(part=>({
   id:part.id,name:part.name,page:part.url,status:part.id==='turbocharger'?'identified-bmw-reference-photo':part.photo?'reference-photo-needs-exact-fitment':'missing-exact-component-photo',
-  currentSource:part.photo?.page || null,currentCredit:part.photo?.author || 'Original APEX educational diagram',
+  currentSource:part.photo?.page || null,currentCredit:part.photo?.author || 'Original Motron educational diagram',
   currentLicense:part.photo?.license || 'Original educational artwork; no photograph implied',
   required:'Sharp, unmodified BMW component photograph with identified engine/chassis, source, author, license and accessible alt text.',
   suggestedSearch:`https://commons.wikimedia.org/w/index.php?search=${encodeURIComponent(`BMW ${part.name}`)}&title=Special:MediaSearch&type=image`,

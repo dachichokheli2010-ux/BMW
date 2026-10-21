@@ -8,6 +8,7 @@ import {registerHooks} from 'node:module';
 const cases=['/','/models','/electric','/about','/photos','/parts','/cars/f10-m5','/cars/f92-m8','/cars/i4','/engines','/engines/s65','/engines/s70','/engines/edrive','/engines/unknown-engine','/start','/learn','/lessons/first-engine','/play','/play?mode=practice','/my-garage','/tuning-garage','/engine-lab','/generation-guides','/compare','/account','/parts/turbocharger','/glossary','/glossary/torque','/badges','/badges/answers-1','/questions/car-f10-code'];
 cases.push('/community','/friends','/submit-car','/garage/test-token','/community/cars/test-car','/questions/academy-part-turbocharger-photo');
 cases.push('/spotter','/sounds','/personality','/timeline','/legends');
+cases.push('/learn?tab=practice','/learn?lesson=history','/learn?lesson=first-engine&projection=deferred','/lessons/first-engine?projection=deferred','/learn?tab=practice&projection=deferred','/learn?projection=deferred#history');
 const route=process.argv[process.argv.indexOf('--route')+1];
 if(!process.argv.includes('--route')){
   for(const path of cases){
@@ -38,6 +39,8 @@ if(!process.argv.includes('--route')){
   process.on('unhandledRejection',error=>{process.stderr.write(String(error.stack||error)+'\n');process.exit(1);});
   const {allModels}=await import('../public/catalog.js'),{account}=await import('../public/account-sync.js'),{mountPlatform}=await import('../public/platform.js');
   await account.start();
+  const deferredProjection=routeURL.searchParams.get('projection')==='deferred';
+  if(deferredProjection)values.set('apex-garage-owner-v1',JSON.stringify('previous-owner'));
   const current=routeURL.pathname.startsWith('/cars/')?allModels.find(model=>model.id===routeURL.pathname.split('/')[2]):null;
   if(process.env.APEX_DEBUG_ROUTE)console.log('Route: before mount');
   const platform=mountPlatform({catalog:allModels,getCurrent:()=>current,selectModel(){},showCollection(){},openPart(){},compareModels(){},mountComparison(){return {destroy(){}};},dialog(){},toast(){}});
@@ -45,6 +48,12 @@ if(!process.argv.includes('--route')){
   if(process.env.APEX_DEBUG_ROUTE)console.log('Route: after mount');
   while(document.querySelector('.workspace-loading')&&Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,20));
   await new Promise(resolve=>setTimeout(resolve,60));
+  if(deferredProjection){
+    assert.equal(document.querySelector('.ac-player'),null,'An unresolved account projection cannot open a lesson session');
+    assert.ok(document.querySelector('.ml-loading'),'Learn waits for the correct account projection');
+    values.delete('apex-garage-owner-v1');
+    window.dispatchEvent(new window.CustomEvent('apex:accountprojection',{detail:{reason:'signed-out'}}));
+  }
   if(process.env.APEX_DEBUG_ROUTE)console.log('Route: imports settled',errors);
   assert.equal(document.querySelector('.destination-error'),null,'A lazy destination must mount without its error state');
   assert.equal(document.querySelector('.workspace-loading'),null,'The requested destination must finish loading');
@@ -70,6 +79,12 @@ if(!process.argv.includes('--route')){
   }
   if(routeURL.pathname==='/engines/s65')assert.equal(document.querySelector('[data-destination-crumb]').textContent,'S65');
   if(routeURL.pathname==='/start')assert.ok(document.querySelector('.tool-card'));
+  if(routeURL.pathname==='/learn'||routeURL.pathname.startsWith('/lessons/')){
+    assert.ok(document.querySelector('.motron-learn'),'Learn mounts the Motron interface');
+    if(routeURL.searchParams.get('tab')==='practice')assert.equal(document.querySelector('.ml-navigation [aria-current="page"]')?.dataset.value,'practice','Practice deep links survive delayed account projection');
+    if(routeURL.searchParams.get('lesson')==='history'||routeURL.hash==='#history')assert.ok(document.querySelector('.ml-history'),'Legacy lesson aliases and reference hashes open the requested view');
+    if(routeURL.searchParams.get('lesson')==='first-engine')assert.ok(document.querySelector('.ac-player'),'Requested lesson opens after delayed account projection');
+  }
   if(routeURL.pathname==='/play'){
     assert.ok(document.querySelector('.play-shell'));
     if(routeURL.search)assert.ok(document.querySelector('.play-rules'),'Onboarding mode links open the specified how-to screen');

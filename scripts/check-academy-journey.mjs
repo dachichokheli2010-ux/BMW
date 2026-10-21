@@ -12,7 +12,11 @@ const {partCatalog}=await import('../public/parts.js');
 const {academyLearningInterfaceTranslations}=await import('../public/academy-learning-translations.js');
 const {academyTranslationCoverage}=await import('../public/academy-translations.js');
 const {setLanguage,t}=await import('../public/preferences.js');
-const {account}=await import('../public/account-sync.js');
+const {account,createAccountController,ACCOUNT_KEYS}=await import('../public/account-sync.js');
+const {motronLearnTranslations}=await import('../public/motron-learn-copy.js');
+const {MOTRON_MARK_PATH}=await import('../public/brand-mark.js');
+const {modelProfileTranslations}=await import('../public/model-profile-translations.js');
+let focusedElement=null;window.HTMLElement.prototype.focus=function(){focusedElement=this;};
 const {lessonAccess}=await import('../public/academy-access.js');
 const {beginSession,emptyProgress}=await import('../public/academy-state.js');
 const {createLessonDraft}=await import('../public/academy-session.js');
@@ -33,7 +37,7 @@ let root=document.querySelector('#academy');
 // linkedom does not remove listeners through AbortSignal. A real remount gets
 // a fresh host, while both storage objects retain the browser's saved session.
 const replaceHost=()=>{const next=document.createElement('div');root.replaceWith(next);root=next;};
-const click=(action,value)=>{const button=root.querySelector('[data-ac="'+action+'"]'+(value===undefined?'':'[data-value="'+value+'"]'));assert.ok(button,`Missing action ${action} ${value??''}`);assert.equal(button.disabled,false,`Disabled action ${action}`);button.click();};
+const click=(action,value)=>{const button=root.querySelector('[data-ac="'+action+'"]'+(value===undefined?'':'[data-value="'+value+'"]'));assert.ok(button,`Missing action ${action} ${value??''}`);assert.equal(button.disabled,false,`Disabled action ${action}`);const event=new window.Event('click',{bubbles:true});Object.defineProperty(event,'detail',{value:0});button.dispatchEvent(event);};
 const answerQuestion=question=>{
   if(question.type==='choice')click('answer',question.correct);
   if(question.type==='order')for(const item of question.items)click('order',item.id);
@@ -41,23 +45,20 @@ const answerQuestion=question=>{
   click('check');assert.ok(root.querySelector('.ac-feedback.is-correct'),'A correct response reveals its explanation');
 };
 let academy=mountAcademy(root,{storageKey:'journey-fixture'});
-assert.equal(root.querySelectorAll('.ac-mission-stop').length,units[0].lessons.length);
-assert.ok(root.querySelector('.ac-next-lesson'));
-assert.equal(root.querySelector('.ac-mission-stop:nth-child(2) button').dataset.locked,'true','Learning path marks the prerequisite clearly');
-assert.ok(root.querySelector('.ac-mission-asphalt'),'The mission road remains the primary learning journey');
-assert.equal(root.querySelectorAll('.ac-mission-asphalt').length,units[0].lessons.length,'Every mission has a stretchable curve, including on mobile');
-assert.equal(root.querySelectorAll('.ac-road-sign').length,2,'Chapter road has a start and a destination');
-assert.ok(root.querySelector('.ac-journey-landscape[aria-hidden="true"]'),'The journey has original decorative landscape artwork.');
-assert.ok(root.querySelector('.ac-road-atlas'),'The scenic route uses the full mission atlas.');
-assert.equal(root.querySelectorAll('.ac-road-scenery[aria-hidden="true"]').length,units[0].lessons.length,'Road scenery stays decorative for screen readers.');
-assert.equal(root.querySelectorAll('.ac-route-vehicle').length,1,'Only the current mission carries the driving marker.');
-for(const stop of root.querySelectorAll('.ac-mission-stop')){
-  assert.equal(stop.querySelector('.ac-mission-asphalt').getAttribute('viewBox'),'0 0 320 240');
-  const paths=[...stop.querySelectorAll('.ac-mission-asphalt path')].map(path=>path.getAttribute('d'));
-  assert.ok(paths.length===4&&paths.every(path=>path===paths[0]),'Verge, asphalt and centre lane follow exactly the same curve.');
-  assert.ok(paths[0].startsWith('M160 0')&&paths[0].endsWith('160 240'),'Adjacent stretches meet on the same road centre.');
-  assert.equal(stop.querySelector('.ac-mission-copy').parentElement,stop.querySelector('button'),'Full mission names remain inside their accessible mission button.');
-}
+const dashboardReference=modelProfileTranslations.find(([english])=>english==='Dashboard');
+for(const [language,index]of [['ka',1],['ru',2]]){setLanguage(language,false);assert.equal(t('Dashboard'),dashboardReference[index],'Loading Learn preserves the physical dashboard reference translation');}
+setLanguage('en',false);
+assert.ok(root.classList.contains('motron-learn'));
+assert.equal(root.querySelectorAll('.ml-navigation button').length,5,'The new app exposes five focused learning areas');
+assert.equal(root.querySelector('.ml-next-card [data-ac="lesson"]').dataset.value,units[0].lessons[0],'The dashboard has one clear next mission');
+assert.equal(root.querySelector('.ml-brand svg path').getAttribute('d'),MOTRON_MARK_PATH,'Learn uses the original Motron identity');
+assert.ok([...document.querySelectorAll('link[rel="stylesheet"]')].some(link=>link.href.endsWith('/motron-learn.css')),'The new scoped stylesheet loads lazily');
+assert.equal(root.querySelector('.bmw-academy,.ac-shell,.ac-sidebar,.ac-road-atlas,.ac-mission-stop'),null,'The old three-column road app is fully replaced');
+click('nav','tracks');assert.equal(root.querySelectorAll('.ml-track-card').length,units.length,'All seven chapter tracks remain discoverable');
+click('unit','basics');
+assert.equal(root.querySelectorAll('.ml-mission').length,units[0].lessons.length);
+assert.equal(root.querySelector('.ml-mission:nth-child(2) button').dataset.locked,'true','The mission list explains chapter prerequisites');
+for(const mission of root.querySelectorAll('.ml-mission'))assert.equal(mission.querySelector('.ml-mission-copy').parentElement,mission.querySelector('button'),'Full titles are normal-flow content inside the accessible mission button');
 const beforeLocked=localStorage.getItem('journey-fixture-academy-v2');
 click('lesson',units[0].lessons[1]);
 assert.ok(root.querySelector('.ac-locked-panel'),'Locked nodes explain their prerequisite');
@@ -70,6 +71,8 @@ const first=lessons.find(lesson=>lesson.id===units[0].lessons[0]);
 assert.equal(root.querySelector('.ac-player').dataset.stage,'intro');
 assert.ok(root.querySelector('.ac-earned-rewards').textContent.includes('1 garage coin'));
 assert.ok(root.querySelector('details.ac-objectives-panel summary'));
+assert.ok(root.querySelector('.ml-concept-card'));assert.ok(root.querySelector('.ml-scenario .ml-reasoning'),'A concept leads to an applied self-check with reasoning');
+assert.equal(root.querySelector('.ml-session-steps [aria-current]').textContent.replace(/^01/,''),t('Concept'));
 assert.ok(root.querySelector('.ac-lesson-meta').textContent.includes(first.questions.length+' questions'));
 click('start-questions');
 const question=first.questions[0];assert.equal(question.type,'choice');
@@ -79,6 +82,7 @@ assert.ok(root.querySelector('.ac-feedback.is-incorrect'));
 assert.equal(root.querySelector('[data-ac="question-next"]'),null,'A wrong answer cannot skip the question');
 assert.equal(root.querySelector('.ac-first-attempt').textContent,'First answers: 0 / 1');
 answerQuestion(question);
+assert.ok(focusedElement===root.querySelector('[data-ac="question-next"]'),'Keyboard checking moves focus to the newly rendered Continue control');
 assert.equal(root.querySelector('.ac-first-attempt').textContent,'First answers: 0 / 1','Retries preserve the first-answer score');
 for(let i=1;i<first.questions.length;i++){click('question-next');answerQuestion(first.questions[i]);}
 click('finish');
@@ -87,12 +91,11 @@ assert.ok(root.querySelector('.ac-result-review').textContent.includes(question.
 assert.equal(root.querySelector('.ac-game-coins strong').textContent,'+'+(first.questions.length-1)+' garage coins this round','The wrong first response cannot earn a coin through a correction');
 assert.equal(root.querySelector('.ac-result-actions .ac-primary').dataset.value,units[0].lessons[1],'Completion recommends the next unfinished lesson');
 click('exit');
-assert.equal(root.querySelector('.ac-mission-stop:nth-child(2) button').disabled,false,'Completing a lesson unlocks the next card');
-assert.equal(root.querySelector('.ac-mission-stop:nth-child(2) button').dataset.locked,'false');
-assert.equal(root.querySelector('.ac-mission-stop:first-child button').dataset.locked,'false','Completed missions remain replayable');
-assert.ok(root.querySelector('.ac-mission-stop:nth-child(2) .ac-route-vehicle'),'The current driving marker follows progress to the next mission.');
-assert.equal(root.querySelector('.ac-mission-stop:first-child .ac-route-vehicle'),null);
-for(const href of ['/sounds','/personality','/timeline','/legends','/my-garage'])assert.ok(root.querySelector('.ac-side-quests a[href="'+href+'"]'),'Side quest discoverable from Learn: '+href);
+assert.equal(root.querySelector('.ml-next-card [data-ac="lesson"]').dataset.value,units[0].lessons[1],'Completion updates the dashboard next action');
+for(const href of ['/sounds','/personality','/timeline','/legends','/my-garage'])assert.ok(root.querySelector('.ml-discover a[href="'+href+'"]'),'Related activities remain discoverable: '+href);
+click('unit','basics');
+assert.equal(root.querySelector('.ml-mission:nth-child(2) button').dataset.locked,'false','Completing a lesson unlocks the next mission');
+assert.equal(root.querySelector('.ml-mission:first-child button').dataset.locked,'false','Completed missions remain replayable');
 academy.openLesson(first.id);click('start-questions');
 for(let i=0;i<first.questions.length;i++){if(i)click('question-next');answerQuestion(first.questions[i]);}click('finish');
 assert.equal(root.querySelector('.ac-game-coins strong').textContent,'+0 garage coins this round','Replaying checked questions does not pay more coins on the same day');
@@ -112,7 +115,7 @@ click('clear-answer');answerQuestion(match);
 for(const language of ['ka','ru','en']){
   setLanguage(language,false);assert.equal(root.querySelector('[data-ac="question-next"]')?.textContent.trim().replace(/\s*→$/,''),t('Continue'));
 }
-assert.deepEqual(academyTranslationCoverage(academyLearningInterfaceTranslations.map(([english])=>english)).missing,[],'Every new learning interface string has Georgian and Russian copy');
+assert.deepEqual(academyTranslationCoverage([...academyLearningInterfaceTranslations,...motronLearnTranslations].map(([english])=>english)).missing,[],'Every new learning interface string has Georgian and Russian copy');
 academy.destroy();replaceHost();academy=mountAcademy(root,{initialTab:'models',storageKey:'tab-fixture'});
 assert.ok(root.querySelector('.ac-challenge-grid'),'An explicit initial tab opens its requested Academy section');
 const modelsUnit=units.find(unit=>unit.id==='models');
@@ -141,16 +144,17 @@ const syncedValue=JSON.stringify(syncedProgress),syncEvent=new window.Event('sto
 localStorage.setItem('deep-link-fixture-academy-v2',syncedValue);
 Object.defineProperties(syncEvent,{key:{value:'deep-link-fixture-academy-v2'},newValue:{value:syncedValue}});window.dispatchEvent(syncEvent);
 assert.equal(root.querySelector('.ac-locked-panel'),null,'Another tab unlocking the previewed mission reconciles the lock screen');
-assert.equal(root.querySelector('.ac-next-lesson').dataset.value,units[0].lessons.at(-1),'The updated road offers the newly unlocked mission without a blank panel');
+assert.equal(root.querySelector('.ml-next-card [data-ac="lesson"]').dataset.value,units[0].lessons.at(-1),'The updated dashboard offers the newly unlocked mission without a blank panel');
 for(const language of ['ka','ru','en']){
   setLanguage(language,false);academy.setTab('path');
-  assert.equal(root.querySelector('.ac-view-heading h1').textContent,t('Your road to BMW know-how.'));
-  assert.equal(root.querySelectorAll('.ac-mission-stop').length,units[0].lessons.length);
-  assert.equal(root.querySelector('.ac-mission-stop .ac-mission-copy strong').textContent,t(lessons.find(lesson=>lesson.id===units[0].lessons[0]).title),'Mission names stay complete in each language');
+  assert.equal(root.querySelector('.ml-heading h1').textContent,t('Understand the car. One idea at a time.'));
+  academy.setTab('basics');
+  assert.equal(root.querySelectorAll('.ml-mission').length,units[0].lessons.length);
+  assert.equal(root.querySelector('.ml-mission .ml-mission-copy strong').textContent,t(lessons.find(lesson=>lesson.id===units[0].lessons[0]).title),'Mission names stay complete in each language');
 }
 academy.destroy();replaceHost();
 localStorage.setItem('legacy-lock-fixture',JSON.stringify({'combustion:beginner':true}));
-academy=mountAcademy(root,{storageKey:'legacy-lock-fixture'});
+academy=mountAcademy(root,{storageKey:'legacy-lock-fixture'});academy.setTab('basics');
 assert.equal(root.querySelector('[data-ac="lesson"][data-value="combustion"]').dataset.locked,'false','Actual legacy completion survives migration with earlier gaps');
 assert.equal(academy.openLesson('combustion'),true);assert.ok(root.querySelector('.ac-player'),'Migrated completed lessons can be replayed');
 academy.destroy();replaceHost();
@@ -162,5 +166,54 @@ assert.equal(root.querySelector('.ac-resume-card'),null,'A draft cannot advertis
 const resumeAttempt=document.createElement('button');resumeAttempt.dataset.ac='resume';root.append(resumeAttempt);resumeAttempt.click();
 assert.ok(root.querySelector('.ac-locked-panel'),'The resume handler independently checks prerequisites');
 assert.equal(root.querySelector('.ac-player'),null,'An older draft cannot bypass current chapter prerequisites');
-academy.destroy();account.destroy();
-console.log('PASS Academy journey: winding road and destinations, central prerequisites across every launcher, replayable legacy gaps, unlocked daily/puzzles/review, first-answer coins, explanations, draft recovery, full translated mission names and initial tabs.');
+academy.destroy();
+replaceHost();setLanguage('en',false);
+const originalAccountMethods={getSnapshot:account.getSnapshot,subscribe:account.subscribe};
+const alice={id:'local:learn-alice',name:'Alice'},bob={id:'local:learn-bob',name:'Bob'};
+const aliceProgress=emptyProgress(),bobProgress=emptyProgress();
+aliceProgress.xp=125;aliceProgress.name='Alice';bobProgress.xp=23;bobProgress.name='Bob';bobProgress.selectedPath='powertrains';
+let sessionUser=alice,releaseSession=null,delaySession=false;
+const remoteProgress=new Map([[alice.id,aliceProgress],[bob.id,bobProgress]]);
+localStorage.setItem('apex-garage-owner-v1',JSON.stringify(alice.id));
+localStorage.setItem(ACCOUNT_KEYS.academy,JSON.stringify(aliceProgress));
+const identityController=createAccountController({storage:localStorage,eventTarget:window,fetchImpl:async(path,request={})=>{
+  if(path==='/api/auth/session'){
+    if(delaySession)await new Promise(resolve=>{releaseSession=resolve;});
+    return Response.json({user:sessionUser,csrfToken:'journey-test-csrf'});
+  }
+  if(path==='/api/garage'&&(!request.method||request.method==='GET'))return Response.json({revision:0,updatedAt:null,state:{favorites:[],builds:[],academy:remoteProgress.get(sessionUser.id),legacyProgress:{}}});
+  throw new Error('Unexpected identity regression request '+path);
+}});
+await identityController.start();
+account.getSnapshot=identityController.getSnapshot;account.subscribe=identityController.subscribe;
+academy=mountAcademy(root);
+assert.equal(academy.openLesson(first.id),true);click('start-questions');answerQuestion(first.questions[0]);
+const aliceSaved=JSON.parse(localStorage.getItem(ACCOUNT_KEYS.academy));
+assert.equal(aliceSaved.name,'Alice');assert.equal(aliceSaved.attempts[first.questions[0].id].total,1);
+delaySession=true;sessionUser=bob;
+const bobProjection=JSON.stringify(bobProgress);
+localStorage.setItem('apex-garage-owner-v1',JSON.stringify(bob.id));localStorage.setItem(ACCOUNT_KEYS.academy,bobProjection);
+const ownerEvent=new window.Event('storage');Object.defineProperty(ownerEvent,'key',{value:'apex-garage-owner-v1'});window.dispatchEvent(ownerEvent);
+assert.equal(identityController.getSnapshot().user.id,alice.id,'The delayed response still exposes the previous user');
+assert.equal(identityController.getSnapshot().ready,false,'The account controller invalidates identity immediately');
+assert.ok(root.querySelector('.ml-loading'),'Learn suspends before the delayed session response');
+assert.equal(root.querySelector('.ac-player'),null,'The old account cannot keep answering while identity is unknown');
+assert.equal(academy.openLesson(first.id),false,'The public lesson entry point also blocks during identity resolution');
+for(const action of ['check','finish']){const staleAction=document.createElement('button');staleAction.dataset.ac=action;root.append(staleAction);staleAction.click();}
+assert.equal(localStorage.getItem(ACCOUNT_KEYS.academy),bobProjection,'Stale answer/finish events cannot overwrite the new account projection');
+const aliceDraft=JSON.parse(sessionStorage.getItem('bmw-academy-state-v2-unfinished:'+alice.id));
+assert.equal(aliceDraft.owner,alice.id);assert.equal(aliceDraft.session.first[first.questions[0].id],true,'The previous session is recoverable only under its original owner');
+let identityWaitTimer;
+const bobReady=new Promise((resolve,reject)=>{const unsubscribe=identityController.subscribe(snapshot=>{if(snapshot.ready&&snapshot.user?.id===bob.id)queueMicrotask(()=>{unsubscribe();resolve();});});identityWaitTimer=setTimeout(()=>{unsubscribe();reject(new Error('Timed out waiting for the resolved Bob account'));},3000);});
+assert.equal(typeof releaseSession,'function');releaseSession();try{await bobReady;}finally{clearTimeout(identityWaitTimer);}
+assert.equal(root.querySelector('.ml-loading'),null);assert.equal(root.querySelector('.ml-wallet>span strong').textContent,'23','The new owner sees only their XP');
+assert.equal(root.querySelector('.ac-resume-card'),null,'Alice\'s unfinished lesson is not offered to Bob');
+assert.equal(JSON.parse(localStorage.getItem(ACCOUNT_KEYS.academy)).attempts[first.questions[0].id],undefined,'Alice\'s checked answers are not imported into Bob');
+assert.equal(academy.openLesson(first.id),true);click('start-questions');answerQuestion(first.questions[0]);academy.destroy();
+const bobSaved=JSON.parse(localStorage.getItem(ACCOUNT_KEYS.academy)),bobDraft=JSON.parse(sessionStorage.getItem('bmw-academy-state-v2-unfinished:'+bob.id));
+assert.equal(bobSaved.name,'Bob');assert.equal(bobSaved.xp,23);assert.equal(bobSaved.attempts[first.questions[0].id].total,1);
+assert.equal(bobDraft.owner,bob.id);assert.equal(JSON.parse(sessionStorage.getItem('bmw-academy-state-v2-unfinished:'+alice.id)).owner,alice.id);
+assert.equal(JSON.parse(localStorage.getItem('apex-garage-game-v1:account:'+encodeURIComponent(alice.id))).coins,1);
+assert.equal(JSON.parse(localStorage.getItem('apex-garage-game-v1:account:'+encodeURIComponent(bob.id))).coins,1,'Quiz coins use the resolved owner after switching');
+identityController.destroy();Object.assign(account,originalAccountMethods);account.destroy();
+console.log('PASS Motron Learn journey: new dashboard and seven tracks, concept/apply/keep sessions, centralized prerequisites, preserved replay/rewards, keyboard Continue focus, drafts, three languages, deep links and delayed account-switch isolation.');

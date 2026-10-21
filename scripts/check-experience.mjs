@@ -77,7 +77,7 @@ try{
     assert.deepEqual(result.cards,['e92']);assert.deepEqual(result.values,{e92:25000});assert.deepEqual(result.services,[service]);assert.equal(result.paint,'Alpine White');assert.equal(result.wheel,'silver');assert.equal(Object.hasOwn(result,'password'),false);
     const dates=validateHub({...emptyHub(),claimedDays:['2026-02-31','2026-02-28','2024-02-29','2025-02-29'],services:[{...service,date:'2026-02-31'},{...service,due:'2025-02-29'},service]},allModels);
     assert.deepEqual(dates.claimedDays,['2026-02-28','2024-02-29'],'Imported dates must exist on the calendar');assert.deepEqual(dates.services,[service]);
-    assert.throws(()=>validateHub({cards:[]},allModels),/not an APEX collection/);assert.throws(()=>validateHub({...emptyHub(),services:Array(1001).fill(service)},allModels),/1,000/);
+    assert.throws(()=>validateHub({cards:[]},allModels),/not an Motron collection/);assert.throws(()=>validateHub({...emptyHub(),services:Array(1001).fill(service)},allModels),/1,000/);
   });
 
   await check('garage totals convert PS and kW to mechanical hp and average only available sprint figures',()=>{

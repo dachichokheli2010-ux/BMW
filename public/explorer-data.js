@@ -60,7 +60,7 @@ export const carRecords=allModels.map(model=>({
   id:model.id,name:model.name,url:carURL(model.id),engineId:engineId(model.code),
   fields:[...model.profile.sections.flatMap(section=>section.fields),...extraCarDefinitions.map(([id,label])=>{
     const story=storyFor(model),value=id==='bestFor'?story?.bestFor:id==='cons'?story?.tradeOff:null;
-    return value&&model.source?{id,label,status:'source-linked',value,unit:null,sources:[{url:model.source,title:model.name+' factory reference'}],note:'APEX editorial guidance, not a factory buying recommendation.'}:unknown(id,label,'A matching model, year and market reference has not yet been checked.');
+    return value&&model.source?{id,label,status:'source-linked',value,unit:null,sources:[{url:model.source,title:model.name+' factory reference'}],note:'Motron editorial guidance, not a factory buying recommendation.'}:unknown(id,label,'A matching model, year and market reference has not yet been checked.');
   })],
   photos:model.profile.photos,context:model.profile.context
 }));
@@ -84,7 +84,7 @@ export const engineRecords=[...new Set(allModels.map(model=>model.code))].map(co
   const setFact=(key,value,sources,note)=>Object.assign(fields.find(field=>field.id===key),{status:'cross-checked',value,unit:key==='displacement'?'cm³':null,sources,note});
   const design=engineNotes[code];
   if(design){
-    for(const [key,value]of [['funFact',design[0]],['strengths',design[1]]])Object.assign(fields.find(field=>field.id===key),{status:'source-linked',label:key==='strengths'?'Design character':'Engine fact',value,sources:[{url:applications[0].source,title:applications[0].name+' factory reference'}],note:'APEX design guide with the represented application’s factory reference; not a blanket reliability assessment.'});
+    for(const [key,value]of [['funFact',design[0]],['strengths',design[1]]])Object.assign(fields.find(field=>field.id===key),{status:'source-linked',label:key==='strengths'?'Design character':'Engine fact',value,sources:[{url:applications[0].source,title:applications[0].name+' factory reference'}],note:'Motron design guide with the represented application’s factory reference; not a blanket reliability assessment.'});
   }
   if(code==='S58'){
     setFact('engineLayout','Inline-six',[legends,s58Detail],'Both BMW M references describe the S58 series engine.');

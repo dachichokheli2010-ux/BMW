@@ -9,7 +9,7 @@ const {communityTranslations}=await import('../public/community-translations.js'
 const {challengeTranslations}=await import('../public/community-challenge-ui.js');
 const tick=()=>new Promise(resolve=>setTimeout(resolve,8));let checks=0;
 const check=(value,message)=>{assert.ok(value,message);checks++;};
-const valid={title:'My Sunday BMW',model:'BMW M3 / E46',year:2003,engine:'S54B32',transmission:'6-speed manual',horsepower:null,description:'My carefully maintained BMW, with photographs from my own garage.',evidence:'I can show a current photograph with my APEX handle.',photos:[{data:'data:image/jpeg;base64,test',caption:'Exterior'}]};
+const valid={title:'My Sunday BMW',model:'BMW M3 / E46',year:2003,engine:'S54B32',transmission:'6-speed manual',horsepower:null,description:'My carefully maintained BMW, with photographs from my own garage.',evidence:'I can show a current photograph with my Motron handle.',photos:[{data:'data:image/jpeg;base64,test',caption:'Exterior'}]};
 check(!validateCommunitySubmission(valid),'Undocumented power can remain empty');
 check(validateCommunitySubmission({...valid,year:1890}),'Impossible model years fail');
 check(validateCommunitySubmission({...valid,photos:[]}),'A real photo is required');

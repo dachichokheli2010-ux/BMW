@@ -1,4 +1,4 @@
-# APEX upgrade roadmap
+# Motron upgrade roadmap
 
 This is an incremental upgrade to the existing buildless JavaScript site, with dedicated pages, the existing Three.js viewers, Neon on Vercel, and SQLite for an unconfigured local preview. Existing catalogs, account identities, saved garages and learning progress are retained.
 

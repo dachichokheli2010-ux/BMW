@@ -25,4 +25,11 @@ for(const path of ['/api/router','/api/router?__apex_route=admin/login&__apex_ro
 const config=JSON.parse(await fs.readFile(new URL('../vercel.json',import.meta.url),'utf8'));
 assert.ok(config.rewrites.some(rule=>rule.source==='/api/admin/:action'&&rule.destination==='/api/router?__apex_route=admin/:action'));
 assert.ok(config.rewrites.some(rule=>rule.source==='/api/community/:path*'&&rule.destination==='/api/router?__apex_route=community/:path*'));checks+=2;
+let connects=0;
+const missingDatabase=createRoutedVercelHandler({environment:{},connect:async()=>{connects++;throw new Error('Unexpected connection');}});
+const missingResponse=await missingDatabase(new Request(origin+'/api/router?__apex_route=admin/session'));
+assert.equal(missingResponse.status,503);assert.equal((await missingResponse.json()).code,'DATABASE_NOT_CONFIGURED');assert.equal(connects,0);assert.equal(missingResponse.headers.get('cache-control'),'no-store');checks++;
+const failingDatabase=createRoutedVercelHandler({environment:{DATABASE_URL:'postgresql://private-user:private-password@db.invalid/test'},connect:async()=>{throw Object.assign(new Error('Never expose the connection string or SQL error.'),{code:'42501'});}});
+const failingResponse=await failingDatabase(new Request(origin+'/api/router?__apex_route=admin/session')),failure=await failingResponse.json();
+assert.equal(failingResponse.status,503);assert.equal(failure.code,'DATABASE_UNAVAILABLE');assert.equal(failingResponse.headers.get('cache-control'),'no-store');assert.ok(!JSON.stringify(failure).includes('private-password')&&!JSON.stringify(failure).includes('42501'));checks++;
 console.log(`Vercel API routing: ${checks} checks passed (all nested routes, private mutations, query preservation and invalid targets).`);

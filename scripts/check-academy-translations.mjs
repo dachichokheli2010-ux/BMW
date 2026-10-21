@@ -57,18 +57,18 @@ const guideUIExamples = [
   'Buyer guides', 'Research a BMW generation before you buy', 'Generation buyer guides',
   'BUY WITH CONTEXT', 'Explore catalog-backed BMW generation pages, sourced pre-purchase checks, and import guidance for buyers in Georgia.',
   'CHASSIS-BY-CHASSIS RESEARCH', 'Opening generation buyer guides…',
-  'APEX collection examples are not a complete production or market list. Engine and model details link to their factory sources.',
+  'Motron collection examples are not a complete production or market list. Engine and model details link to their factory sources.',
   'Search chassis, model or engine', 'Try E46, M3 or S54', 'Showing {count} generations',
   'No matching generations. Try a chassis or engine code.', 'BMW GENERATION', '{count} catalog examples',
   'All buyer guides', 'BMW GENERATION BUYER GUIDE', 'A source-linked starting point for researching this generation.',
   'OVERVIEW', 'ENGINES', 'RESEARCH STATUS', 'BEFORE YOU BUY', 'MAINTENANCE', 'GEORGIA BUYER NOTES',
-  'Catalog overview', 'This page groups the models currently represented in APEX under this chassis code. It does not claim to list every engine, trim, year or market variant.',
+  'Catalog overview', 'This page groups the models currently represented in Motron under this chassis code. It does not claim to list every engine, trim, year or market variant.',
   'Engines represented in this catalog', 'These engine codes are only the sourced examples linked above, not a complete list of engines offered for this generation.',
   'Known issues', 'Not available: no generation-specific issue claims are included without a verified source.',
   'Pre-purchase checks', 'Typical maintenance items', 'Not available: consult the service schedule for the exact vehicle, market and VIN.',
   'If you are buying in Georgia', 'Cars imported from the US', 'Cars imported from Europe', 'Clearance and inspection in Georgia',
   'Other generation guides', 'Explore another chassis', 'Browse all', 'Source for: {claim}', 'Factory source',
-  'Factory source for {model}', 'BMW {chassis} buyer guide · APEX', 'No catalog generation matches {chassis}.',
+  'Factory source for {model}', 'BMW {chassis} buyer guide · Motron', 'No catalog generation matches {chassis}.',
 ];
 const generationGuideClaims = Object.values(generationGuideSources).flat().map(item=>item.claim);
 const allUIExamples = [...uiExamples,...guideUIExamples,...generationGuideClaims];

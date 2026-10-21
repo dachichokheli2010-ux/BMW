@@ -67,5 +67,5 @@ const server=http.createServer(async(req,res)=>{
  }
 });
 server.requestTimeout=30000;server.headersTimeout=15000;
-server.listen(port,host,()=>console.log(`BMW Garage running at http://${host==='0.0.0.0'?'localhost':host}:${port} — ${neonConnection?'Neon PostgreSQL configured':'local SQLite storage'}.`));
+server.listen(port,host,()=>console.log(`Motron running at http://${host==='0.0.0.0'?'localhost':host}:${port} — ${neonConnection?'Neon PostgreSQL configured':'local SQLite storage'}.`));
 for(const signal of ['SIGINT','SIGTERM'])process.once(signal,()=>{server.close(async()=>{await database?.close();process.exit(0);});server.closeIdleConnections();});

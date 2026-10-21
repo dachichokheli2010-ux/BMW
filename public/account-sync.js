@@ -19,8 +19,8 @@ export function summarizeGarage(state) {
 export function accountStorageMessage(snapshot) {
   if(snapshot.storageAvailable===false)return 'Browser storage is unavailable. Local changes may not be saved.';
   if(!snapshot.user)return 'Guest data is saved in this browser. Sign in to sync across devices.';
-  if(snapshot.status==='synced')return 'Saved to your APEX account. Changes sync across your devices.';
-  if(snapshot.status==='pending'||snapshot.status==='syncing')return 'Saving to your APEX account. A copy stays on this browser.';
+  if(snapshot.status==='synced')return 'Saved to your Motron account. Changes sync across your devices.';
+  if(snapshot.status==='pending'||snapshot.status==='syncing')return 'Saving to your Motron account. A copy stays on this browser.';
   if(snapshot.status==='conflict')return 'Saved on this device. Resolve the sync conflict in Account.';
   if(snapshot.status==='offline')return 'Saved on this device. Account sync is waiting to reconnect.';
   return 'Account sync needs attention. Open Account to review it.';

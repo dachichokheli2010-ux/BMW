@@ -1,5 +1,6 @@
 import {neon} from '@neondatabase/serverless';
 import {communitySchemaStatements,communityTableNames} from './community-schema.js';
+import {environmentValue} from './environment-values.js';
 
 // App-owned tables live separately from any tables created in Neon SQL Editor.
 export const POSTGRES_SCHEMA='apex';
@@ -49,7 +50,7 @@ const clients=new Map();
 
 export function databaseURL(environment=process.env){
  for(const key of ['DATABASE_URL','POSTGRES_URL','NEON_DATABASE_URL','DATABASE_URL_UNPOOLED','POSTGRES_URL_NON_POOLING']){
-  const value=environment[key]?.trim();if(value)return value;
+  const value=environmentValue(environment[key]);if(value)return value;
  }
  return null;
 }
@@ -105,11 +106,17 @@ export async function inspectPostgres(query){
  const result=await query(columnsQuery,['apex']);
  return Object.fromEntries(Object.keys(required).map(table=>[table,{columns:result.rows.filter(row=>row.table_name===table).map(row=>row.column_name),missing:required[table].filter(column=>!result.rows.some(row=>row.table_name===table&&row.column_name===column))}]));
 }
-export async function initializePostgres(query,transaction){
- const statements=[['SELECT pg_advisory_xact_lock(7491832)',[]],...postgresSchemaStatements.map(sql=>[sql,[]])];
- if(transaction)await transaction(statements);else for(const [sql,values]of statements)await query(sql,values);
- const report=await inspectPostgres(query);
- if(Object.values(report).some(table=>table.missing.length))throw new Error('The apex database schema is incomplete. Run npm run db:check to inspect it.');
+export async function initializePostgres(query,transaction,{applySchema=false}={}){
+ // An already provisioned deployment can use a data-only role. PostgreSQL
+ // checks CREATE privileges even for CREATE ... IF NOT EXISTS, so replaying DDL
+ // on every cold start can block otherwise valid account/admin sessions.
+ let report=await inspectPostgres(query);
+ if(applySchema||Object.values(report).some(table=>table.missing.length)){
+  const statements=[['SELECT pg_advisory_xact_lock(7491832)',[]],...postgresSchemaStatements.map(sql=>[sql,[]])];
+  if(transaction)await transaction(statements);else for(const [sql,values]of statements)await query(sql,values);
+  report=await inspectPostgres(query);
+ }
+ if(Object.values(report).some(table=>table.missing.length))throw Object.assign(new Error('The apex database schema is incomplete. Run npm run db:check to inspect it.'),{code:'DATABASE_SCHEMA_INCOMPLETE'});
  // Preserve accounts from the prior app schema, if it is actually that schema.
  // Manually-created public tables with different columns are left untouched.
  const legacy=(await query(columnsQuery,['public'])).rows;
@@ -141,5 +148,5 @@ export async function createPostgresDatabase(connectionString,{initialize=true}=
   if(!client.ready)client.ready=initializePostgres(client.query,client.transaction).catch(error=>{client.ready=null;throw error;});
   await client.ready;
  }
- return {...createPostgresAdapter(client.query,client.transaction),inspect:()=>inspectPostgres(client.query),initialize:()=>initializePostgres(client.query,client.transaction)};
+ return {...createPostgresAdapter(client.query,client.transaction),inspect:()=>inspectPostgres(client.query),initialize:()=>initializePostgres(client.query,client.transaction,{applySchema:true})};
 }

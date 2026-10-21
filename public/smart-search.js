@@ -18,7 +18,7 @@ const aliases = {
 };
 const topics = [
   ['starter-kit', 'Find my BMW & name decoder', 'beginner start here family BMW cheap affordable budget finder name decoder M340i xDrive eDrive comfy sporty', 'engineering'],
-  ['play-arcade', 'APEX games & daily challenge', 'arcade games daily quiz badges XP sprint survival memory timeline versus flashcards', 'engineering'],
+  ['play-arcade', 'Motron games & daily challenge', 'arcade games daily quiz badges XP sprint survival memory timeline versus flashcards', 'engineering'],
   ['glossary', 'Automotive glossary', 'Glossary definitions terminology VANOS Valvetronic xDrive DCT torque horsepower ტერმინები ლექსიკონი словарь термины', 'academy'],
   ['m-recognition', 'BMW M photo challenges', 'BMW M recognition identify photo quiz M2 M3 M4 M5 M6 M8 generation chassis თამაში ფოტო викторина', 'academy'],
   ['academy-practice', 'Automotive puzzles', 'Puzzles matching sequence components quick practice quiz თავსატეხები задачи практика', 'academy'],
@@ -83,7 +83,7 @@ export function createSearchIndex(catalog = [], parts = []) {
   const engines=engineRecords.map(engine=>makeRecord({id:'directory-engine-'+engine.id,category:'Engineering',title:engine.code+' engine family',identity:engine.code,keywords:[engine.name,engine.tagline,...engine.searchTerms].join(' '),subtitle:engine.applications.length+' catalog applications · engine directory',href:engineURL(engine)}));
   return [...vehicles,...components,...engines,...topics.map(([id,title,keywords,kind]) => makeRecord({
     id, category:kind === 'academy' ? 'Lessons' : kind === 'community' ? 'Community' : 'Engineering', title, identity:id, keywords,
-    subtitle:kind === 'academy' ? 'Academy · interactive lesson' : kind === 'community' ? 'Your place in the APEX community' : 'Interactive educational workspace',
+    subtitle:kind === 'academy' ? 'Academy · interactive lesson' : kind === 'community' ? 'Your place in the Motron community' : 'Interactive educational workspace',
   }))];
 }
 

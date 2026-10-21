@@ -35,7 +35,7 @@ function renderSources(items) {
 
 function renderCatalog(container,groups) {
   container.innerHTML=`<div class="generation-guide-index">
-    <p class="generation-guide-disclosure">${esc(t('APEX collection examples are not a complete production or market list. Engine and model details link to their factory sources.'))}</p>
+    <p class="generation-guide-disclosure">${esc(t('Motron collection examples are not a complete production or market list. Engine and model details link to their factory sources.'))}</p>
     <label class="generation-guide-search">${esc(t('Search chassis, model or engine'))}<input type="search" data-guide-search placeholder="${esc(t('Try E46, M3 or S54'))}" autocomplete="off"></label>
     <p class="generation-guide-count" role="status" aria-live="polite"></p>
     <div class="generation-guide-grid" data-guide-grid>${groups.map(group=>`<a class="generation-guide-card" data-guide-card data-search="${esc([group.code,...group.models.flatMap(model=>[model.name,model.code])].join(' ').toLowerCase())}" href="/generation-guides?chassis=${encodeURIComponent(group.code)}"><span class="eyebrow">${esc(t('BMW GENERATION'))}</span><strong>${esc(group.code)}</strong><span>${esc(t('{count} catalog examples',{count:group.models.length}))}</span><span class="generation-guide-card-arrow" aria-hidden="true">↗</span></a>`).join('')}</div>
@@ -59,7 +59,7 @@ function renderGuide(container,group,groups) {
     <a class="generation-guide-back" href="/generation-guides">← ${esc(t('All buyer guides'))}</a>
     <header class="generation-guide-detail-heading"><span class="eyebrow">${esc(t('BMW GENERATION BUYER GUIDE'))}</span><h2>${esc(group.code)}</h2><p>${esc(t('A source-linked starting point for researching this generation.'))}</p></header>
     <div class="generation-guide-sections">
-      <section class="generation-guide-section"><span class="eyebrow">01 / ${esc(t('OVERVIEW'))}</span><h3>${esc(t('Catalog overview'))}</h3><p>${esc(t('This page groups the models currently represented in APEX under this chassis code. It does not claim to list every engine, trim, year or market variant.'))}</p><div class="generation-guide-models">${modelCards}</div></section>
+      <section class="generation-guide-section"><span class="eyebrow">01 / ${esc(t('OVERVIEW'))}</span><h3>${esc(t('Catalog overview'))}</h3><p>${esc(t('This page groups the models currently represented in Motron under this chassis code. It does not claim to list every engine, trim, year or market variant.'))}</p><div class="generation-guide-models">${modelCards}</div></section>
       <section class="generation-guide-section"><span class="eyebrow">02 / ${esc(t('ENGINES'))}</span><h3>${esc(t('Engines represented in this catalog'))}</h3><p class="generation-guide-engine-codes">${codes.map(code=>`<span>${esc(code)}</span>`).join('')}</p><p>${esc(t('These engine codes are only the sourced examples linked above, not a complete list of engines offered for this generation.'))}</p></section>
       <section class="generation-guide-section"><span class="eyebrow">03 / ${esc(t('RESEARCH STATUS'))}</span><h3>${esc(t('Engine concerns & evidence'))}</h3><a class="guide-source-link" href="#buyer-research">${esc(t('Choose your exact BMW'))} ↓</a></section>
       <section class="generation-guide-section"><span class="eyebrow">04 / ${esc(t('BEFORE YOU BUY'))}</span><h3>${esc(t('Pre-purchase checks'))}</h3><ul class="generation-guide-checks">${references('prePurchase')}</ul></section>
@@ -76,7 +76,7 @@ export function mountGenerationGuides(container,{catalog}) {
   const group=groups.find(item=>item.code===selected);
   if(group){
     renderGuide(container,group,groups);
-    const updateTitle=()=>{document.title=t('BMW {chassis} buyer guide · APEX',{chassis:group.code});};
+    const updateTitle=()=>{document.title=t('BMW {chassis} buyer guide · Motron',{chassis:group.code});};
     updateTitle();
     window.addEventListener('apex:languagechange',updateTitle);
   }

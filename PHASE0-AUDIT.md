@@ -1,4 +1,4 @@
-# APEX audit — 19 October 2026
+# Motron audit — 19 October 2026
 
 Scope: the current local checkout, including its existing uncommitted changes. Application source, routes, API, account synchronization, learning content, catalog assembly, image manifests and existing checks were reviewed in parallel before implementation. Existing work is preserved.
 

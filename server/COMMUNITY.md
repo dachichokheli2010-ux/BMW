@@ -32,7 +32,14 @@ only**. The password record uses the existing salted PBKDF2-SHA256 format with
 `.env.local` file; `npm run admin:check` reports configuration status without
 printing credentials. Local files do not update a running deployment. Configure
 the same two variables through the deployment provider's private server secrets
-before deploying. Never commit them to source code, browser assets or
+before deploying. On Vercel, enable the variables for Production and any Preview
+environment you use, then redeploy; existing deployments do not read a changed
+local file. A `200` response from `/api/admin/session` with `configured: false`
+means the database API responded but the deployed owner credentials are missing
+or invalid. Database configuration/outage failures instead return `503` with
+`DATABASE_NOT_CONFIGURED` or `DATABASE_UNAVAILABLE`. Surrounding whitespace and
+one pair of dotenv quotes are accepted without changing the credential record.
+Never commit them to source code, browser assets or
 `vercel.json`. No email delivery provider or pre-existing public account is
 required for administrator sign-in.
 

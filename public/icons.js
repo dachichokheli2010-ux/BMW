@@ -1,6 +1,6 @@
 import {originalText,translateText,t} from './preferences.js';
 
-// Original APEX symbols: one 24-unit grid, rounded 1.5-unit strokes.
+// Original Motron symbols: one 24-unit grid, rounded 1.5-unit strokes.
 const drawings=Object.freeze({
  external:'<path d="M4 21v-7a7 7 0 0 1 7-7h9M16 3l4 4-4 4M8 21v-6a4 4 0 0 1 4-4"/>',
  next:'<path d="M3 16h8a6 6 0 0 0 6-6V5M13 9l4-4 4 4M3 12h7a3 3 0 0 0 3-3V5"/>',
@@ -53,7 +53,7 @@ export const iconNames=Object.freeze(Object.keys(drawings));
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 /** @param {string} name @param {{label?:string,className?:string}} [options] */
 export function icon(name,{label,className=''}={}){
- if(!Object.hasOwn(drawings,name))throw new TypeError('Unknown APEX icon: '+name);
+ if(!Object.hasOwn(drawings,name))throw new TypeError('Unknown Motron icon: '+name);
  return `<svg class="apex-icon ${esc(className)}" data-apex-icon="${name}" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ${label?`role="img" aria-label="${esc(label)}"`:'aria-hidden="true"'}>${drawings[name]}</svg>`;
 }
 

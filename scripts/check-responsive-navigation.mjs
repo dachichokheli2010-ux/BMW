@@ -5,7 +5,7 @@ import {mountNavigation} from '../public/navigation.js';
 
 // Test controller behavior at the same widths used by the final CSS cascade.
 // CSS geometry and browser-native modality still need real-browser visual QA.
-const {document,window}=parseHTML('<html><body style="top:7px"><header class="site-header"><a class="brand" href="/">APEX</a><div class="header-tools"><div class="apex-select"><select id="language-select"><option>English</option></select></div><button id="theme-toggle">Theme</button></div></header><main></main></body></html>');
+const {document,window}=parseHTML('<html><body style="top:7px"><header class="site-header"><a class="brand" href="/">Motron</a><div class="header-tools"><div class="apex-select"><select id="language-select"><option>English</option></select></div><button id="theme-toggle">Theme</button></div></header><main></main></body></html>');
 const location=new URL('https://apex.example/models');
 let width=390,active=document.body,searches=0;
 const queries=[],scrolls=[];
@@ -59,5 +59,5 @@ const helperStyles=await fs.readFile(new URL('../public/site-helper.css',import.
 assert.ok(helperStyles.includes('@media(max-width:760px){body:has(.account-page) .site-helper-trigger{display:none}}'),'The floating helper must not cover the account page on mobile');
 const glassStyles=await fs.readFile(new URL('../public/liquid-glass.css',import.meta.url),'utf8');
 assert.ok(glassStyles.includes('body:has(.account-page) .glass-bottom-nav { display: none; }'),'The fixed quick navigation must not cover account controls on mobile');
-assert.ok(glassStyles.includes('body:has(.bmw-academy .ac-player) .glass-bottom-nav { display: none; }'),'The fixed quick navigation must not cover the active lesson action bar on mobile');
+assert.ok(glassStyles.includes('body:has(.motron-learn .ac-player) .glass-bottom-nav { display: none; }'),'The fixed quick navigation must not cover the active Motron lesson action bar on mobile');
 console.log('PASS Responsive navigation: 320/390/1120px controls, 1121/1200/1440px restoration, queued close/reopen, focus, scroll lock, history routes, menu search, cleanup and all four page style orders (DOM simulation).');

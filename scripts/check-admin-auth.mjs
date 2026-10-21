@@ -4,6 +4,7 @@ import {createLocalDatabase} from '../server/local-db.mjs';
 import {initializePostgres,createPostgresAdapter} from '../server/postgres-db.js';
 import {handleApi} from '../server/api.js';
 import {hashPassword,verifyPassword,randomToken,tokenHash} from '../server/passwords.js';
+import {adminConfiguration} from '../server/admin-auth.js';
 
 let checks=0;
 const check=(value,message)=>{assert.ok(value,message);checks++;};
@@ -33,6 +34,12 @@ async function suite(DB,label){
  const login=await call('/api/admin/login',{method:'POST',body:{email:email.toUpperCase(),password}});
  check(login.status===200&&login.data.user.name==='Administrator'&&login.data.csrfToken.length===43,label+' case-insensitive dedicated login succeeds');
  const cookie=login.cookie,csrf=login.data.csrfToken;
+ const originalCredentials={email:env.ADMIN_LOGIN_EMAIL,hash:env.ADMIN_PASSWORD_HASH};
+ env.ADMIN_LOGIN_EMAIL='  "'+originalCredentials.email.toUpperCase()+'"\r\n';env.ADMIN_PASSWORD_HASH="  '"+originalCredentials.hash+"'\r\n";
+ check(adminConfiguration(env)?.email===originalCredentials.email&&adminConfiguration(env)?.passwordHash===originalCredentials.hash,label+' pasted dotenv quotes and surrounding hosting whitespace preserve the credential record');
+ check((await call('/api/admin/session',{cookie})).data.csrfToken===csrf,label+' normalized environment formatting does not revoke or break a valid administrator session');
+ check(adminConfiguration({...env,ADMIN_PASSWORD_HASH:originalCredentials.hash+'invalid'})===null,label+' a malformed hash still fails closed after environment normalization');
+ env.ADMIN_LOGIN_EMAIL=originalCredentials.email;env.ADMIN_PASSWORD_HASH=originalCredentials.hash;
  check(cookie.startsWith('__Host-bmw_admin=')&&['HttpOnly','SameSite=Strict','Secure','Path=/','Max-Age=28800'].every(part=>login.headers.get('Set-Cookie').includes(part)),label+' administrator cookie is dedicated, strict and expires after eight hours');
  check(!JSON.stringify(login.data).includes(email)&&!JSON.stringify(login.data).includes(password),label+' login response excludes credentials');
  check((await call('/api/admin/session',{cookie})).data.csrfToken===csrf,label+' dedicated session round-trips');
@@ -50,7 +57,7 @@ async function suite(DB,label){
  const sessionCount=(await DB.prepare('SELECT COUNT(*) AS count FROM sessions WHERE user_id = ?').bind(login.data.user.id).first()).count;
  const insertFailure={...DB,prepare(sql){return /^INSERT INTO sessions\b/.test(sql)?{bind:()=>DB.prepare('INSERT INTO sessions (token_hash,user_id,csrf_token,created_at,expires_at) VALUES (?,?,?,?,?)').bind(randomToken(),'missing-admin-session-principal',randomToken(),Date.now(),Date.now()+1000)}:DB.prepare(sql);}};
  env.DB=insertFailure;
- try{check((await call('/api/admin/login',{method:'POST',body:{email,password},cookie})).status===503,label+' failed administrator replacement reports a retryable storage failure');}finally{env.DB=DB;}
+ try{const failed=await call('/api/admin/login',{method:'POST',body:{email,password},cookie});check(failed.status===503&&failed.data.code==='DATABASE_UNAVAILABLE',label+' failed administrator replacement reports a distinct retryable storage failure');}finally{env.DB=DB;}
  check((await call('/api/admin/session',{cookie})).data.csrfToken===csrf&&(await DB.prepare('SELECT COUNT(*) AS count FROM sessions WHERE user_id = ?').bind(login.data.user.id).first()).count===sessionCount,label+' failed replacement rolls back revocation and leaves the current administrator session usable');
  const publicPassword=randomToken();
  await call('/api/auth/signup',{method:'POST',body:{name:'Public owner',email,password:publicPassword}});
