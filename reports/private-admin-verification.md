@@ -1,4 +1,20 @@
-# Private administration and bug repairs — 20 October 2026
+# Private administration and bug repairs — 21 October 2026
+
+## 21 October update
+
+The dashboard now has paginated server search, sorting and complete queue/history totals instead of a silent combined 100-record cap. Record summaries expand into a clearer photo/evidence/decision workspace. Notes remain in this tab across searches, pages, failed refreshes and other decisions. Loading, retry, stale-response, expired-session and failed-photo states have explicit recovery controls. Search and filters stay usable on phones.
+
+The new **Accounts & sign-ins** tab shows real account names, private email addresses, registration dates, provider, password-configured status, active session counts and tracked successful sign-ins. Dedicated administrator records are excluded. Passwords and password hashes are never returned or displayed. Sign-in metadata is recorded atomically with session creation; it remains after logout. Historical activity before tracking is explicitly unknown.
+
+Database repairs include concurrent SQLite startup/migration locking, consistent transaction results across adapters, guarded one-time legacy imports, Unicode name searches, atomic session replacement and recovery-link consumption. Failed writes preserve the previous login or recovery token. Private and member sessions reject malformed CSRF records, newly issued sessions survive tied creation timestamps, and rate-limit responses report the actual remaining window. Cross-tab account changes invalidate old in-flight saves and trigger session verification even when a save was busy.
+
+Moderation verifies the status/timestamp shown on the form. A private operation claim, decision and audit event share one transaction, so concurrent/stale decisions or failed writes cannot silently replace another review or leave a temporary claim behind. Queue photo/profile metadata is fetched in batches, reducing database round trips.
+
+Focused checks cover real SQLite/PostgreSQL behavior, rollback and races, account-directory privacy/paging, the redesigned UI, and a real isolated HTTP signup/login/admin/analytics/logout workflow. Final full-suite/build results are recorded at completion. Live Neon credentials are not configured in this checkout; these results do not claim inspection or repair of an external production database. Browser screenshot verification is unavailable.
+
+Final verification passed: the complete `npm run check` suite within `npm run build:vercel`, 196 dedicated auth/account-directory checks, 107 admin UI checks, 80 core backend checks, 93 account-sync checks, 51 adapter checks, 556 community backend checks and 110 HTTP account checks. Worker and Vercel artifacts were rebuilt from the final source; Vercel validated 110 modules, 40 stylesheets, 834 asset references and 1,371 deep links. The HTTP asset audit passed all 2,127 URLs. A built-Worker smoke test exercised protected account analytics and confirmed that the internal administrator is excluded from the directory. The final phone metric-overflow adjustment also passed the Academy journey check before both artifacts were regenerated.
+
+The earlier implementation and verification record follows.
 
 Administration lives at `/admin` in a separate HTML page with its own email/password form, session cookie, dashboard and logout. Public navigation, accounts and search do not link or redirect into administration. The address is excluded from discovery and indexing; server authentication protects all administrative data and actions.
 

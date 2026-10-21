@@ -1,6 +1,6 @@
 # Public route and image HTTP check
 
-Checked 2127 local URLs against http://127.0.0.1:4193 using HEAD requests and response content types.
+Checked 2127 local URLs against http://127.0.0.1:4194 using HEAD requests and response content types.
 - Discovery pages: 1371
 - Private entry pages: 1
 - Referenced images, including responsive variants: 686

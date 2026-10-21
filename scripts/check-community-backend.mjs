@@ -135,10 +135,13 @@ async function suite(DB,label){
  check((await call('/api/admin/community',{actor:admin})).data.pending.length===1,label+' real private moderation queue');
  check((await call(photoURL,{actor:admin})).status===200,label+' dedicated administrator can inspect private photographs');
  check((await call('/api/admin/moderation',{actor:admin,method:'POST',body:{id,action:'approve',note:'Ownership and specification checked.'}})).status===200,label+' admin approval');
+ const staleDecision=await call('/api/admin/moderation',{actor:admin,method:'POST',body:{id,action:'reject',note:'A note from the former pending review.',expectedStatus:'pending',expectedUpdatedAt:submitted.data.submission.updatedAt}});check(staleDecision.status===409&&staleDecision.data.code==='MODERATION_CHANGED',label+' an outdated pending form cannot unpublish a reviewed car');
+ const staleVersion=await call('/api/admin/moderation',{actor:admin,method:'POST',body:{id,action:'reject',note:'An outdated note on an approved car.',expectedStatus:'approved',expectedUpdatedAt:'2000-01-01T00:00:00.000Z'}});check(staleVersion.status===409&&staleVersion.data.code==='MODERATION_CHANGED',label+' current status alone cannot authorize stale record details');
  const published=(await call('/api/community/cars?id='+id)).data.car;check(published.photos.length===1&&published.author.handle==='alice-driver',label+' approved card published');
  check(!JSON.stringify(published).includes('Private ownership')&&!('evidence'in published)&&!('moderationNote'in published)&&!('user_id'in published),label+' private proof never public');
  const binary=await call(photoURL);check(binary.status===200&&binary.headers.get('Content-Type')==='image/jpeg'&&binary.headers.get('Cache-Control').includes('no-store'),label+' approved binary photo');
  check((await call('/api/admin/moderation',{actor:admin,method:'POST',body:{id,action:'reject',note:'Please clarify the engine replacement history.'}})).status===200,label+' admin can unpublish');
+ check((await call('/api/admin/moderation',{actor:admin,method:'POST',body:{id,action:'reject',note:'Repeated action must not add another decision.'}})).data.code==='MODERATION_CHANGED',label+' a duplicate change request cannot create another moderation action');
  check((await call('/api/community/cars?id='+id)).status===404&&(await call(photoURL)).status===404,label+' rejection revokes public car and photo');
  const edited=await call('/api/community/submissions',{actor:alice,method:'PUT',body:{...input,id,photos:undefined,description:input.description+' The engine replacement history is now attached.'}});check(edited.status===200&&edited.data.submission.photos.length===1,label+' rejected draft retains omitted photos');
  const captioned=await call('/api/community/submissions',{actor:alice,method:'PUT',body:{...input,id,photos:[{id:edited.data.submission.photos[0].id,caption:'Updated owner caption'}]}});check(captioned.status===200&&captioned.data.submission.photos[0].caption==='Updated owner caption',label+' owner edits retained photo caption');
@@ -161,6 +164,11 @@ async function suite(DB,label){
  const reviewRace=(await call('/api/community/submissions',{actor:alice,method:'POST',body:{...input,title:'Competing reviewer record'}})).data.submission;
  await DB.prepare('UPDATE community_wallets SET balance = 50 WHERE user_id = ?').bind(alice.id).run();await call('/api/community/submissions/submit',{actor:alice,method:'POST',body:{id:reviewRace.id}});
  const beforeAudit=Number((await DB.prepare('SELECT COUNT(*) AS count FROM community_audit WHERE car_id = ?').bind(reviewRace.id).first()).count);
+ const beforeFailedDecision=await DB.prepare('SELECT * FROM community_cars WHERE id = ?').bind(reviewRace.id).first();
+ env.DB={...DB,batch(statements){return DB.batch([...statements,DB.prepare('INSERT INTO community_audit (id,actor_id,action,car_id,note,created_at) VALUES (?,?,?,?,?,?)').bind(crypto.randomUUID(),'missing-test-actor','test',reviewRace.id,'Injected rollback check',Date.now())]);}};
+ const failedDecision=await call('/api/admin/moderation',{actor:admin,method:'POST',body:{id:reviewRace.id,action:'approve',note:'Do not persist a failed decision.'}});env.DB=DB;
+ const afterFailedDecision=await DB.prepare('SELECT * FROM community_cars WHERE id = ?').bind(reviewRace.id).first();check(failedDecision.status===503&&afterFailedDecision.status===beforeFailedDecision.status&&afterFailedDecision.moderation_note===beforeFailedDecision.moderation_note&&afterFailedDecision.updated_at===beforeFailedDecision.updated_at,label+' failed moderation rolls back its private claim, state and timestamp');
+ check(Number((await DB.prepare('SELECT COUNT(*) AS count FROM community_audit WHERE car_id = ?').bind(reviewRace.id).first()).count)===beforeAudit,label+' failed moderation does not create phantom audit activity');
  // Hold both reviewers after reading the same pending snapshot. Batch statements
  // stay original adapter statements, exercising actual atomic SQL and row locks.
  let readers=0,release;const barrier=new Promise(resolve=>{release=resolve;});
@@ -189,6 +197,20 @@ async function suite(DB,label){
  delete env.ADMIN_USER_IDS;
  check((await call('/api/auth/session',{actor:bob})).data.user.isAdmin===false,label+' session role is recalculated when administrator access is revoked');
  check((await call('/api/admin/community',{actor:bob})).status===401,label+' public cookie cannot authenticate the administrator workspace');
+ // Administrative pages must reach records beyond the former combined 100-row cap.
+ const fixtures=Array.from({length:112},(_,index)=>({id:crypto.randomUUID(),status:index<105?'pending':index%2?'approved':'rejected',title:index===104?'Exact 100%_ review target':'Review fixture '+String(index).padStart(3,'0'),at:Date.now()-200000-index*1000}));
+ await DB.batch(fixtures.map(item=>DB.prepare('INSERT INTO community_cars (id,user_id,title,model,year,engine,transmission,horsepower,description,modifications,evidence,status,created_at,updated_at,submitted_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(item.id,alice.id,item.title,'BMW E46',2003,'M54','Manual',231,input.description,'','Private review fixture',item.status,item.at,item.at,item.at)));
+ const firstPage=await call('/api/admin/community?view=queue&pageSize=20',{actor:admin});
+ check(firstPage.status===200&&firstPage.data.pagination.total>100&&firstPage.data.submissions.length===20&&firstPage.data.pagination.hasNext,label+' queue exposes true server total and bounded pages');
+ const seenRows=new Set();for(let page=1;page<=firstPage.data.pagination.totalPages;page++){const result=await call('/api/admin/community?view=queue&pageSize=20&page='+page,{actor:admin});check(result.status===200&&result.data.submissions.every(car=>car.status==='pending'&&car.author.handle==='alice-driver'),label+' paginated queue retains ownership and status');for(const car of result.data.submissions){check(!seenRows.has(car.id),label+' deterministic page ordering avoids duplicate rows');seenRows.add(car.id);}}
+ check(seenRows.size===firstPage.data.pagination.total,label+' every pending record is accessible beyond row100');
+ const exact=await call('/api/admin/community?view=queue&q='+encodeURIComponent('100%_'),{actor:admin});check(exact.status===200&&exact.data.pagination.total===1&&exact.data.submissions[0].title==='Exact 100%_ review target',label+' search treats SQL wildcard characters literally');
+ await DB.prepare('UPDATE community_cars SET title = ? WHERE id = ?').bind('ТЕСТ ᲢᲔᲡᲢᲘ',fixtures[0].id).run();for(const query of ['тест','ტესტი']){const found=await call('/api/admin/community?view=queue&q='+encodeURIComponent(query),{actor:admin});check(found.status===200&&found.data.submissions.some(car=>car.id===fixtures[0].id),label+' case-insensitive account-language search: '+query);}
+ const ownerSearch=await call('/api/admin/community?view=history&q=alice-driver&status=approved',{actor:admin});check(ownerSearch.status===200&&ownerSearch.data.pagination.total>0&&ownerSearch.data.submissions.every(car=>car.status==='approved'),label+' history filters and searches owner on the server');
+ const reversed=await call('/api/admin/community?view=queue&sort=newest&pageSize=1',{actor:admin});check(reversed.data.submissions[0].id!==firstPage.data.submissions[0].id,label+' queue sorting changes the actual server order');
+ const emptyPage=await call('/api/admin/community?view=history&q=no-such-review-record&page=99',{actor:admin});check(emptyPage.data.pagination.page===1&&emptyPage.data.pagination.totalPages===1&&emptyPage.data.submissions.length===0,label+' empty search has a usable first page');
+ for(const query of ['page=0','pageSize=101','page=1.5','view=unknown','sort=unknown','view=queue&status=approved'])check((await call('/api/admin/community?'+query,{actor:admin})).status===400,label+' invalid review filter is rejected: '+query);
+ const metadata=firstPage.data.submissions[0];check(!('user_id'in metadata)&&!('data'in (metadata.photos[0]||{}))&&!JSON.stringify(firstPage.data).includes('password_hash'),label+' batch metadata retains private field boundaries');
  return {id,photoURL,alice,call};
 }
 try{

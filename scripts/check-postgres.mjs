@@ -1,10 +1,14 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import {Worker} from 'node:worker_threads';
 import {PGlite} from '@electric-sql/pglite';
 import {initializePostgres,inspectPostgres,createPostgresAdapter,postgresSQL,postgresSchemaStatements,databaseURL,validateDatabaseURL} from '../server/postgres-db.js';
 import {handleApi} from '../server/api.js';
 import {createVercelHandler} from '../server/vercel-api.js';
 import {emptyGarage} from '../server/validation.js';
+import {createLocalDatabase} from '../server/local-db.mjs';
 
 let checks=0;
 const check=(condition,message)=>{assert.ok(condition,message);checks++;};
@@ -12,16 +16,47 @@ assert.equal(postgresSQL("SELECT '?' AS literal, users.* FROM users WHERE email 
 assert.equal(postgresSQL('SELECT $$?$$, ? /* ? */'), 'SELECT $$?$$, $1 /* ? */');checks++;
 assert.equal(databaseURL({DATABASE_URL:'postgresql://test:secret@primary.neon.tech/db',POSTGRES_URL:'other'}),'postgresql://test:secret@primary.neon.tech/db');checks++;
 assert.throws(()=>validateDatabaseURL('not-a-connection'));checks++;
-const database=new PGlite(),legacy=new PGlite(),manual=new PGlite();
 const runner=pg=>async(sql,values=[])=>{const result=await pg.query(sql,values);return {rows:result.rows,rowCount:result.affectedRows??result.rows.length};};
-const transact=pg=>async statements=>pg.transaction(async tx=>{for(const [sql,values]of statements)await tx.query(sql,values);});
+const transact=pg=>async statements=>pg.transaction(async tx=>{const results=[];for(const [sql,values]of statements)results.push(await tx.query(sql,values));return results;});
+async function adapterChecks(DB,label,table='adapter_checks'){
+ await DB.prepare(`CREATE TABLE ${table} (id TEXT PRIMARY KEY,value INTEGER NOT NULL CHECK(value >= 0))`).run();
+ const saved=await DB.batch([DB.prepare(`INSERT INTO ${table} (id,value) VALUES (?,?) RETURNING id,value`).bind('first',1),DB.prepare(`UPDATE ${table} SET value = value + 1 WHERE id = ? RETURNING value`).bind('first'),DB.prepare(`SELECT value FROM ${table} WHERE id = ?`).bind('first')]);
+ check(saved[0].results[0].id==='first'&&saved[0].meta.changes===1,label+' batch retains INSERT RETURNING rows and affected counts.');
+ check(saved[1].results[0].value===2&&saved[1].meta.changes===1,label+' batch retains UPDATE RETURNING rows and affected counts.');
+ check(saved[2].results[0].value===2,label+' batch returns SELECT rows.');
+ await assert.rejects(DB.batch([DB.prepare(`INSERT INTO ${table} (id,value) VALUES (?,?)`).bind('rollback',1),DB.prepare(`UPDATE ${table} SET value = -1 WHERE id = ?`).bind('first')]));checks++;
+ check(!(await DB.prepare(`SELECT id FROM ${table} WHERE id = ?`).bind('rollback').first())&&(await DB.prepare(`SELECT value FROM ${table} WHERE id = ?`).bind('first').first()).value===2,label+' a failed batch rolls every write back.');
+}
+async function localChecks(){
+ const directory=await fs.mkdtemp(path.join(os.tmpdir(),'apex-local-migrations-')),filename=path.join(directory,'concurrent.sqlite'),gate=new SharedArrayBuffer(4),workers=[];let local;
+ const source=`import {parentPort,workerData} from 'node:worker_threads';const {createLocalDatabase}=await import(workerData.module);parentPort.postMessage('ready');Atomics.wait(new Int32Array(workerData.gate),0,0);try{const DB=await createLocalDatabase(workerData.filename);await DB.prepare('INSERT INTO users (id,provider,name,created_at,updated_at) VALUES (?,?,?,?,?)').bind('local:worker-'+workerData.index,'password','Worker '+workerData.index,1,1).run();DB.close();parentPort.postMessage({ok:true});}catch(error){parentPort.postMessage({ok:false,message:error.code});}`;
+ try{
+  const ready=[],finished=[];
+  for(let index=0;index<6;index++){
+   const worker=new Worker(source,{eval:true,execArgv:['--input-type=module','--disable-warning=ExperimentalWarning'],workerData:{module:new URL('../server/local-db.mjs',import.meta.url).href,filename,gate,index}});workers.push(worker);let announce;
+   ready.push(new Promise((resolve,reject)=>{announce=resolve;worker.once('error',reject);}));finished.push(new Promise((resolve,reject)=>{worker.on('message',value=>value==='ready'?announce():resolve(value));worker.once('error',reject);}));
+  }
+  await Promise.all(ready);Atomics.store(new Int32Array(gate),0,1);Atomics.notify(new Int32Array(gate),0);
+  check((await Promise.all(finished)).every(result=>result.ok),'Concurrent local startup waits for WAL and applies each migration once.');
+  local=await createLocalDatabase(filename);
+  check((await local.prepare('SELECT count(*) AS count FROM users').first()).count===6,'Concurrent local startup preserves every process’s saved account.');
+  const files=(await fs.readdir(new URL('../drizzle/',import.meta.url))).filter(name=>/^\d+_[a-z0-9_]+\.sql$/i.test(name));
+  check((await local.prepare('SELECT count(*) AS count FROM _bmw_migrations').first()).count===files.length,'Local migration receipts contain one entry per migration.');
+  await adapterChecks(local,'SQLite');
+  const selected=await local.batch([local.prepare('SELECT value FROM adapter_checks')]);check(selected[0].meta.changes===0,'A SQLite SELECT must not inherit a previous statement’s affected-row count.');
+  await assert.rejects(local.prepare('INSERT INTO sessions (token_hash,user_id,csrf_token,created_at,expires_at) VALUES (?,?,?,?,?)').bind('orphan','missing','csrf',1,2).run());checks++;
+ }finally{local?.close();await Promise.all(workers.map(worker=>worker.terminate()));assert.equal(path.dirname(path.resolve(directory)),path.resolve(os.tmpdir()));await fs.rm(directory,{recursive:true,force:true});}
+}
+await localChecks();
+const database=new PGlite(),legacy=new PGlite(),manual=new PGlite();
 try{
  await manual.exec(await fs.readFile(new URL('../sql/neon-accounts.sql',import.meta.url),'utf8'));
  check(Object.values(await inspectPostgres(runner(manual))).every(table=>table.missing.length===0),'Manual Neon setup creates the complete auth, recovery and community schema.');
  await database.exec("CREATE TABLE public.users (id UUID PRIMARY KEY,email TEXT); INSERT INTO public.users VALUES ('11111111-1111-1111-1111-111111111111','existing@example.com');");
  for(const table of ['lessons','questions','user_progress','user_stats','achievements','user_achievements'])await database.exec(`CREATE TABLE public.${table}(id INTEGER PRIMARY KEY)`);
- const query=runner(database),DB=createPostgresAdapter(query);
+ const query=runner(database),DB=createPostgresAdapter(query,transact(database));
  await initializePostgres(query,transact(database));
+ await adapterChecks(DB,'PostgreSQL','apex.adapter_checks');
  check((await database.query('SELECT email FROM public.users')).rows[0].email==='existing@example.com','Manually created users and learning tables survive initialization.');
  check((await database.query("SELECT count(*)::int AS count FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'")).rows[0].count===7,'All seven public tables remain.');
  let cookie='',csrf='';
@@ -74,5 +109,12 @@ try{
  await initializePostgres(runner(legacy),transact(legacy));
  check((await legacy.query('SELECT count(*)::int AS count FROM public.users')).rows[0].count===1,'Repeat migration leaves original accounts untouched.');
  check((await legacy.query('SELECT count(*)::int AS count FROM apex.sessions')).rows[0].count===0,'Repeated cold-start initialization cannot revive legacy sessions.');
- console.log(`PostgreSQL: ${checks} checks passed (real SQL, seven-table preservation, auth, saves, migration and API routes).`);
+ await legacy.query("DELETE FROM apex.users WHERE id='local:legacy'");await initializePostgres(runner(legacy),transact(legacy));
+ check((await legacy.query('SELECT count(*)::int AS count FROM apex.users')).rows[0].count===0,'A completed public import cannot resurrect an account removed from the private schema.');
+ check((await legacy.query('SELECT count(*)::int AS count FROM public.users')).rows[0].count===1,'One-time import leaves all legacy source rows in place.');
+ await manual.exec("CREATE TABLE public.users (id TEXT PRIMARY KEY,provider INTEGER,email TEXT,name TEXT,password_hash TEXT,created_at DOUBLE PRECISION,updated_at DOUBLE PRECISION);INSERT INTO public.users VALUES ('local:unrelated',7,'unrelated@example.test','Unrelated row',NULL,1,1)");
+ await initializePostgres(runner(manual),transact(manual));
+ check((await manual.query('SELECT provider FROM public.users')).rows[0].provider===7,'Lookalike public tables with incompatible types are preserved and ignored.');
+ check((await manual.query('SELECT count(*)::int AS count FROM apex.schema_migrations')).rows[0].count===0,'An unrelated source does not receive a completed legacy-import receipt.');
+ console.log(`Database adapters: ${checks} checks passed (concurrent SQLite startup, batch rows/rollback, real PostgreSQL, seven-table preservation, auth, saves and one-time legacy imports).`);
 }finally{await database.close();await legacy.close();await manual.close();}

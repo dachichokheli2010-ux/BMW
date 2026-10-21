@@ -28,55 +28,10 @@
 .bmw-academy .ac-next-lesson strong { font-size: 20px; font-weight: 500; line-height: 1.4; color: var(--ac-text); }
 .bmw-academy .ac-next-lesson span > span { font-size: 12px; color: var(--ac-muted); }
 .bmw-academy .ac-next-lesson > b { color: var(--ac-blue); font-size: 24px; font-weight: 400; }
-.bmw-academy .ac-journey-hero .ac-view-heading { align-items: center; gap: 22px; }
-.bmw-academy .ac-journey-hero .ac-view-heading > div { min-width: 0; }
-.bmw-academy .ac-road-hero-mark { flex: none; width: 90px; height: 100px; color: color-mix(in srgb, var(--ac-blue) 40%, var(--ac-card)); transform: rotate(-12deg); }
-.bmw-academy .ac-road-hero-mark svg { width: 100%; height: 100%; }
 .bmw-academy .ac-chapter-banner { background: linear-gradient(125deg, color-mix(in srgb, var(--ac-blue) 10%, var(--ac-card)), var(--ac-card)); }
 .bmw-academy .ac-chapter-progress { display: block; margin-top: 18px; font-size: 12px; color: var(--ac-blue); line-height: 1.8; }
 .bmw-academy .ac-chapter-banner .ac-unit-fraction { font-size: 38px; align-self: center; }
 .bmw-academy .ac-chapter-banner .ac-unit-fraction small { font-size: 17px; }
-/* Each curved segment stretches with its own row. Text stays in the grid,
-   so translated titles can wrap without drifting into neighboring missions. */
-.bmw-academy .ac-mission-road { --ac-road-width: 160px; --ac-road-offset: 32px; position: relative; margin: 24px 0 30px; min-width: 0; padding: 12px 0 0; border-radius: 20px; background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--ac-blue) 5%, transparent), transparent 65%); }
-.bmw-academy .ac-mission-road > ol { position: relative; list-style: none; padding: 0; margin: 0; }
-.bmw-academy .ac-mission-stop { position: relative; height: auto; min-height: 188px; }
-.bmw-academy .ac-mission-asphalt { display: block; position: absolute; inset: 0 auto 0 calc(50% - 80px); width: var(--ac-road-width); height: 100%; overflow: visible; pointer-events: none; }
-.bmw-academy .ac-mission-asphalt path { fill: none; }
-.bmw-academy .ac-mission-shoulder { stroke: color-mix(in srgb, var(--ac-muted) 30%, var(--ac-line)); stroke-width: 68; }
-.bmw-academy .ac-mission-edge { stroke: color-mix(in srgb, var(--ac-muted) 10%, var(--ac-card)); stroke-width: 62; }
-.bmw-academy .ac-mission-lane { stroke: color-mix(in srgb, var(--ac-muted) 55%, var(--ac-bg)); stroke-width: 2; stroke-dasharray: 5 6; }
-.bmw-academy .ac-mission-stop.is-done .ac-mission-lane { stroke: var(--ac-green); }
-.bmw-academy .ac-mission-stop > button, .bmw-academy .ac-mission-stop.is-right > button { position: relative; top: auto; left: auto; transform: none; display: grid; grid-template-columns: minmax(0, 1fr) var(--ac-road-width) minmax(0, 1fr); align-items: center; gap: 12px; width: 100%; height: auto; min-height: inherit; padding: 16px 0; border: 0; border-radius: 14px; text-align: left; background: transparent; }
-.bmw-academy .ac-mission-marker { grid-column: 2; grid-row: 1; display: flex; justify-content: center; min-width: 0; }
-.bmw-academy .ac-mission-node { position: relative; left: calc(0px - var(--ac-road-offset)); display: grid; place-items: center; width: 70px; height: 70px; border: 3px solid var(--ac-line); border-radius: 50%; background: var(--ac-bg); box-shadow: 0 6px 0 var(--ac-line); color: var(--ac-muted); font-size: 21px; font-weight: 600; }
-.bmw-academy .ac-mission-stop.is-right .ac-mission-node { left: var(--ac-road-offset); }
-.bmw-academy .ac-mission-node svg { width: 25px; height: 25px; }
-.bmw-academy .ac-mission-copy, .bmw-academy .ac-mission-stop.is-right .ac-mission-copy { position: static; top: auto; left: auto; right: auto; transform: none; grid-column: 1; grid-row: 1; display: grid; gap: 9px; width: auto; min-width: 0; padding: 17px 12px; border: 1px solid transparent; border-radius: 14px; text-align: right; }
-.bmw-academy .ac-mission-stop.is-right .ac-mission-copy { grid-column: 3; text-align: left; }
-.bmw-academy .ac-mission-copy small { font-size: 10px; color: var(--ac-muted); letter-spacing: .6px; line-height: 1.7; }
-.bmw-academy .ac-mission-copy strong { font-size: 17px; line-height: 1.55; font-weight: 500; color: var(--ac-text); overflow-wrap: anywhere; }
-.bmw-academy .ac-mission-copy > span { font-size: 11px; line-height: 1.8; color: var(--ac-muted); }
-.bmw-academy .ac-mission-copy > b { font-size: 11px; line-height: 1.8; color: var(--ac-blue); font-weight: 500; }
-.bmw-academy .ac-mission-stop.is-current .ac-mission-node { color: var(--ac-bg); background: var(--ac-blue); border-color: color-mix(in srgb, var(--ac-blue) 70%, #fff); box-shadow: 0 6px 0 color-mix(in srgb, var(--ac-blue) 60%, #000), 0 0 0 9px color-mix(in srgb, var(--ac-blue) 12%, transparent); }
-.bmw-academy .ac-mission-stop.is-current .ac-mission-copy { border-color: color-mix(in srgb, var(--ac-blue) 35%, var(--ac-line)); background: color-mix(in srgb, var(--ac-blue) 6%, var(--ac-bg)); }
-.bmw-academy .ac-mission-stop.is-current small { color: var(--ac-blue); }
-.bmw-academy .ac-mission-stop.is-done .ac-mission-node { color: var(--ac-green); border-color: var(--ac-green); background: color-mix(in srgb, var(--ac-green) 9%, var(--ac-bg)); box-shadow: 0 6px 0 color-mix(in srgb, var(--ac-green) 35%, var(--ac-line)); }
-.bmw-academy .ac-mission-stop.is-locked > button { opacity: 1; }
-.bmw-academy .ac-mission-stop.is-locked .ac-mission-node { background: var(--ac-card); }
-.bmw-academy .ac-mission-stop.is-checkpoint .ac-mission-node { border-radius: 20px; font-size: 28px; outline: 2px dashed color-mix(in srgb, var(--ac-blue) 40%, var(--ac-line)); outline-offset: 6px; }
-.bmw-academy .ac-mission-stop > button:hover .ac-mission-copy { border-color: var(--ac-line); background: var(--ac-card); }
-.bmw-academy .ac-mission-stop > button:hover .ac-mission-node { border-color: var(--ac-blue); }
-.bmw-academy .ac-mission-stop > button:focus-visible { outline-offset: 2px; }
-.bmw-academy .ac-road-sign { position: relative; display: grid; justify-items: center; gap: 9px; text-align: center; padding: 20px 12px; }
-.bmw-academy .ac-road-sign > span { display: grid; place-items: center; width: 58px; height: 48px; border: 1px solid var(--ac-line); border-radius: 12px; color: var(--ac-blue); background: var(--ac-bg); font-size: 26px; }
-.bmw-academy .ac-road-sign strong { font-size: 10px; letter-spacing: 1px; line-height: 1.8; font-weight: 500; }
-.bmw-academy .ac-road-sign small { font-size: 12px; line-height: 1.8; color: var(--ac-muted); }
-.bmw-academy .ac-road-start::after, .bmw-academy .ac-road-finish::before { content: ''; position: absolute; left: calc(50% - 31px); width: 62px; height: 20px; z-index: -1; background: color-mix(in srgb, var(--ac-muted) 10%, var(--ac-card)); border-inline: 3px solid color-mix(in srgb, var(--ac-muted) 30%, var(--ac-line)); }
-.bmw-academy .ac-road-start::after { bottom: 0; }
-.bmw-academy .ac-road-finish::before { top: 0; }
-.bmw-academy .ac-road-finish.is-complete > span { color: var(--ac-green); border-color: var(--ac-green); }
-.bmw-academy .ac-road-note { font-size: 12px; line-height: 1.85; max-width: 560px; margin-bottom: 28px; color: var(--ac-muted); }
 .bmw-academy .ac-locked-panel { display: grid; justify-items: start; gap: 16px; padding: clamp(24px, 4vw, 40px); border: 1px solid var(--ac-line); border-radius: 18px; background: var(--ac-card); }
 .bmw-academy .ac-locked-emblem { display: grid; place-items: center; width: 64px; height: 64px; border: 1px solid var(--ac-line); border-radius: 18px; color: var(--ac-blue); font-size: 40px; }
 .bmw-academy .ac-locked-panel h2 { font-size: 25px; line-height: 1.4; }
@@ -197,24 +152,6 @@
   .bmw-academy .ac-stats .ac-profile-mini { grid-column: 1 / -1; }
 }
 @media (max-width: 760px) {
-  .bmw-academy .ac-road-hero-mark { width: 60px; height: 76px; }
-  .bmw-academy .ac-journey-hero .ac-view-heading { gap: 12px; }
-  .bmw-academy .ac-mission-road { --ac-road-width: 90px; --ac-road-offset: 18px; background-position: left top; }
-  .bmw-academy .ac-mission-road::before { content: none; }
-  .bmw-academy .ac-mission-stop { min-height: 170px; padding: 0; }
-  .bmw-academy .ac-mission-stop > button, .bmw-academy .ac-mission-stop.is-right > button { grid-template-columns: var(--ac-road-width) minmax(0, 1fr); gap: 10px; padding-block: 16px; }
-  .bmw-academy .ac-mission-asphalt { inset: 0 auto 0 0; }
-  .bmw-academy .ac-mission-marker { grid-column: 1; }
-  .bmw-academy .ac-mission-node { width: 54px; height: 54px; font-size: 16px; border-width: 2px; }
-  .bmw-academy .ac-mission-node svg { width: 21px; height: 21px; }
-  .bmw-academy .ac-mission-stop.is-checkpoint .ac-mission-node { border-radius: 15px; outline-offset: 4px; }
-  .bmw-academy .ac-mission-copy, .bmw-academy .ac-mission-stop.is-right .ac-mission-copy { grid-column: 2; text-align: left; padding: 14px 12px; gap: 8px; }
-  .bmw-academy .ac-mission-copy strong { font-size: 17px; }
-  .bmw-academy .ac-mission-copy > span { font-size: 12px; }
-  .bmw-academy .ac-road-sign { grid-template-columns: 90px minmax(0, 1fr); justify-items: start; align-items: center; column-gap: 10px; padding-inline: 0; text-align: left; }
-  .bmw-academy .ac-road-sign > span { grid-column: 1; grid-row: 1 / 3; justify-self: center; width: 48px; height: 46px; }
-  .bmw-academy .ac-road-sign strong, .bmw-academy .ac-road-sign small { grid-column: 2; padding-left: 12px; }
-  .bmw-academy .ac-road-start::after, .bmw-academy .ac-road-finish::before { left: 27px; width: 36px; }
   .bmw-academy .ac-chapter-banner .ac-unit-fraction { font-size: 30px; }
   .bmw-academy .ac-locked-actions { width: 100%; flex-direction: column; }
   .bmw-academy .ac-main { padding-top: 0; }
@@ -290,14 +227,6 @@
   html[lang=ru] .bmw-academy .ac-mobile-shortcuts button { font-size: 11px; }
 }
 @media (max-width: 360px) {
-  .bmw-academy .ac-road-hero-mark { display: none; }
-  .bmw-academy .ac-mission-road { --ac-road-width: 76px; --ac-road-offset: 15.2px; }
-  .bmw-academy .ac-mission-stop > button, .bmw-academy .ac-mission-stop.is-right > button { gap: 6px; }
-  .bmw-academy .ac-mission-node { width: 44px; height: 44px; font-size: 14px; }
-  .bmw-academy .ac-mission-copy, .bmw-academy .ac-mission-stop.is-right .ac-mission-copy { padding-inline: 10px; }
-  .bmw-academy .ac-mission-copy strong { font-size: 16px; }
-  .bmw-academy .ac-road-sign { grid-template-columns: 76px minmax(0, 1fr); gap: 6px; }
-  .bmw-academy .ac-road-start::after, .bmw-academy .ac-road-finish::before { left: 23px; width: 30px; }
   .bmw-academy .ac-player-body { padding-inline: 14px; }
   .bmw-academy .ac-player-top > strong { display: none; }
   .bmw-academy .ac-next-icon { display: none; }
@@ -330,3 +259,177 @@
 .bmw-academy .ac-legacy-credit-history summary{min-height:40px;line-height:1.8;padding-block:8px}
 .bmw-academy .ac-legacy-credit-history p{font-size:12px;margin:12px 0}
 .bmw-academy .ac-legacy-credit-history button{font-size:12px;min-height:44px;padding:10px 14px}
+
+/* The mission atlas: a continuous road, with real document-flow mission cards.
+   Curves stretch with translated content; scenery never controls the row height. */
+@media (min-width:761px) {
+  .bmw-academy .ac-shell:has(.ac-journey-hero) { grid-template-columns:168px minmax(0,1fr); gap:34px; }
+  .bmw-academy .ac-shell:has(.ac-journey-hero)>.ac-stats { position:static; grid-column:2; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; padding-top:30px; border-top:1px solid var(--ac-line); }
+  .bmw-academy .ac-shell:has(.ac-journey-hero)>.ac-stats>* { min-width:0; margin:0; }
+  .bmw-academy .ac-shell:has(.ac-journey-hero)>.ac-stats .ac-profile-mini { grid-column:1/-1; }
+}
+.bmw-academy .ac-journey-hero { position:relative; isolation:isolate; overflow:hidden; min-height:310px; margin:0 0 22px; padding:40px; border:1px solid #476581; border-radius:24px; background:linear-gradient(120deg,#101f32,#173b5c); box-shadow:0 18px 50px #00000010; }
+.bmw-academy .ac-journey-hero::after { content:""; position:absolute; inset:0; z-index:1; pointer-events:none; background:linear-gradient(90deg,#102136 10%,#102136ec 35%,#10213650 70%,transparent); }
+.bmw-academy .ac-journey-hero .ac-view-heading { position:relative; z-index:2; align-items:center; margin:0; max-width:76%; }
+.bmw-academy .ac-journey-hero .ac-view-heading h1 { max-width:620px; color:#f1f7ff; font-size:clamp(35px,4.1vw,58px); line-height:1.1; letter-spacing:-.045em; margin:17px 0; text-wrap:balance; }
+.bmw-academy .ac-journey-hero .ac-view-heading p { max-width:440px; color:#b9cbdf; font-size:14px; line-height:1.85; margin:0; }
+.bmw-academy .ac-journey-hero .ac-kicker { color:#9dccf8; letter-spacing:.2em; font-size:10px; }
+.bmw-academy .ac-journey-landscape { position:absolute; inset:0 -3% 0 auto; width:80%; height:100%; pointer-events:none; }
+.bmw-academy .ac-journey-sun { fill:#a0c4df; opacity:.24; }
+.bmw-academy .ac-journey-ridge-back { fill:#355b79; }
+.bmw-academy .ac-journey-snow { fill:#96b3c9; opacity:.56; }
+.bmw-academy .ac-journey-ridge-front { fill:#21465d; }
+.bmw-academy .ac-journey-trees { color:#15364b; fill:currentColor; }
+.bmw-academy .ac-journey-highway-edge { fill:none; stroke:#91a8b9; stroke-width:34px; }
+.bmw-academy .ac-journey-highway { fill:none; stroke:#253449; stroke-width:28px; }
+.bmw-academy .ac-journey-highway-lane { fill:none; stroke:#cad8e2; stroke-width:1.5px; stroke-dasharray:9 12; }
+.bmw-academy .ac-main:has(.ac-journey-hero) .ac-path-metrics { margin-bottom:24px; gap:12px; }
+.bmw-academy .ac-main:has(.ac-journey-hero) .ac-path-metrics>div { flex-direction:row; align-items:center; gap:15px; padding:18px; border-radius:13px; background:var(--ac-bg); }
+.bmw-academy .ac-main:has(.ac-journey-hero) .ac-path-metrics strong { flex:none; font-size:30px; }
+.bmw-academy .ac-main:has(.ac-journey-hero) .ac-path-metrics span { font-size:11px; }
+.bmw-academy .ac-main:has(.ac-journey-hero) .ac-chapter-banner { padding:28px 30px; border-radius:18px; }
+.bmw-academy .ac-main:has(.ac-journey-hero) .ac-chapter-banner>div { min-width:0; }
+.bmw-academy .ac-main:has(.ac-journey-hero) .ac-chapter-banner h2 { font-size:clamp(25px,2.7vw,35px); overflow-wrap:anywhere; }
+.bmw-academy .ac-main:has(.ac-journey-hero) .ac-unit-fraction { flex:none; white-space:nowrap; font-size:44px; }
+.bmw-academy .ac-main:has(.ac-journey-hero) .ac-next-lesson { padding:24px 26px; margin-block:18px 26px; border-radius:16px; }
+.bmw-academy .ac-main:has(.ac-journey-hero) .ac-next-lesson strong { font-size:21px; }
+.bmw-academy .ac-road-atlas { --ac-road-width:clamp(220px,24vw,300px); --ac-road-offset:calc(var(--ac-road-width) * .2625); --ac-node-size:78px; --ac-route-gap:14px; --ac-route-ground:color-mix(in srgb,var(--ac-blue) 3%,var(--ac-bg)); position:relative; isolation:isolate; overflow:hidden; min-width:0; margin:0 0 24px; padding:22px 26px 16px; border:1px solid var(--ac-line); border-radius:24px; background:radial-gradient(ellipse at 8% 15%,color-mix(in srgb,#6f9a87 8%,transparent),transparent 50%),radial-gradient(ellipse at 95% 80%,color-mix(in srgb,var(--ac-blue) 7%,transparent),transparent 60%),var(--ac-route-ground); }
+.bmw-academy .ac-road-atlas .ac-road-map-caption { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:1px 0 20px; border-bottom:1px solid var(--ac-line); font-size:10px; letter-spacing:.12em; font-variant-numeric:tabular-nums; color:var(--ac-muted); }
+.bmw-academy .ac-road-map-caption>span:first-child { display:flex; gap:9px; align-items:center; }
+.bmw-academy .ac-road-map-caption i { width:7px; height:7px; border-radius:50%; background:var(--ac-blue); box-shadow:0 0 0 4px color-mix(in srgb,var(--ac-blue) 12%,transparent); }
+.bmw-academy .ac-road-atlas>ol { position:relative; list-style:none; margin:0; padding:0; }
+.bmw-academy .ac-road-atlas .ac-mission-stop { position:relative; min-height:270px; height:auto; padding:0; }
+.bmw-academy .ac-road-atlas .ac-mission-asphalt { display:block; position:absolute; inset:0 auto 0 calc(50% - var(--ac-road-width) / 2); width:var(--ac-road-width); height:100%; overflow:visible; pointer-events:none; }
+.bmw-academy .ac-road-atlas .ac-mission-asphalt path { fill:none; }
+.bmw-academy .ac-road-atlas .ac-mission-verge { stroke:color-mix(in srgb,#6d9482 12%,transparent); stroke-width:104px; }
+.bmw-academy .ac-road-atlas .ac-mission-shoulder { stroke:#61778b; stroke-width:66px; }
+.bmw-academy .ac-road-atlas .ac-mission-edge { stroke:#293a4d; stroke-width:60px; }
+.bmw-academy .ac-road-atlas .ac-mission-lane { stroke:#afc0cf; stroke-width:2px; stroke-dasharray:10 13; }
+.bmw-academy .ac-road-atlas .is-done .ac-mission-lane { stroke:#99debd; }
+.bmw-academy .ac-road-atlas .is-current .ac-mission-shoulder { stroke:#90bee3; }
+.bmw-academy .ac-road-atlas .is-current .ac-mission-lane { stroke:#e6f4ff; }
+.bmw-academy .ac-road-atlas .ac-mission-stop>button { position:relative; z-index:1; top:auto; left:auto; transform:none; display:grid; grid-template-columns:minmax(0,1fr) var(--ac-road-width) minmax(0,1fr); gap:14px; align-items:center; width:100%; height:auto; min-height:inherit; padding:25px 0; border:0; border-radius:16px; text-align:left; background:transparent; }
+.bmw-academy .ac-road-atlas .ac-mission-stop>button:hover { background:transparent; }
+.bmw-academy .ac-road-atlas .ac-mission-marker { position:relative; grid-column:2; grid-row:1; display:flex; align-items:center; justify-content:center; min-width:0; min-height:84px; }
+.bmw-academy .ac-road-atlas .ac-mission-node { position:relative; left:calc(0px - var(--ac-road-offset)); display:grid; place-items:center; flex:none; width:78px; height:78px; border:4px solid #657b90; border-radius:50%; background:#172638; color:#c3d2df; box-shadow:0 7px 0 #0c1724,0 9px 18px #0002; font-size:23px; font-weight:600; font-variant-numeric:tabular-nums; transition:transform .2s,border-color .2s,box-shadow .2s; }
+.bmw-academy .ac-road-atlas .ac-mission-stop.is-right .ac-mission-node { left:var(--ac-road-offset); }
+.bmw-academy .ac-road-atlas .ac-mission-node svg { width:25px; height:25px; }
+.bmw-academy .ac-road-atlas .ac-route-vehicle { position:absolute; top:-60px; left:calc(50% - 19px - var(--ac-road-offset)); width:38px; height:74px; transform:rotate(-14deg); filter:drop-shadow(0 7px 5px #0005); }
+.bmw-academy .ac-road-atlas .is-right .ac-route-vehicle { left:calc(50% - 19px + var(--ac-road-offset)); transform:rotate(14deg); }
+.bmw-academy .ac-road-atlas .ac-mission-copy { position:relative; grid-column:1; grid-row:1; display:grid; justify-self:stretch; gap:10px; width:auto; min-width:0; padding:23px 22px; border:1px solid var(--ac-line); border-radius:16px; text-align:left; background:var(--ac-bg); box-shadow:0 8px 24px #00000009; transition:transform .2s,border-color .2s,box-shadow .2s; }
+.bmw-academy .ac-road-atlas .ac-mission-stop.is-right .ac-mission-copy { grid-column:3; }
+.bmw-academy .ac-road-atlas .ac-mission-copy { --ac-connector:calc(var(--ac-road-width) * .2375 + var(--ac-route-gap) - var(--ac-node-size) / 2); }
+.bmw-academy .ac-road-atlas .ac-mission-copy::after { content:""; position:absolute; top:50%; right:calc(-1 * var(--ac-connector)); width:var(--ac-connector); border-top:1px solid color-mix(in srgb,var(--ac-blue) 35%,var(--ac-line)); }
+.bmw-academy .ac-road-atlas .is-right .ac-mission-copy::after { right:auto; left:calc(-1 * var(--ac-connector)); }
+.bmw-academy .ac-road-atlas .ac-mission-copy small { display:flex; align-items:center; gap:7px; font-size:9px; color:var(--ac-muted); letter-spacing:.1em; line-height:1.8; }
+.bmw-academy .ac-road-atlas .ac-mission-copy small::before { content:""; width:5px; height:5px; border-radius:50%; background:currentColor; flex:none; }
+.bmw-academy .ac-road-atlas .ac-mission-copy strong { display:block; font-size:20px; line-height:1.5; letter-spacing:-.025em; font-weight:500; color:var(--ac-text); overflow-wrap:anywhere; text-wrap:pretty; }
+.bmw-academy .ac-road-atlas .ac-mission-copy>span { font-size:11px; line-height:1.8; color:var(--ac-muted); }
+.bmw-academy .ac-road-atlas .ac-mission-copy>b { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:3px; padding-top:12px; border-top:1px solid var(--ac-line); color:var(--ac-blue); font-size:11px; line-height:1.8; font-weight:500; }
+.bmw-academy .ac-road-atlas .ac-mission-copy>b>span { font-size:20px; line-height:1; }
+.bmw-academy .ac-road-atlas .is-current .ac-mission-node { color:#102136; background:#a7d6ff; border-color:#e0f2ff; box-shadow:0 7px 0 #4d7da2,0 0 0 12px color-mix(in srgb,var(--ac-blue) 14%,transparent),0 0 48px #6da9dc30; }
+.bmw-academy .ac-road-atlas .is-current .ac-mission-copy { border-color:color-mix(in srgb,var(--ac-blue) 60%,var(--ac-line)); background:linear-gradient(130deg,color-mix(in srgb,var(--ac-blue) 10%,var(--ac-bg)),var(--ac-bg)); box-shadow:0 12px 30px color-mix(in srgb,var(--ac-blue) 7%,transparent); }
+.bmw-academy .ac-road-atlas .is-current .ac-mission-copy small { color:var(--ac-blue); }
+.bmw-academy .ac-road-atlas .is-done .ac-mission-node { color:#b0e8cc; border-color:#8bbda5; background:#23453b; box-shadow:0 7px 0 #153229,0 7px 18px #0002; }
+.bmw-academy .ac-road-atlas .is-done .ac-mission-copy small { color:var(--ac-green); }
+.bmw-academy .ac-road-atlas .is-locked>button { opacity:1; }
+.bmw-academy .ac-road-atlas .is-locked .ac-mission-copy { background:color-mix(in srgb,var(--ac-bg) 70%,transparent); }
+.bmw-academy .ac-road-atlas .is-locked .ac-mission-copy::after { border-top-style:dashed; }
+.bmw-academy .ac-road-atlas .is-locked .ac-mission-copy>b { color:var(--ac-muted); }
+.bmw-academy .ac-road-atlas .is-checkpoint .ac-mission-node { border-radius:22px; outline:1px solid color-mix(in srgb,var(--ac-blue) 60%,transparent); outline-offset:7px; font-size:28px; }
+.bmw-academy .ac-road-atlas .ac-mission-stop>button:hover .ac-mission-copy { transform:translateY(-3px); border-color:var(--ac-blue); box-shadow:0 14px 28px #00000014; }
+.bmw-academy .ac-road-atlas .ac-mission-stop>button:hover .ac-mission-node { transform:translateY(-3px); border-color:#b5dcff; }
+.bmw-academy .ac-road-atlas .ac-mission-stop>button:focus-visible { outline-offset:-2px; }
+.bmw-academy .ac-road-atlas .ac-road-scenery { position:absolute; top:0; right:2%; width:min(26%,210px); height:100%; pointer-events:none; }
+.bmw-academy .ac-road-atlas .is-right .ac-road-scenery { right:auto; left:2%; transform:scaleX(-1); }
+.bmw-academy .ac-road-contours { stroke:color-mix(in srgb,var(--ac-muted) 17%,transparent); stroke-width:1px; }
+.bmw-academy .ac-road-trees { color:color-mix(in srgb,#6a9c81 22%,var(--ac-route-ground)); fill:currentColor; }
+.bmw-academy .ac-road-contour-dot { fill:color-mix(in srgb,var(--ac-blue) 20%,transparent); }
+.bmw-academy .ac-road-atlas .ac-road-sign { position:relative; z-index:1; display:grid; justify-items:center; gap:10px; padding:28px 12px; text-align:center; }
+.bmw-academy .ac-road-atlas .ac-road-sign>span { display:grid; place-items:center; width:62px; height:60px; border:1px solid color-mix(in srgb,var(--ac-blue) 45%,var(--ac-line)); border-radius:15px; background:var(--ac-bg); color:var(--ac-blue); box-shadow:0 5px 15px #0000000a; }
+.bmw-academy .ac-road-atlas .ac-road-sign svg { width:36px; height:36px; }
+.bmw-academy .ac-road-atlas .ac-road-sign strong { max-width:280px; font-size:10px; letter-spacing:.1em; line-height:1.8; font-weight:600; }
+.bmw-academy .ac-road-atlas .ac-road-sign small { max-width:340px; color:var(--ac-muted); font-size:12px; line-height:1.8; }
+.bmw-academy .ac-road-atlas .ac-road-start::after,.bmw-academy .ac-road-atlas .ac-road-finish::before { content:""; position:absolute; z-index:-1; left:calc(50% - var(--ac-road-width) * .103125); width:calc(var(--ac-road-width) * .20625); height:22px; background:#293a4d; border-inline:3px solid #61778b; }
+.bmw-academy .ac-road-atlas .ac-road-start::after { bottom:0; }
+.bmw-academy .ac-road-atlas .ac-road-finish::before { top:0; }
+.bmw-academy .ac-road-atlas .ac-road-finish.is-complete>span { color:var(--ac-green); border-color:var(--ac-green); }
+.bmw-academy .ac-road-note { margin:0 4px 32px; max-width:700px; font-size:12px; line-height:1.85; color:var(--ac-muted); }
+.bmw-academy .ac-main:has(.ac-journey-hero) .ac-path-metrics strong { min-width:0; max-width:100%; overflow-wrap:anywhere; }
+html[data-theme=light] .bmw-academy:has(.ac-journey-hero) { --ac-blue:#1765aa; --ac-green:#2e7b5d; }
+@media (max-width:1080px) and (min-width:761px) {
+  .bmw-academy .ac-shell:has(.ac-journey-hero) { grid-template-columns:155px minmax(0,1fr); gap:24px; }
+  .bmw-academy .ac-shell:has(.ac-journey-hero)>.ac-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .bmw-academy .ac-journey-hero { min-height:285px; padding:30px; }
+  .bmw-academy .ac-journey-hero .ac-view-heading { max-width:85%; }
+  .bmw-academy .ac-main:has(.ac-journey-hero) .ac-path-metrics>div { flex-direction:column; align-items:flex-start; gap:6px; padding:16px; }
+}
+@media (max-width:1020px) {
+  .bmw-academy .ac-road-atlas { --ac-road-width:106px; --ac-node-size:60px; --ac-route-gap:18px; padding-inline:18px; }
+  .bmw-academy .ac-road-atlas .ac-mission-stop { min-height:225px; }
+  .bmw-academy .ac-road-atlas .ac-mission-stop>button { grid-template-columns:var(--ac-road-width) minmax(0,1fr); gap:18px; padding-block:22px; }
+  .bmw-academy .ac-road-atlas .ac-mission-asphalt { left:0; }
+  .bmw-academy .ac-road-atlas .ac-mission-marker { grid-column:1; min-height:66px; }
+  .bmw-academy .ac-road-atlas .ac-mission-node { width:60px; height:60px; border-width:3px; font-size:18px; }
+  .bmw-academy .ac-road-atlas .ac-mission-node svg { width:23px; height:23px; }
+  .bmw-academy .ac-road-atlas .ac-route-vehicle { top:-52px; width:30px; height:59px; left:calc(50% - 15px - var(--ac-road-offset)); }
+  .bmw-academy .ac-road-atlas .is-right .ac-route-vehicle { left:calc(50% - 15px + var(--ac-road-offset)); }
+  .bmw-academy .ac-road-atlas .ac-mission-copy,.bmw-academy .ac-road-atlas .ac-mission-stop.is-right .ac-mission-copy { grid-column:2; padding:22px; }
+  .bmw-academy .ac-road-atlas .ac-mission-copy { --ac-connector:calc(var(--ac-road-width) * .7625 + var(--ac-route-gap) - var(--ac-node-size) / 2); }
+  .bmw-academy .ac-road-atlas .is-right .ac-mission-copy { --ac-connector:calc(var(--ac-road-width) * .2375 + var(--ac-route-gap) - var(--ac-node-size) / 2); }
+  .bmw-academy .ac-road-atlas .ac-mission-copy::after,.bmw-academy .ac-road-atlas .is-right .ac-mission-copy::after { right:auto; left:calc(-1 * var(--ac-connector)); width:var(--ac-connector); }
+  .bmw-academy .ac-road-atlas .ac-road-scenery { display:none; }
+  .bmw-academy .ac-road-atlas .ac-road-sign { grid-template-columns:var(--ac-road-width) minmax(0,1fr); column-gap:18px; justify-items:start; align-items:center; text-align:left; padding:26px 0; }
+  .bmw-academy .ac-road-atlas .ac-road-sign>span { grid-column:1; grid-row:1/3; justify-self:center; }
+  .bmw-academy .ac-road-atlas .ac-road-sign strong,.bmw-academy .ac-road-atlas .ac-road-sign small { grid-column:2; }
+  .bmw-academy .ac-road-atlas .ac-road-start::after,.bmw-academy .ac-road-atlas .ac-road-finish::before { left:calc(var(--ac-road-width) * .396875); border-inline-width:1px; }
+}
+@media (max-width:760px) {
+  .bmw-academy .ac-shell:has(.ac-journey-hero) { display:block; }
+  .bmw-academy .ac-shell:has(.ac-journey-hero)>.ac-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .bmw-academy .ac-journey-hero { min-height:290px; padding:28px 24px; border-radius:19px; }
+  .bmw-academy .ac-journey-hero .ac-view-heading { max-width:100%; }
+  .bmw-academy .ac-journey-hero .ac-view-heading h1 { max-width:480px; font-size:clamp(34px,7vw,46px); }
+  .bmw-academy .ac-journey-hero .ac-view-heading p { max-width:360px; font-size:13px; }
+  .bmw-academy .ac-journey-landscape { width:110%; opacity:.65; right:-20%; }
+  .bmw-academy .ac-journey-hero::after { background:linear-gradient(90deg,#102136f5,#102136b0 70%,#10213660); }
+  .bmw-academy .ac-main:has(.ac-journey-hero) .ac-path-metrics { gap:8px; }
+  .bmw-academy .ac-main:has(.ac-journey-hero) .ac-path-metrics>div { flex-direction:column; align-items:flex-start; gap:7px; padding:14px 10px; }
+  .bmw-academy .ac-main:has(.ac-journey-hero) .ac-path-metrics strong { font-size:26px; }
+  .bmw-academy .ac-main:has(.ac-journey-hero) .ac-path-metrics span { font-size:10px; }
+  .bmw-academy .ac-main:has(.ac-journey-hero) .ac-chapter-banner { padding:23px 20px; }
+  .bmw-academy .ac-main:has(.ac-journey-hero) .ac-unit-fraction { font-size:32px; }
+  .bmw-academy .ac-main:has(.ac-journey-hero) .ac-next-lesson { padding:20px 18px; gap:13px; }
+  .bmw-academy .ac-main:has(.ac-journey-hero) .ac-next-lesson strong { font-size:19px; }
+  .bmw-academy .ac-road-atlas { --ac-road-width:88px; --ac-node-size:52px; --ac-route-gap:12px; padding:18px 13px 12px; border-radius:19px; }
+  .bmw-academy .ac-road-atlas .ac-road-map-caption { font-size:9px; padding-bottom:18px; }
+  .bmw-academy .ac-road-atlas .ac-mission-stop { min-height:230px; }
+  .bmw-academy .ac-road-atlas .ac-mission-stop>button { gap:12px; padding-block:22px; }
+  .bmw-academy .ac-road-atlas .ac-mission-marker { min-height:58px; }
+  .bmw-academy .ac-road-atlas .ac-mission-node { width:52px; height:52px; border-width:2px; font-size:16px; }
+  .bmw-academy .ac-road-atlas .is-current .ac-mission-node { box-shadow:0 5px 0 #4d7da2,0 0 0 7px color-mix(in srgb,var(--ac-blue) 14%,transparent); }
+  .bmw-academy .ac-road-atlas .is-checkpoint .ac-mission-node { border-radius:16px; outline-offset:4px; }
+  .bmw-academy .ac-road-atlas .ac-mission-copy,.bmw-academy .ac-road-atlas .ac-mission-stop.is-right .ac-mission-copy { padding:18px 16px; gap:9px; border-radius:13px; }
+  .bmw-academy .ac-road-atlas .ac-mission-copy strong { font-size:18px; }
+  .bmw-academy .ac-road-atlas .ac-mission-copy small { font-size:8px; letter-spacing:.05em; }
+  .bmw-academy .ac-road-atlas .ac-mission-copy>b { font-size:10px; }
+  .bmw-academy .ac-road-atlas .ac-road-sign { column-gap:12px; }
+  .bmw-academy .ac-road-atlas .ac-road-sign>span { width:52px; height:52px; border-radius:13px; }
+  .bmw-academy .ac-road-atlas .ac-road-sign strong { font-size:9px; letter-spacing:.06em; }
+  html[lang=ka] .bmw-academy .ac-journey-hero .ac-view-heading h1 { font-size:clamp(30px,6.5vw,42px); line-height:1.3; letter-spacing:-.02em; }
+}
+@media (max-width:460px) {
+  .bmw-academy .ac-shell:has(.ac-journey-hero)>.ac-stats { grid-template-columns:minmax(0,1fr); }
+  .bmw-academy .ac-road-atlas { --ac-road-width:72px; --ac-node-size:45px; --ac-route-gap:9px; padding-inline:13px; }
+  .bmw-academy .ac-road-atlas .ac-mission-stop>button { gap:9px; }
+  .bmw-academy .ac-road-atlas .ac-mission-copy,.bmw-academy .ac-road-atlas .ac-mission-stop.is-right .ac-mission-copy { padding:17px 13px; }
+  .bmw-academy .ac-road-atlas .ac-mission-copy strong { font-size:17px; }
+  .bmw-academy .ac-road-atlas .ac-mission-node { width:45px; height:45px; font-size:14px; }
+  .bmw-academy .ac-road-atlas .ac-mission-node svg { width:20px; height:20px; }
+  .bmw-academy .ac-road-atlas .ac-road-sign { column-gap:9px; }
+  .bmw-academy .ac-road-atlas .ac-route-vehicle { width:26px; height:51px; top:-45px; left:calc(50% - 13px - var(--ac-road-offset)); }
+  .bmw-academy .ac-road-atlas .is-right .ac-route-vehicle { left:calc(50% - 13px + var(--ac-road-offset)); }
+}
+@media (prefers-reduced-motion:reduce) {
+  .bmw-academy .ac-road-atlas .ac-mission-copy,.bmw-academy .ac-road-atlas .ac-mission-node { transition:none; }
+}

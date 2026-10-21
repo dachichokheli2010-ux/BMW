@@ -47,6 +47,17 @@ assert.equal(root.querySelector('.ac-mission-stop:nth-child(2) button').dataset.
 assert.ok(root.querySelector('.ac-mission-asphalt'),'The mission road remains the primary learning journey');
 assert.equal(root.querySelectorAll('.ac-mission-asphalt').length,units[0].lessons.length,'Every mission has a stretchable curve, including on mobile');
 assert.equal(root.querySelectorAll('.ac-road-sign').length,2,'Chapter road has a start and a destination');
+assert.ok(root.querySelector('.ac-journey-landscape[aria-hidden="true"]'),'The journey has original decorative landscape artwork.');
+assert.ok(root.querySelector('.ac-road-atlas'),'The scenic route uses the full mission atlas.');
+assert.equal(root.querySelectorAll('.ac-road-scenery[aria-hidden="true"]').length,units[0].lessons.length,'Road scenery stays decorative for screen readers.');
+assert.equal(root.querySelectorAll('.ac-route-vehicle').length,1,'Only the current mission carries the driving marker.');
+for(const stop of root.querySelectorAll('.ac-mission-stop')){
+  assert.equal(stop.querySelector('.ac-mission-asphalt').getAttribute('viewBox'),'0 0 320 240');
+  const paths=[...stop.querySelectorAll('.ac-mission-asphalt path')].map(path=>path.getAttribute('d'));
+  assert.ok(paths.length===4&&paths.every(path=>path===paths[0]),'Verge, asphalt and centre lane follow exactly the same curve.');
+  assert.ok(paths[0].startsWith('M160 0')&&paths[0].endsWith('160 240'),'Adjacent stretches meet on the same road centre.');
+  assert.equal(stop.querySelector('.ac-mission-copy').parentElement,stop.querySelector('button'),'Full mission names remain inside their accessible mission button.');
+}
 const beforeLocked=localStorage.getItem('journey-fixture-academy-v2');
 click('lesson',units[0].lessons[1]);
 assert.ok(root.querySelector('.ac-locked-panel'),'Locked nodes explain their prerequisite');
@@ -79,6 +90,8 @@ click('exit');
 assert.equal(root.querySelector('.ac-mission-stop:nth-child(2) button').disabled,false,'Completing a lesson unlocks the next card');
 assert.equal(root.querySelector('.ac-mission-stop:nth-child(2) button').dataset.locked,'false');
 assert.equal(root.querySelector('.ac-mission-stop:first-child button').dataset.locked,'false','Completed missions remain replayable');
+assert.ok(root.querySelector('.ac-mission-stop:nth-child(2) .ac-route-vehicle'),'The current driving marker follows progress to the next mission.');
+assert.equal(root.querySelector('.ac-mission-stop:first-child .ac-route-vehicle'),null);
 for(const href of ['/sounds','/personality','/timeline','/legends','/my-garage'])assert.ok(root.querySelector('.ac-side-quests a[href="'+href+'"]'),'Side quest discoverable from Learn: '+href);
 academy.openLesson(first.id);click('start-questions');
 for(let i=0;i<first.questions.length;i++){if(i)click('question-next');answerQuestion(first.questions[i]);}click('finish');

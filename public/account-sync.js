@@ -51,7 +51,7 @@ export function mergeGuestGarage(current,guest) {
 export function createAccountController({fetchImpl=(...args)=>fetch(...args),storage,eventTarget=globalThis.window,timeout=15000}={}) {
   if(storage===undefined){try{storage=globalThis.localStorage;}catch{storage=null;}}
   let user=null,provider='password',signInUrl='',signOutUrl='',csrfToken=null,status='loading',message='Checking your account…',revision=0,updatedAt=null,conflict=null,capabilities={},adminAccess={},remoteKnown=false;
-  let started=false,ready=false,starting=null,writing=false,authenticating=false,applying=false,dirty=false,debounce,retryTimer,stopped=false,identity=0,storageOK=true,opening=null;
+  let started=false,ready=false,starting=null,writing=false,authenticating=false,applying=false,dirty=false,debounce,retryTimer,stopped=false,identity=0,storageOK=true,opening=null,sessionRefreshPending=false;
   let current=empty(),base=empty(),listeners=new Set();
   function get(key){try{return storage?.getItem(key)??null;}catch{storageOK=false;return null;}}
   function put(key,value){try{if(!storage)throw new Error();if(value===null)storage.removeItem(key);else storage.setItem(key,JSON.stringify(value));return true;}catch{storageOK=false;return false;}}
@@ -151,10 +151,10 @@ export function createAccountController({fetchImpl=(...args)=>fetch(...args),sto
       else if(error.status===401){requireGuest('session-expired',{preserveCache:true});setStatus('expired','Your session ended. Sign in again to sync.');}
       else if(error.status===400||error.status===409||error.status===413){setStatus('error',error.message);}
       else{cache();setStatus('offline','Changes are saved on this device. Waiting for the account service to reconnect.');clearTimeout(retryTimer);retryTimer=setTimeout(()=>void flush(),15000);}
-    }finally{writing=false;}
+    }finally{writing=false;if(sessionRefreshPending&&!stopped)void retry();else if(generation!==identity&&ready&&dirty&&remoteKnown&&!conflict&&!stopped)schedule(0);}
   }
   async function retry(){
-    if(authenticating||writing)return;
+    if(authenticating||writing||stopped)return;sessionRefreshPending=false;
     setStatus('loading','Reconnecting to your account…');
     const generation=identity;try{const data=await request('/api/auth/session');if(generation===identity)await openSession(data);}catch(error){if(generation===identity)setStatus('offline',error.message||'The account service is unavailable. You can keep exploring and try again.');}
   }
@@ -174,7 +174,7 @@ export function createAccountController({fetchImpl=(...args)=>fetch(...args),sto
       }
       return snapshot();
     }
-    finally{authenticating=false;}
+    finally{authenticating=false;if(sessionRefreshPending&&!stopped)void retry();}
   }
   async function logout(){
     if(provider==='chatgpt'){if(signOutUrl)globalThis.location.assign(signOutUrl);return;}
@@ -200,15 +200,25 @@ export function createAccountController({fetchImpl=(...args)=>fetch(...args),sto
   async function resetPassword(token,password){const result=await request('/api/auth/reset-password',{method:'POST',body:{token,password}});requireGuest('password-reset');setStatus('guest',result.message||'Your password has been reset. Sign in with your new password.');return result;}
   async function verifyEmail(token){const result=await request('/api/auth/verify-email',{method:'POST',body:{token}});if(user)await retry();return result;}
   async function resendVerification(language){return request('/api/auth/resend-verification',{method:'POST',body:{language}});}
+  function refreshStorageSession(){
+    // Invalidate in-flight responses immediately. A busy writer must not apply
+    // its old account snapshot over another tab's newly opened projection.
+    const invalidate=!sessionRefreshPending;sessionRefreshPending=true;
+    if(invalidate){identity++;opening=null;ready=false;setStatus('loading','Checking the account opened in another tab…');}
+    clearTimeout(debounce);clearTimeout(retryTimer);
+    if(!authenticating&&!writing&&!stopped)void retry();
+  }
   function handleStorage(event){
-    if(applying||!ready)return;
+    if(applying)return;
+    if(event.key===null||event.key===OWNER_KEY){refreshStorageSession();return;}
     if(event.key===OWNER_KEY||event.key===CACHE_KEY){
       // Another tab can change the authenticated browser session. Verify the
       // session instead of ever uploading a projection under the wrong user.
-      const owner=get(OWNER_KEY);if(user&&owner!==JSON.stringify(String(user.id))||!user&&owner){void retry();return;}
+      const owner=get(OWNER_KEY);if(!ready||user&&owner!==JSON.stringify(String(user.id))||!user&&owner){refreshStorageSession();return;}
       if(event.key===CACHE_KEY&&user){const latest=parsed(CACHE_KEY);if(latest&&String(latest.userId)===String(user.id)){current=cleanState(latest.state);base=cleanState(latest.base);revision=latest.revision;dirty=!!latest.dirty;remoteKnown=latest.remoteKnown===true;conflict=validGarageSnapshot(latest.conflict)?latest.conflict:null;updatedAt=latest.updatedAt;announce();if(dirty&&!conflict&&remoteKnown)schedule();}}
       return;
     }
+    if(!ready)return;
     if(Object.values(ACCOUNT_KEYS).includes(event.key))changed();
   }
   const localEvents=['apex:localchange','apex:favoriteschange','apex:garagechange','apex:progress'];

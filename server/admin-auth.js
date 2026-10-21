@@ -5,6 +5,7 @@ export const ADMIN_AUTH_PATHS=new Set(['/api/admin/session','/api/admin/login','
 const SESSION_MS=8*60*60*1000;
 const PRINCIPAL_ID='administrator:owner';
 const passwordRecord=/^pbkdf2-sha256\$600000\$[a-f0-9]{32}\$[a-f0-9]{64}$/;
+const validToken=value=>typeof value==='string'&&/^[A-Za-z0-9_-]{43}$/.test(value);
 const only=(body,keys)=>body&&typeof body==='object'&&!Array.isArray(body)&&Object.keys(body).every(key=>keys.includes(key));
 
 export function adminConfiguration(env={}){
@@ -26,7 +27,7 @@ export async function getAdminSession(request,env){
  const config=adminConfiguration(env),token=readCookie(request);if(!config||!token)return null;
  const hash=await sessionHash(config,token);
  const row=await env.DB.prepare("SELECT sessions.csrf_token,sessions.token_hash FROM sessions INNER JOIN users ON users.id = sessions.user_id WHERE sessions.token_hash = ? AND sessions.user_id = ? AND users.provider = 'administrator' AND sessions.expires_at > ?").bind(hash,PRINCIPAL_ID,Date.now()).first();
- return row?{user:{id:PRINCIPAL_ID,name:'Administrator'},csrfToken:row.csrf_token,tokenHash:row.token_hash}:null;
+ return row&&validToken(row.csrf_token)&&row.token_hash===hash?{user:{id:PRINCIPAL_ID,name:'Administrator'},csrfToken:row.csrf_token,tokenHash:row.token_hash}:null;
 }
 export async function handleAdminAuth(request,env,{ApiError,readJSON,requireCSRF,limit,json}){
  const path=new URL(request.url).pathname,method=request.method,config=adminConfiguration(env),configured=Boolean(config);
@@ -55,7 +56,8 @@ export async function handleAdminAuth(request,env,{ApiError,readJSON,requireCSRF
   env.DB.prepare('DELETE FROM auth_limits WHERE expires_at <= ?').bind(now),
   ...(session?[env.DB.prepare('DELETE FROM sessions WHERE token_hash = ?').bind(session.tokenHash)]:[]),
   env.DB.prepare('INSERT INTO sessions (token_hash,user_id,csrf_token,created_at,expires_at) VALUES (?,?,?,?,?)').bind(hash,PRINCIPAL_ID,csrfToken,now,now+SESSION_MS),
-  env.DB.prepare('DELETE FROM sessions WHERE user_id = ? AND token_hash NOT IN (SELECT token_hash FROM sessions WHERE user_id = ? ORDER BY created_at DESC,token_hash DESC LIMIT 5)').bind(PRINCIPAL_ID,PRINCIPAL_ID)
+  // Always retain this login, including clock changes or same-millisecond ties.
+  env.DB.prepare('DELETE FROM sessions WHERE user_id = ? AND token_hash <> ? AND token_hash NOT IN (SELECT token_hash FROM sessions WHERE user_id = ? AND token_hash <> ? ORDER BY created_at DESC,token_hash DESC LIMIT 4)').bind(PRINCIPAL_ID,hash,PRINCIPAL_ID,hash)
  ]);
  return json(snapshot({user:{id:PRINCIPAL_ID,name:'Administrator'},csrfToken}),200,{'Set-Cookie':setCookie(request,token)});
 }

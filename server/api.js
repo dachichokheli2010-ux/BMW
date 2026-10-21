@@ -5,10 +5,11 @@ import {accountMailConfigured,sendAccountMail} from './account-mail.js';
 import {COMMUNITY_PATHS,handleCommunity} from './community-api.js';
 import {administratorUser} from './admin-policy.js';
 import {ADMIN_AUTH_PATHS,getAdminSession,handleAdminAuth} from './admin-auth.js';
+import {handleAdminAccounts} from './admin-accounts.js';
 import {handleSiteAsk} from './site-helper.js';
 
 const SESSION_MS=7*24*60*60*1000;
-export const AUTH_PATHS=new Set(['/api/auth/session','/api/auth/signup','/api/auth/login','/api/auth/logout','/api/auth/forgot-password','/api/auth/reset-password','/api/auth/verify-email','/api/auth/resend-verification','/api/account/profile','/api/garage',...COMMUNITY_PATHS,...ADMIN_AUTH_PATHS]);
+export const AUTH_PATHS=new Set(['/api/auth/session','/api/auth/signup','/api/auth/login','/api/auth/logout','/api/auth/forgot-password','/api/auth/reset-password','/api/auth/verify-email','/api/auth/resend-verification','/api/account/profile','/api/garage','/api/admin/accounts',...COMMUNITY_PATHS,...ADMIN_AUTH_PATHS]);
 const json=(body,status=200,headers={})=>Response.json(body,{status,headers:{'Cache-Control':'no-store','Pragma':'no-cache','X-Content-Type-Options':'nosniff','Vary':'Cookie',...headers}});
 class ApiError extends Error {constructor(message,status=400,code){super(message);this.status=status;this.code=code;}}
 const only=(body,keys)=>body&&typeof body==='object'&&!Array.isArray(body)&&Object.keys(body).every(key=>keys.includes(key));
@@ -44,7 +45,7 @@ async function readJSON(request,max=16384){
 async function limit(env,key,maximum,window){
   const now=Date.now(),hashed=await tokenHash(key);
   const row=await env.DB.prepare('INSERT INTO auth_limits (key, attempts, window_start, expires_at) VALUES (?, 1, ?, ?) ON CONFLICT(key) DO UPDATE SET attempts = CASE WHEN auth_limits.expires_at <= ? THEN 1 ELSE auth_limits.attempts + 1 END, window_start = CASE WHEN auth_limits.expires_at <= ? THEN ? ELSE auth_limits.window_start END, expires_at = CASE WHEN auth_limits.expires_at <= ? THEN ? ELSE auth_limits.expires_at END RETURNING attempts, expires_at').bind(hashed,now,now+window,now,now,now,now,now+window).first();
-  if(row.attempts>maximum)throw new ApiError('Too many attempts. Please try again in a few minutes.',429);
+  if(row.attempts>maximum){const error=new ApiError('Too many attempts. Please try again in a few minutes.',429);error.retryAfter=Math.max(1,Math.ceil((row.expires_at-now)/1000));throw error;}
 }
 async function cleanExpired(env){const now=Date.now();await env.DB.prepare('DELETE FROM sessions WHERE expires_at <= ?').bind(now).run();await env.DB.prepare('DELETE FROM auth_limits WHERE expires_at <= ?').bind(now).run();await env.DB.prepare('DELETE FROM account_tokens WHERE expires_at <= ?').bind(now).run();}
 async function issueAccountToken(env,user,purpose,language){
@@ -60,19 +61,38 @@ async function issueAccountToken(env,user,purpose,language){
     console.error('Account email could not be delivered.');
   }
 }
-async function consumeAccountToken(env,token,purpose){
-  // DELETE ... RETURNING is one atomic claim, so parallel requests cannot reuse it.
-  return env.DB.prepare('DELETE FROM account_tokens WHERE token_hash = ? AND purpose = ? AND expires_at > ? RETURNING user_id').bind(await tokenHash(token),purpose,Date.now()).first();
+async function applyAccountToken(env,token,purpose,password){
+  const hash=await tokenHash(token),claim=await tokenHash(randomToken()),now=Date.now();
+  const owner='SELECT user_id FROM account_tokens WHERE token_hash = ?';
+  // Claim and effects share one transaction. A failed write restores the original
+  // link; another request can neither consume it twice nor observe this marker.
+  const statements=[env.DB.prepare("UPDATE account_tokens SET token_hash = ? WHERE token_hash = ? AND purpose = ? AND expires_at > ? AND EXISTS (SELECT 1 FROM users WHERE users.id = account_tokens.user_id AND users.provider = 'password') RETURNING user_id").bind(claim,hash,purpose,now)];
+  if(purpose==='reset')statements.push(
+    env.DB.prepare(`UPDATE users SET password_hash = ?, updated_at = ? WHERE id = (${owner}) AND provider = 'password'`).bind(password,now,claim),
+    env.DB.prepare(`DELETE FROM sessions WHERE user_id = (${owner})`).bind(claim)
+  );
+  statements.push(
+    env.DB.prepare(`INSERT INTO user_verifications (user_id,verified_at) SELECT user_id,? FROM account_tokens WHERE token_hash = ? ON CONFLICT(user_id) DO UPDATE SET verified_at = excluded.verified_at`).bind(now,claim),
+    env.DB.prepare(purpose==='reset'?`DELETE FROM account_tokens WHERE user_id = (${owner})`:'DELETE FROM account_tokens WHERE token_hash = ?').bind(claim)
+  );
+  const results=await env.DB.batch(statements);
+  return results[0]?.results?.[0]||null;
 }
-async function createSession(request,env,userId){
+async function createSession(request,env,userId,previousTokenHash=null){
   const token=randomToken(),csrfToken=randomToken(),hash=await tokenHash(token),now=Date.now();
-  await env.DB.prepare('INSERT INTO sessions (token_hash, user_id, csrf_token, created_at, expires_at) VALUES (?, ?, ?, ?, ?)').bind(hash,userId,csrfToken,now,now+SESSION_MS).run();
-  await env.DB.prepare('DELETE FROM sessions WHERE user_id = ? AND token_hash NOT IN (SELECT token_hash FROM sessions WHERE user_id = ? ORDER BY created_at DESC, token_hash DESC LIMIT 10)').bind(userId,userId).run();
+  // A failed replacement must leave the prior session usable for retry.
+  await env.DB.batch([
+    ...(previousTokenHash?[env.DB.prepare('DELETE FROM sessions WHERE token_hash = ?').bind(previousTokenHash)]:[]),
+    env.DB.prepare('INSERT INTO sessions (token_hash, user_id, csrf_token, created_at, expires_at) VALUES (?, ?, ?, ?, ?)').bind(hash,userId,csrfToken,now,now+SESSION_MS),
+    env.DB.prepare('INSERT INTO user_login_activity (user_id,sign_in_count,last_signed_in_at) VALUES (?,1,?) ON CONFLICT(user_id) DO UPDATE SET sign_in_count = user_login_activity.sign_in_count + 1, last_signed_in_at = CASE WHEN user_login_activity.last_signed_in_at > excluded.last_signed_in_at THEN user_login_activity.last_signed_in_at ELSE excluded.last_signed_in_at END').bind(userId,now),
+    env.DB.prepare('DELETE FROM sessions WHERE user_id = ? AND token_hash <> ? AND token_hash NOT IN (SELECT token_hash FROM sessions WHERE user_id = ? AND token_hash <> ? ORDER BY created_at DESC, token_hash DESC LIMIT 9)').bind(userId,hash,userId,hash)
+  ]);
   return {csrfToken,tokenHash:hash,cookie:setCookie(request,token)};
 }
 async function getSession(request,env){
   const token=readCookie(request);let session=null;
   if(token)session=await env.DB.prepare('SELECT users.*, user_verifications.verified_at AS email_verified_at, user_preferences.language, sessions.csrf_token, sessions.token_hash FROM sessions INNER JOIN users ON users.id = sessions.user_id LEFT JOIN user_verifications ON user_verifications.user_id = users.id LEFT JOIN user_preferences ON user_preferences.user_id = users.id WHERE sessions.token_hash = ? AND sessions.expires_at > ?').bind(await tokenHash(token),Date.now()).first();
+  if(session&&!validAccountToken(session.csrf_token))session=null;
   if(!hosted(env))return session&&session.provider==='password'?{user:viewUser(session),csrfToken:session.csrf_token,tokenHash:session.token_hash}:null;
   // Only the Sites gateway supplies these headers. The local server always uses
   // password mode and never treats an oai-* request header as authentication.
@@ -119,6 +139,7 @@ export async function handleApi(request,env={}){
     const adminSession=adminRoute||pathname==='/api/community/car-photo'?await getAdminSession(request,env):null;
     session=adminRoute?adminSession:await getSession(request,env);
     if(session)session.user=administratorUser(env,session.user);
+    if(pathname==='/api/admin/accounts')return await handleAdminAccounts(request,env,{adminSession,ApiError,json});
     if(COMMUNITY_PATHS.has(pathname))return await handleCommunity(request,env,{session,adminSession,ApiError,readJSON,requireCSRF,authRequired,limit,json,sessionHeaders});
     const info=providerInfo(env);
     if(pathname==='/api/auth/session'){
@@ -152,8 +173,7 @@ export async function handleApi(request,env={}){
         user=await env.DB.prepare("SELECT users.*, user_verifications.verified_at AS email_verified_at, user_preferences.language FROM users LEFT JOIN user_verifications ON user_verifications.user_id = users.id LEFT JOIN user_preferences ON user_preferences.user_id = users.id WHERE users.email = ? AND users.provider = 'password'").bind(email).first();
         if(!await verifyPassword(body.password,user?.password_hash))throw new ApiError('Email or password is incorrect.',401);
       }
-      if(session?.tokenHash)await env.DB.prepare('DELETE FROM sessions WHERE token_hash = ?').bind(session.tokenHash).run();
-      const fresh=await createSession(request,env,user.id);
+      const fresh=await createSession(request,env,user.id,session?.tokenHash);
       const signedInUser=administratorUser(env,viewUser(user));
       return json({user:signedInUser,csrfToken:fresh.csrfToken,...info,redirectTo:'/account'},200,sessionHeaders(fresh));
     }
@@ -176,16 +196,8 @@ export async function handleApi(request,env={}){
       await limit(env,'reset-ip:'+(env.CLIENT_IP||'local'),15,15*60*1000);
       const body=await readJSON(request);
       if(!only(body,['token','password'])||!validAccountToken(body?.token)||!validPassword(body.password))throw new ApiError('Use a valid reset link and a password with 12–128 characters.',400,'INVALID_RESET');
-      const password=await hashPassword(body.password),claimed=await consumeAccountToken(env,body.token,'reset');
+      const password=await hashPassword(body.password),claimed=await applyAccountToken(env,body.token,'reset',password);
       if(!claimed)throw new ApiError(tokenMessage,400,'INVALID_TOKEN');
-      const now=Date.now();
-      // Commit password replacement and all-session revocation together.
-      await env.DB.batch([
-        env.DB.prepare("UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ? AND provider = 'password'").bind(password,now,claimed.user_id),
-        env.DB.prepare('DELETE FROM sessions WHERE user_id = ?').bind(claimed.user_id),
-        env.DB.prepare('DELETE FROM account_tokens WHERE user_id = ?').bind(claimed.user_id),
-        env.DB.prepare('INSERT INTO user_verifications (user_id,verified_at) VALUES (?,?) ON CONFLICT(user_id) DO UPDATE SET verified_at = excluded.verified_at').bind(claimed.user_id,now)
-      ]);
       return json({user:null,csrfToken:null,message:'Password updated. Sign in with your new password.',code:'PASSWORD_RESET'},200,{'Set-Cookie':setCookie(request,'',false)});
     }
     if(pathname==='/api/auth/verify-email'){
@@ -194,9 +206,8 @@ export async function handleApi(request,env={}){
       await limit(env,'verify-ip:'+(env.CLIENT_IP||'local'),30,15*60*1000);
       const body=await readJSON(request);
       if(!only(body,['token'])||!validAccountToken(body?.token))throw new ApiError(tokenMessage,400,'INVALID_TOKEN');
-      const claimed=await consumeAccountToken(env,body.token,'verify');
+      const claimed=await applyAccountToken(env,body.token,'verify');
       if(!claimed)throw new ApiError(tokenMessage,400,'INVALID_TOKEN');
-      await env.DB.prepare('INSERT INTO user_verifications (user_id,verified_at) VALUES (?,?) ON CONFLICT(user_id) DO UPDATE SET verified_at = excluded.verified_at').bind(claimed.user_id,Date.now()).run();
       const verifiedUser=session?.user.id===claimed.user_id?administratorUser(env,{...session.user,emailVerified:true}):null;
       return json({message:'Email verified. You can continue to your account.',code:'EMAIL_VERIFIED',...(verifiedUser?{user:verifiedUser}:{})},200,sessionHeaders(session));
     }
@@ -246,7 +257,7 @@ export async function handleApi(request,env={}){
       return json({state,revision:body.revision+1,updatedAt:new Date(now).toISOString()},200,sessionHeaders(session));
     }
   }catch(error){
-    if(error instanceof ApiError)return json({error:error.message,...(error.code?{code:error.code}:{})},error.status,{...sessionHeaders(session),...(error.status===429?{'Retry-After':'900'}:{})});
+    if(error instanceof ApiError)return json({error:error.message,...(error.code?{code:error.code}:{})},error.status,{...sessionHeaders(session),...(error.status===429?{'Retry-After':String(error.retryAfter||900)}:{})});
     console.error('BMW account operation failed.');
     return json({error:'Account storage is temporarily unavailable. Your current input has been preserved.'},503,sessionHeaders(session));
   }

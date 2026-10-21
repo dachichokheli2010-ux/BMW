@@ -10,12 +10,14 @@ Account and garage data lives in a separate PostgreSQL schema:
 
 | Table | Purpose |
 | --- | --- |
+| `apex.schema_migrations` | Receipts for completed data imports |
 | `apex.users` | Account names, email addresses and password hashes |
 | `apex.sessions` | Revocable session token hashes and CSRF tokens |
+| `apex.user_login_activity` | Successful member sign-in counts and latest sign-in time; no credentials or session tokens |
 | `apex.auth_limits` | Login and mutation rate limits |
 | `apex.user_garages` | Each account's favorites, tuning builds and academy progress |
 
-The first account API request initializes these tables in one transaction. It takes a database advisory lock to avoid concurrent initialization. A matching account schema from an older app version in `public` is copied without removing its original rows, including email verification and language preferences. Unrelated public tables are ignored. Legacy session and recovery tokens are not copied: sign in again after a schema migration. This prevents a later server restart from restoring a session that was already revoked by logout or a password reset.
+The first account API request initializes these tables in one transaction. It takes a database advisory lock to avoid concurrent initialization. A matching account schema from an older app version in `public` is copied without removing its original rows, including email verification and language preferences. The import checks source column types and records completion in `apex.schema_migrations`; later server starts cannot recreate app rows that were subsequently removed. Unrelated public tables are ignored. Legacy session and recovery tokens are not copied: sign in again after a schema migration. This prevents a later server restart from restoring a session that was already revoked by logout or a password reset.
 
 ## Deploy the fix
 
@@ -40,12 +42,14 @@ This check reads schema metadata only. It reports missing app columns without pr
 npm run db:migrate
 ```
 
-`npm start` uses Neon whenever a connection variable is configured. Without one, it uses a persistent local SQLite database in `.data/`; that local database is separate from the deployed Neon database. A failed Neon connection does not silently switch an account to SQLite.
+`npm start` uses Neon whenever a connection variable is configured. Without one, it uses a persistent local SQLite database in `.data/`; that local database is separate from the deployed Neon database. A failed Neon connection does not silently switch an account to SQLite. Concurrent local starts wait for SQLite initialization and recheck migration receipts under the write lock, so each numbered migration applies once.
 
 The retained `db:generate` command is for the existing SQLite/D1 schema. Its migrations are not PostgreSQL migrations. Use the Neon setup above for Vercel instead.
 
 ## Verification and limits
 
-`npm run check` includes a real PostgreSQL engine test using PGlite, account API tests, guest/account isolation, revision conflicts, and preservation of the seven manually created public tables. It does not validate the credentials, privileges or deployed version in your Vercel account. Those require access to that connected deployment.
+`npm run check` includes a real PostgreSQL engine test using PGlite, concurrent local SQLite initialization, transaction rollback and returned-row checks, account API tests, guest/account isolation, revision conflicts, one-time legacy imports, and preservation of the seven manually created public tables. It does not validate the credentials, privileges or deployed version in your Vercel account. Those require access to that connected deployment.
 
 Learning progress is private account data, not a trusted multiplayer score. Email verification and email-based password recovery are not configured. Hosted Sites deployments continue to use their existing native ChatGPT identity; the Vercel and standalone Node deployments use the email/password account API.
+
+The private `/admin` account directory reads real account totals, active unexpired sessions, registration dates and successful sign-in metadata. Tracking is committed in the same transaction as session creation and survives logout. Existing accounts without a tracking row show an unknown historical sign-in time; old login activity is not reconstructed. Passwords, password hashes, session/CSRF tokens and garage contents are excluded from this directory. The additive SQLite migration is `0005_login_activity.sql`; PostgreSQL initializes the matching app-owned table automatically.

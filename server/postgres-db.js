@@ -5,10 +5,13 @@ import {communitySchemaStatements,communityTableNames} from './community-schema.
 export const POSTGRES_SCHEMA='apex';
 export const postgresSchemaStatements=[
  'CREATE SCHEMA IF NOT EXISTS apex',
+ `CREATE TABLE IF NOT EXISTS apex.schema_migrations (name TEXT PRIMARY KEY, applied_at DOUBLE PRECISION NOT NULL)`,
  `CREATE TABLE IF NOT EXISTS apex.users (id TEXT PRIMARY KEY, provider TEXT NOT NULL, email TEXT UNIQUE, name TEXT NOT NULL, password_hash TEXT, created_at DOUBLE PRECISION NOT NULL, updated_at DOUBLE PRECISION NOT NULL)`,
  `CREATE TABLE IF NOT EXISTS apex.sessions (token_hash TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES apex.users(id) ON DELETE CASCADE, csrf_token TEXT NOT NULL, created_at DOUBLE PRECISION NOT NULL, expires_at DOUBLE PRECISION NOT NULL)`,
  'CREATE INDEX IF NOT EXISTS sessions_user_idx ON apex.sessions(user_id)',
  'CREATE INDEX IF NOT EXISTS sessions_expiry_idx ON apex.sessions(expires_at)',
+ `CREATE TABLE IF NOT EXISTS apex.user_login_activity (user_id TEXT PRIMARY KEY REFERENCES apex.users(id) ON DELETE CASCADE, sign_in_count INTEGER NOT NULL DEFAULT 0 CHECK(sign_in_count >= 0), last_signed_in_at DOUBLE PRECISION NOT NULL)`,
+ 'CREATE INDEX IF NOT EXISTS login_activity_recent_idx ON apex.user_login_activity(last_signed_in_at)',
  `CREATE TABLE IF NOT EXISTS apex.auth_limits (key TEXT PRIMARY KEY, attempts INTEGER NOT NULL, window_start DOUBLE PRECISION NOT NULL, expires_at DOUBLE PRECISION NOT NULL)`,
  'CREATE INDEX IF NOT EXISTS auth_limits_expiry_idx ON apex.auth_limits(expires_at)',
  `CREATE TABLE IF NOT EXISTS apex.user_garages (user_id TEXT PRIMARY KEY REFERENCES apex.users(id) ON DELETE CASCADE, state TEXT NOT NULL, revision INTEGER NOT NULL, updated_at DOUBLE PRECISION NOT NULL)`,
@@ -19,9 +22,10 @@ export const postgresSchemaStatements=[
  `CREATE TABLE IF NOT EXISTS apex.user_preferences (user_id TEXT PRIMARY KEY REFERENCES apex.users(id) ON DELETE CASCADE, language TEXT NOT NULL CHECK (language IN ('en','ka','ru')))`
 ];
 postgresSchemaStatements.push(...communitySchemaStatements.map(sql=>sql.replace(/(CREATE TABLE IF NOT EXISTS |REFERENCES | ON )(community_[a-z_]+|users)(?=\s|\()/g,'$1apex.$2')));
-const tableNames=new Set(['users','sessions','auth_limits','user_garages','account_tokens','user_verifications','user_preferences',...communityTableNames]);
-const required={users:['id','provider','email','name','password_hash','created_at','updated_at'],sessions:['token_hash','user_id','csrf_token','created_at','expires_at'],auth_limits:['key','attempts','window_start','expires_at'],user_garages:['user_id','state','revision','updated_at'],account_tokens:['token_hash','user_id','purpose','created_at','expires_at'],user_verifications:['user_id','verified_at'],user_preferences:['user_id','language']};
+const tableNames=new Set(['users','sessions','user_login_activity','auth_limits','user_garages','account_tokens','user_verifications','user_preferences',...communityTableNames]);
+const required={schema_migrations:['name','applied_at'],users:['id','provider','email','name','password_hash','created_at','updated_at'],sessions:['token_hash','user_id','csrf_token','created_at','expires_at'],auth_limits:['key','attempts','window_start','expires_at'],user_garages:['user_id','state','revision','updated_at'],account_tokens:['token_hash','user_id','purpose','created_at','expires_at'],user_verifications:['user_id','verified_at'],user_preferences:['user_id','language']};
 Object.assign(required,{
+ user_login_activity:['user_id','sign_in_count','last_signed_in_at'],
  community_profiles:['user_id','handle','display_name','bio','created_at','updated_at'],
  community_friends:['id','requester_id','recipient_id','pair_key','status','created_at','updated_at'],
  community_shares:['user_id','token','created_at'],
@@ -34,6 +38,13 @@ Object.assign(required,{
  community_audit:['id','actor_id','action','car_id','note','created_at']
 });
 const numericTypes=new Set(['integer','bigint','double precision','real','numeric']);
+const textTypes=new Set(['text','character varying','character']);
+const legacyTypes={
+ users:{id:textTypes,provider:textTypes,email:textTypes,name:textTypes,password_hash:textTypes,created_at:numericTypes,updated_at:numericTypes},
+ user_garages:{user_id:textTypes,state:new Set(['text','character varying','json','jsonb']),revision:new Set(['integer','bigint']),updated_at:numericTypes},
+ user_verifications:{user_id:textTypes,verified_at:numericTypes},
+ user_preferences:{user_id:textTypes,language:textTypes}
+};
 const clients=new Map();
 
 export function databaseURL(environment=process.env){
@@ -73,18 +84,20 @@ export function postgresSQL(sql){
 }
 export function createPostgresAdapter(query,transaction){
  const statements=new WeakMap();
+ const result=value=>({results:value.rows||[],success:true,meta:{changes:Number(value.rowCount??value.affectedRows??0)}});
  const prepare=(sql,values=[])=>{
  const prepared={
   bind(...next){return prepare(sql,next);},
   async first(column){const result=await query(postgresSQL(sql),values);const row=result.rows[0]||null;return column&&row?row[column]:row;},
   async all(){const result=await query(postgresSQL(sql),values);return {results:result.rows,success:true};},
-  async run(){const result=await query(postgresSQL(sql),values);return {results:result.rows,success:true,meta:{changes:Number(result.rowCount??result.affectedRows??0)}};}
+  async run(){return result(await query(postgresSQL(sql),values));}
  };
  statements.set(prepared,[postgresSQL(sql),values]);return prepared;
  };
  return {prepare,async batch(batch){
   if(!transaction)throw new Error('Atomic account operations require a database transaction.');
-  return transaction(batch.map(prepared=>{const entry=statements.get(prepared);if(!entry)throw new Error('Batch statements must belong to this database.');return entry;}));
+  const values=await transaction(batch.map(prepared=>{const entry=statements.get(prepared);if(!entry)throw new Error('Batch statements must belong to this database.');return entry;}));
+  return (values||[]).map(result);
  },close:async()=>{}};
 }
 const columnsQuery="SELECT table_name,column_name,data_type FROM information_schema.columns WHERE table_schema = $1 AND table_name IN ("+Object.keys(required).map(table=>"'"+table+"'").join(',')+")";
@@ -100,15 +113,17 @@ export async function initializePostgres(query,transaction){
  // Preserve accounts from the prior app schema, if it is actually that schema.
  // Manually-created public tables with different columns are left untouched.
  const legacy=(await query(columnsQuery,['public'])).rows;
- const compatible=table=>required[table].every(column=>legacy.some(row=>row.table_name===table&&row.column_name===column))&&legacy.filter(row=>row.table_name===table&&['created_at','updated_at','expires_at','verified_at'].includes(row.column_name)).every(row=>numericTypes.has(row.data_type));
+ const compatible=table=>Object.entries(legacyTypes[table]).every(([column,types])=>legacy.some(row=>row.table_name===table&&row.column_name===column&&types.has(row.data_type)));
  if(compatible('users')){
-  const migrate=[[`INSERT INTO apex.users (id,provider,email,name,password_hash,created_at,updated_at) SELECT id::text,provider,email,name,password_hash,created_at,updated_at FROM public.users WHERE id::text ~ '^(local:|chatgpt:)' AND provider IN ('password','chatgpt') AND name IS NOT NULL ON CONFLICT DO NOTHING`,[]]];
-  if(compatible('user_garages'))migrate.push([`INSERT INTO apex.user_garages (user_id,state,revision,updated_at) SELECT user_id::text,state::text,revision,updated_at FROM public.user_garages WHERE EXISTS (SELECT 1 FROM apex.users WHERE id=public.user_garages.user_id::text) ON CONFLICT DO NOTHING`,[]]);
-  if(compatible('user_verifications'))migrate.push([`INSERT INTO apex.user_verifications (user_id,verified_at) SELECT user_id::text,verified_at FROM public.user_verifications WHERE EXISTS (SELECT 1 FROM apex.users WHERE id=public.user_verifications.user_id::text) ON CONFLICT DO NOTHING`,[]]);
-  if(compatible('user_preferences'))migrate.push([`INSERT INTO apex.user_preferences (user_id,language) SELECT user_id::text,language FROM public.user_preferences WHERE language IN ('en','ka','ru') AND EXISTS (SELECT 1 FROM apex.users WHERE id=public.user_preferences.user_id::text) ON CONFLICT DO NOTHING`,[]]);
+  const pending="NOT EXISTS (SELECT 1 FROM apex.schema_migrations WHERE name = 'legacy-public-accounts-v1')";
+  const migrate=[['SELECT pg_advisory_xact_lock(7491832)',[]],[`INSERT INTO apex.users (id,provider,email,name,password_hash,created_at,updated_at) SELECT id,provider,email,name,password_hash,created_at,updated_at FROM public.users WHERE id ~ '^(local:|chatgpt:)' AND provider IN ('password','chatgpt') AND name IS NOT NULL AND created_at IS NOT NULL AND updated_at IS NOT NULL AND ${pending} ON CONFLICT DO NOTHING`,[]]];
+  if(compatible('user_garages'))migrate.push([`INSERT INTO apex.user_garages (user_id,state,revision,updated_at) SELECT user_id,state::text,revision,updated_at FROM public.user_garages WHERE state IS NOT NULL AND revision BETWEEN 0 AND 2147483647 AND updated_at IS NOT NULL AND EXISTS (SELECT 1 FROM apex.users WHERE id=public.user_garages.user_id) AND ${pending} ON CONFLICT DO NOTHING`,[]]);
+  if(compatible('user_verifications'))migrate.push([`INSERT INTO apex.user_verifications (user_id,verified_at) SELECT user_id,verified_at FROM public.user_verifications WHERE verified_at IS NOT NULL AND EXISTS (SELECT 1 FROM apex.users WHERE id=public.user_verifications.user_id) AND ${pending} ON CONFLICT DO NOTHING`,[]]);
+  if(compatible('user_preferences'))migrate.push([`INSERT INTO apex.user_preferences (user_id,language) SELECT user_id,language FROM public.user_preferences WHERE language IN ('en','ka','ru') AND EXISTS (SELECT 1 FROM apex.users WHERE id=public.user_preferences.user_id) AND ${pending} ON CONFLICT DO NOTHING`,[]]);
   // Sessions and account recovery tokens are deliberately not copied. Re-copying
   // a legacy token on a later cold start would resurrect a revoked session or
   // let an already-used recovery link run again. Owners sign in to the new schema.
+  migrate.push(["INSERT INTO apex.schema_migrations (name,applied_at) VALUES ('legacy-public-accounts-v1',$1) ON CONFLICT(name) DO NOTHING",[Date.now()]]);
   if(transaction)await transaction(migrate);else for(const [sql,values]of migrate)await query(sql,values);
  }
  return report;

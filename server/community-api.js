@@ -24,9 +24,28 @@ const activeRound=(env,id,now)=>env.DB.prepare('SELECT * FROM community_mastery_
 function roundView(round){if(!round)return null;const data=JSON.parse(round.question_data);return {id:round.id,questions:publicMasteryQuestions(data.items,data.language),language:data.language,total:MASTERY_POLICY.questions,requiredCorrect:MASTERY_POLICY.requiredCorrect,expiresAt:iso(round.expires_at)};}
 async function shareState(env,id){const row=await env.DB.prepare('SELECT token FROM community_shares WHERE user_id = ?').bind(id).first();return row?{enabled:true,token:row.token,url:'/garage/'+row.token}:{enabled:false};}
 async function photosFor(env,id){return (await env.DB.prepare('SELECT id,caption,width,height FROM community_photos WHERE car_id = ? ORDER BY position').bind(id).all()).results.map(row=>({...row,url:'/api/community/car-photo?id='+row.id}));}
-async function carView(env,row,{privateView=false}={}){
- const result={id:row.id,title:row.title,model:row.model,year:row.year,engine:row.engine,transmission:row.transmission,horsepower:row.horsepower,description:row.description,modifications:row.modifications,status:row.status,createdAt:iso(row.created_at),updatedAt:iso(row.updated_at),submittedAt:iso(row.submitted_at),reviewedAt:iso(row.reviewed_at),author:profile(await getProfile(env,row.user_id)),photos:await photosFor(env,row.id)};
+function carRecord(row,author,photos,{privateView=false}={}){
+ const result={id:row.id,title:row.title,model:row.model,year:row.year,engine:row.engine,transmission:row.transmission,horsepower:row.horsepower,description:row.description,modifications:row.modifications,status:row.status,createdAt:iso(row.created_at),updatedAt:iso(row.updated_at),submittedAt:iso(row.submitted_at),reviewedAt:iso(row.reviewed_at),author:profile(author),photos};
  if(privateView)Object.assign(result,{evidence:row.evidence,moderationNote:row.moderation_note,creditSpent:row.credit_spent});return result;
+}
+async function carView(env,row,options={}){return carRecord(row,await getProfile(env,row.user_id),await photosFor(env,row.id),options);}
+async function carViews(env,rows,options={}){
+ if(!rows.length)return [];
+ const ownerIds=[...new Set(rows.map(row=>row.user_id))],carIds=rows.map(row=>row.id),slots=values=>values.map(()=>'?').join(',');
+ // Fetch metadata once per page; photos themselves remain behind their access-checked URL.
+ const [owners,photos]=await Promise.all([
+  env.DB.prepare(`SELECT user_id,handle,display_name,bio FROM community_profiles WHERE user_id IN (${slots(ownerIds)})`).bind(...ownerIds).all(),
+  env.DB.prepare(`SELECT car_id,id,caption,width,height FROM community_photos WHERE car_id IN (${slots(carIds)}) ORDER BY position,id`).bind(...carIds).all()
+ ]);
+ const profiles=new Map(owners.results.map(row=>[row.user_id,row])),byCar=new Map();
+ for(const {car_id,...photo} of photos.results){if(!byCar.has(car_id))byCar.set(car_id,[]);byCar.get(car_id).push({...photo,url:'/api/community/car-photo?id='+photo.id});}
+ return rows.map(row=>carRecord(row,profiles.get(row.user_id),byCar.get(row.id)||[],options));
+}
+function adminListOptions(url,ApiError){
+ const params=url.searchParams,view=params.get('view')||'all',status=params.get('status')||'all',sort=params.get('sort')||(view==='queue'?'oldest':'newest'),query=(params.get('q')||'').trim();
+ if(!['all','queue','history'].includes(view)||!['all','approved','rejected'].includes(status)||!['oldest','newest'].includes(sort)||view==='queue'&&status!=='all'||query.length>100||/[\u0000-\u001f\u007f]/.test(query))throw new ApiError('Choose a valid review view, search and filter.',400,'INVALID_REVIEW_FILTER');
+ const integer=(key,fallback,max)=>{const value=params.get(key);if(value===null)return fallback;if(!/^[1-9]\d*$/.test(value)||Number(value)>max)throw new ApiError('Choose a valid review page and page size.',400,'INVALID_REVIEW_PAGE');return Number(value);};
+ return {view,status,sort,query,page:integer('page',1,1000000),pageSize:integer('pageSize',view==='all'?100:20,100)};
 }
 async function audit(env,user,action,carId,note=''){await env.DB.prepare('INSERT INTO community_audit (id,actor_id,action,car_id,note,created_at) VALUES (?,?,?,?,?,?)').bind(uuid(),user,action,carId,note,Date.now()).run();}
 async function carInput(body,existing,env,ErrorClass){
@@ -141,13 +160,13 @@ export async function handleCommunity(request,env,context){
  }
  if(path==='/api/community/cars'){
   allowed(['GET']);const id=url.searchParams.get('id');if(id){if(!safeID(id))throw new ApiError('Car not found.',404);const row=await env.DB.prepare("SELECT * FROM community_cars WHERE id = ? AND status = 'approved'").bind(id).first();if(!row)throw new ApiError('Car not found.',404);return respond({car:await carView(env,row)});}
-  const rows=(await env.DB.prepare("SELECT * FROM community_cars WHERE status = 'approved' ORDER BY reviewed_at DESC,id DESC LIMIT 60").all()).results;return respond({cars:await Promise.all(rows.map(row=>carView(env,row)))});
+  const rows=(await env.DB.prepare("SELECT * FROM community_cars WHERE status = 'approved' ORDER BY reviewed_at DESC,id DESC LIMIT 60").all()).results;return respond({cars:await carViews(env,rows)});
  }
  if(path==='/api/community/submissions'){
   allowed(['GET','POST','PUT']);
   if(method==='GET'){
    const id=url.searchParams.get('id');if(id){if(!safeID(id))throw new ApiError('Submission not found.',404);const row=await env.DB.prepare('SELECT * FROM community_cars WHERE id = ?').bind(id).first();if(!row||row.user_id!==user.id&&!isAdmin)throw new ApiError('Submission not found.',404);return respond({submission:await carView(env,row,{privateView:true})});}
-   const rows=(await env.DB.prepare('SELECT * FROM community_cars WHERE user_id = ? ORDER BY updated_at DESC LIMIT 30').bind(user.id).all()).results;return respond({submissions:await Promise.all(rows.map(row=>carView(env,row,{privateView:true})))});
+   const rows=(await env.DB.prepare('SELECT * FROM community_cars WHERE user_id = ? ORDER BY updated_at DESC LIMIT 30').bind(user.id).all()).results;return respond({submissions:await carViews(env,rows,{privateView:true})});
   }
   await requireProfile();await limit(env,'community-car-write:'+user.id,30,60*60*1000);const body=await readJSON(request,900*1024);let existing=null;
   if(method==='PUT'){if(!safeID(body?.id))throw new ApiError('Choose your draft.');existing=await env.DB.prepare('SELECT * FROM community_cars WHERE id = ? AND user_id = ?').bind(body.id,user.id).first();if(!existing)throw new ApiError('Submission not found.',404);if(!['draft','rejected'].includes(existing.status))throw new ApiError('Only drafts or rejected submissions can be edited.',409);}
@@ -172,17 +191,39 @@ export async function handleCommunity(request,env,context){
   const fresh=await env.DB.prepare('SELECT * FROM community_cars WHERE id = ?').bind(row.id).first();if(fresh.status!=='pending')throw new ApiError('Earn 50 verified community credits before submitting this car.',409,'CREDITS_REQUIRED');return respond({submission:await carView(env,fresh,{privateView:true}),credits:await wallet(env,user.id)});
  }
  if(path==='/api/admin/community'){
-  allowed(['GET']);requireAdmin();const count=async(sql,values=[])=>Number((await env.DB.prepare(sql).bind(...values).first()).count);
-  const stats={accounts:await count("SELECT COUNT(*) AS count FROM users WHERE provider IN ('password','chatgpt')"),drivers:await count('SELECT COUNT(*) AS count FROM community_profiles'),sharedGarages:await count('SELECT COUNT(*) AS count FROM community_shares'),friendships:await count("SELECT COUNT(*) AS count FROM community_friends WHERE status = 'accepted'"),drafts:await count("SELECT COUNT(*) AS count FROM community_cars WHERE status = 'draft'"),pending:await count("SELECT COUNT(*) AS count FROM community_cars WHERE status = 'pending'"),approved:await count("SELECT COUNT(*) AS count FROM community_cars WHERE status = 'approved'"),rejected:await count("SELECT COUNT(*) AS count FROM community_cars WHERE status = 'rejected'"),creditsEarned:Number((await env.DB.prepare('SELECT COALESCE(SUM(amount),0) AS total FROM community_credit_ledger WHERE amount > 0').first()).total),creditsSpent:Number((await env.DB.prepare('SELECT COALESCE(SUM(-amount),0) AS total FROM community_credit_ledger WHERE amount < 0').first()).total)};
-  const rows=(await env.DB.prepare("SELECT * FROM community_cars WHERE status IN ('pending','approved','rejected') ORDER BY CASE WHEN status = 'pending' THEN 0 ELSE 1 END,updated_at DESC LIMIT 100").all()).results,submissions=await Promise.all(rows.map(row=>carView(env,row,{privateView:true}))),activity=(await env.DB.prepare('SELECT action,car_id,note,created_at FROM community_audit ORDER BY created_at DESC LIMIT 50').all()).results.map(row=>({action:row.action,carId:row.car_id,note:row.note,createdAt:iso(row.created_at)}));return respond({stats,pending:submissions.filter(c=>c.status==='pending'),submissions,recentActivity:activity});
+  allowed(['GET']);requireAdmin();const options=adminListOptions(url,ApiError),where=[options.view==='queue'?"c.status = 'pending'":options.view==='history'?"c.status IN ('approved','rejected')":"c.status IN ('pending','approved','rejected')"],values=[];
+  if(options.status!=='all'){where.push('c.status = ?');values.push(options.status);}
+  if(options.query){const needle='%'+options.query.toLowerCase().replace(/[!%_]/g,'!$&')+'%';where.push("(LOWER(c.title) LIKE ? ESCAPE '!' OR LOWER(c.model) LIKE ? ESCAPE '!' OR LOWER(c.engine) LIKE ? ESCAPE '!' OR LOWER(COALESCE(p.display_name,'')) LIKE ? ESCAPE '!' OR LOWER(COALESCE(p.handle,'')) LIKE ? ESCAPE '!')");values.push(...Array(5).fill(needle));}
+  const from='FROM community_cars c LEFT JOIN community_profiles p ON p.user_id = c.user_id WHERE '+where.join(' AND ');
+  const total=Number((await env.DB.prepare('SELECT COUNT(*) AS count '+from).bind(...values).first()).count),totalPages=Math.max(1,Math.ceil(total/options.pageSize)),page=Math.min(options.page,totalPages),order=(options.view==='all'?"CASE WHEN c.status = 'pending' THEN 0 ELSE 1 END,":"")+(options.sort==='oldest'?'c.submitted_at ASC,c.updated_at ASC,c.id ASC':'c.updated_at DESC,c.id ASC');
+  const rawStats=await env.DB.prepare(`SELECT
+   (SELECT COUNT(*) FROM users WHERE provider IN ('password','chatgpt')) AS accounts,
+   (SELECT COUNT(*) FROM community_profiles) AS drivers,
+   (SELECT COUNT(*) FROM community_shares) AS shared_garages,
+   (SELECT COUNT(*) FROM community_friends WHERE status = 'accepted') AS friendships,
+   (SELECT COUNT(*) FROM community_cars WHERE status = 'draft') AS drafts,
+   (SELECT COUNT(*) FROM community_cars WHERE status = 'pending') AS pending,
+   (SELECT COUNT(*) FROM community_cars WHERE status = 'approved') AS approved,
+   (SELECT COUNT(*) FROM community_cars WHERE status = 'rejected') AS rejected,
+   (SELECT COALESCE(SUM(amount),0) FROM community_credit_ledger WHERE amount > 0) AS credits_earned,
+   (SELECT COALESCE(SUM(-amount),0) FROM community_credit_ledger WHERE amount < 0) AS credits_spent`).first();
+  const stats=Object.fromEntries(Object.entries({accounts:'accounts',drivers:'drivers',sharedGarages:'shared_garages',friendships:'friendships',drafts:'drafts',pending:'pending',approved:'approved',rejected:'rejected',creditsEarned:'credits_earned',creditsSpent:'credits_spent'}).map(([key,column])=>[key,Number(rawStats[column])||0]));
+  const rows=(await env.DB.prepare('SELECT c.* '+from+' ORDER BY '+order+' LIMIT ? OFFSET ?').bind(...values,options.pageSize,(page-1)*options.pageSize).all()).results,submissions=await carViews(env,rows,{privateView:true}),activity=(await env.DB.prepare('SELECT action,car_id,note,created_at FROM community_audit ORDER BY created_at DESC,id DESC LIMIT 50').all()).results.map(row=>({action:row.action,carId:row.car_id,note:row.note,createdAt:iso(row.created_at)}));
+  return respond({stats,pending:submissions.filter(c=>c.status==='pending'),submissions,recentActivity:activity,pagination:{...options,page,total,totalPages,hasPrevious:page>1,hasNext:page<totalPages}});
  }
  if(path==='/api/admin/moderation'){
-  allowed(['POST']);requireAdmin();await limit(env,'community-moderation:'+user.id,100,60000);const body=await readJSON(request);if(!only(body,['id','action','note'])||!safeID(body.id)||!['approve','reject'].includes(body.action)||!text(body.note??'',0,1000)||body.action==='reject'&&!(body.note??'').trim())throw new ApiError('Choose approve or reject and give a reason for rejection.');const row=await env.DB.prepare('SELECT * FROM community_cars WHERE id = ?').bind(body.id).first();if(!row||!['pending','approved','rejected'].includes(row.status))throw new ApiError('Submitted car not found.',404);if(body.action==='approve'&&row.status!=='pending')throw new ApiError('Only a pending submission can be approved.',409);const now=Date.now(),status=body.action==='approve'?'approved':'rejected',operation=uuid();await env.DB.batch([
-   // Lock the record before checking its status again. On PostgreSQL a competing
-   // reviewer waits here; the following statement sees the committed decision.
-   env.DB.prepare('UPDATE community_cars SET updated_at = ? WHERE id = ? AND status = ?').bind(now,row.id,row.status),
-   env.DB.prepare('INSERT INTO community_audit (id,actor_id,action,car_id,note,created_at) SELECT ?,?,?,?,?,? WHERE EXISTS (SELECT 1 FROM community_cars WHERE id = ? AND status = ?)').bind(operation,user.id,status,row.id,(body.note??'').trim(),now,row.id,row.status),
-   env.DB.prepare('UPDATE community_cars SET status = ?,moderation_note = ?,moderated_by = ?,reviewed_at = ?,updated_at = ? WHERE id = ? AND status = ? AND EXISTS (SELECT 1 FROM community_audit WHERE id = ?)').bind(status,(body.note??'').trim(),user.id,now,now,row.id,row.status,operation)
+  allowed(['POST']);requireAdmin();await limit(env,'community-moderation:'+user.id,100,60000);const body=await readJSON(request);
+  if(!only(body,['id','action','note','expectedStatus','expectedUpdatedAt'])||!safeID(body.id)||!['approve','reject'].includes(body.action)||!text(body.note??'',0,1000)||body.action==='reject'&&!(body.note??'').trim()||body.expectedStatus!==undefined&&!['pending','approved','rejected'].includes(body.expectedStatus)||body.expectedUpdatedAt!==undefined&&(typeof body.expectedUpdatedAt!=='string'||!Number.isFinite(Date.parse(body.expectedUpdatedAt))))throw new ApiError('Choose approve or reject and give a reason for rejection.');
+  const row=await env.DB.prepare('SELECT * FROM community_cars WHERE id = ?').bind(body.id).first();if(!row||!['pending','approved','rejected'].includes(row.status))throw new ApiError('Submitted car not found.',404);
+  if(body.expectedStatus!==undefined&&body.expectedStatus!==row.status||body.expectedUpdatedAt!==undefined&&Date.parse(body.expectedUpdatedAt)!==Number(row.updated_at))throw new ApiError('This submission changed since you opened it. Refresh and review its current details before deciding.',409,'MODERATION_CHANGED');
+  if(body.action==='approve'&&row.status!=='pending')throw new ApiError('Only a pending submission can be approved.',409);
+  if(body.action==='reject'&&row.status==='rejected')throw new ApiError('This submission already has a change request. Refresh to see the current decision.',409,'MODERATION_CHANGED');
+  const now=Math.max(Date.now(),Number(row.updated_at)+1),status=body.action==='approve'?'approved':'rejected',operation=uuid(),claim='apex-review:'+operation;await env.DB.batch([
+   // A private operation claim exists only inside this transaction. Competing
+   // reviews or a corrected/resubmitted car cannot satisfy another claim.
+   env.DB.prepare('UPDATE community_cars SET moderation_note = ?,updated_at = ? WHERE id = ? AND status = ? AND updated_at = ? AND moderation_note = ?').bind(claim,now,row.id,row.status,row.updated_at,row.moderation_note),
+   env.DB.prepare('INSERT INTO community_audit (id,actor_id,action,car_id,note,created_at) SELECT ?,?,?,?,?,? WHERE EXISTS (SELECT 1 FROM community_cars WHERE id = ? AND status = ? AND moderation_note = ?)').bind(operation,user.id,status,row.id,(body.note??'').trim(),now,row.id,row.status,claim),
+   env.DB.prepare('UPDATE community_cars SET status = ?,moderation_note = ?,moderated_by = ?,reviewed_at = ?,updated_at = ? WHERE id = ? AND status = ? AND moderation_note = ? AND EXISTS (SELECT 1 FROM community_audit WHERE id = ?)').bind(status,(body.note??'').trim(),user.id,now,now,row.id,row.status,claim,operation)
   ]);
   if(!await env.DB.prepare('SELECT id FROM community_audit WHERE id = ?').bind(operation).first())throw new ApiError('Another reviewer changed this car. Refresh the queue before making a decision.',409,'MODERATION_CHANGED');
   return respond({submission:await carView(env,await env.DB.prepare('SELECT * FROM community_cars WHERE id = ?').bind(row.id).first(),{privateView:true})});

@@ -15,6 +15,7 @@ import {emptyProgress,beginSession,recordAnswer,finishSession} from '../public/a
 import {garageDefaults} from '../public/garage.js';
 import {mergeGuestGarage} from '../public/account-sync.js';
 import vercelApi from '../api/[...path].js';
+import {randomToken} from '../server/passwords.js';
 
 const directory=await fs.mkdtemp(path.join(os.tmpdir(),'bmw-backend-'));
 const filename=path.join(directory,'test.sqlite');
@@ -70,6 +71,17 @@ try{
   check((await call('/api/auth/session',{headers:{'oai-authenticated-user-id':'spoof','oai-authenticated-user-email':'spoof@example.com'}})).data.user===null,'Local authentication ignores forged platform headers.');
   const account={cookie:alice.cookie,csrf:alice.data.csrfToken};
   check((await call('/api/auth/session',account)).data.user.id===alice.data.user.id,'Cookie restores the account.');
+  const aliceSession=await DB.prepare('SELECT token_hash FROM sessions WHERE user_id = ?').bind(alice.data.user.id).first();
+  await DB.prepare('UPDATE sessions SET csrf_token = ? WHERE token_hash = ?').bind('',aliceSession.token_hash).run();
+  check((await call('/api/auth/session',account)).data.user===null,'Incomplete member session records fail closed.');
+  check((await call('/api/garage',{cookie:account.cookie,method:'PUT',body:{state:emptyGarage(),revision:0}})).status===401,'An empty stored CSRF token cannot authorize a write without its header.');
+  await DB.prepare('UPDATE sessions SET csrf_token = ? WHERE token_hash = ?').bind(account.csrf,aliceSession.token_hash).run();
+  const insertFailure={...DB,prepare(sql){return /^INSERT INTO sessions\b/.test(sql)?{bind:()=>DB.prepare('INSERT INTO sessions (token_hash,user_id,csrf_token,created_at,expires_at) VALUES (?,?,?,?,?)').bind(randomToken(),'missing-public-session-principal',randomToken(),Date.now(),Date.now()+1000)}:DB.prepare(sql);}};
+  const signInsBeforeFailure=(await DB.prepare('SELECT sign_in_count FROM user_login_activity WHERE user_id = ?').bind(alice.data.user.id).first()).sign_in_count;
+  env.DB=insertFailure;
+  try{check((await call('/api/auth/login',{cookie:account.cookie,method:'POST',body:{email:'alice@example.com',password}})).status===503,'A failed replacement session returns a retryable storage error.');}finally{env.DB=DB;}
+  check((await call('/api/auth/session',account)).data.user.id===alice.data.user.id,'Session replacement rollback preserves the current login during a database failure.');
+  check((await DB.prepare('SELECT sign_in_count FROM user_login_activity WHERE user_id = ?').bind(alice.data.user.id).first()).sign_in_count===signInsBeforeFailure,'Rolled-back logins do not create false sign-in analytics.');
   check((await call('/api/garage',{...account,method:'PUT',csrf:undefined,body:{state:emptyGarage(),revision:0}})).status===403,'Authenticated writes require CSRF token.');
   check((await call('/api/garage',{...account,method:'PUT',body:{state:emptyGarage(),revision:0},headers:{Origin:'https://attacker.example'}})).status===403,'Valid cookies and CSRF do not bypass origin protection.');
   check((await call('/api/garage',{...account,method:'PUT',body:'{bad'})).status===400,'Invalid JSON is rejected.');
@@ -160,18 +172,28 @@ try{
   check(secure.status===200&&secure.headers.get('Set-Cookie').startsWith('__Host-bmw_session=')&&secure.headers.get('Set-Cookie').includes('; Secure'),'HTTPS uses a host-only Secure cookie.');
   const platformHeaders={'oai-authenticated-user-id':'platform-alice','oai-authenticated-user-email':'alice@example.com','oai-authenticated-user-full-name':'Platform%20Alice','oai-authenticated-user-full-name-encoding':'percent-encoded-utf-8'};
   const platform=await call('/api/auth/session',{provider:'chatgpt',headers:platformHeaders});
+  check((await DB.prepare('SELECT sign_in_count FROM user_login_activity WHERE user_id = ?').bind(platform.data.user.id).first()).sign_in_count===1,'A first hosted account session records one successful sign-in.');
   check(platform.data.user.name==='Platform Alice'&&platform.data.user.id!==alice.data.user.id&&platform.data.user.email==='alice@example.com','Hosted identity uses trusted headers with a separate namespace.');
   check(platform.data.provider==='chatgpt'&&platform.data.signInUrl.includes('/signin-with-chatgpt?return_to='),'Hosted mode exposes native sign-in URL.');
   check((await call('/api/auth/signup',{method:'POST',provider:'chatgpt',body:{}})).status===403,'Hosted accounts never use custom passwords.');
   check((await call('/api/auth/session',{provider:'chatgpt',cookie:platform.cookie})).data.user===null,'A hosted app cookie alone cannot authenticate.');
   const platformAgain=await call('/api/auth/session',{provider:'chatgpt',cookie:platform.cookie,headers:platformHeaders});
   check(platformAgain.data.user.email==='alice@example.com'&&platformAgain.data.csrfToken===platform.data.csrfToken,'Existing hosted sessions still use the live gateway identity.');
+  check((await DB.prepare('SELECT sign_in_count FROM user_login_activity WHERE user_id = ?').bind(platform.data.user.id).first()).sign_in_count===1,'Refreshing a valid hosted session does not inflate login analytics.');
   const platformOther=await call('/api/garage',{provider:'chatgpt',cookie:platform.cookie,headers:{...platformHeaders,'oai-authenticated-user-id':'different-user'}});
   check(platformOther.status===200&&platformOther.data.revision===0,'A platform identity change cannot reuse another user’s garage.');
   check((await call('/api/auth/session',{provider:'chatgpt',headers:{'oai-authenticated-user-id':'incomplete'}})).data.user===null,'Incomplete platform headers do not authenticate.');
   const expiry=await DB.prepare('SELECT token_hash FROM sessions WHERE user_id = ?').bind(login.data.user.id).first();
   await DB.prepare('UPDATE sessions SET expires_at = 0 WHERE token_hash = ?').bind(expiry.token_hash).run();
   check((await call('/api/auth/session',{cookie:login.cookie})).data.user===null,'Expired sessions are rejected.');
+  const actualNow=Date.now,frozenNow=actualNow();Date.now=()=>frozenNow;
+  try{
+    await DB.prepare('DELETE FROM sessions WHERE user_id = ?').bind(bob.data.user.id).run();
+    for(let i=0;i<10;i++)await DB.prepare('INSERT INTO sessions (token_hash,user_id,csrf_token,created_at,expires_at) VALUES (?,?,?,?,?)').bind('f'.repeat(63)+i,bob.data.user.id,randomToken(),frozenNow,frozenNow+7*86400000).run();
+    const tiedLogin=await call('/api/auth/login',{method:'POST',body:{email:'bob@example.com',password}});
+    check(tiedLogin.status===200&&(await call('/api/auth/session',{cookie:tiedLogin.cookie})).data.csrfToken===tiedLogin.data.csrfToken,'Same-millisecond retention cannot prune a newly issued member session.');
+    check((await DB.prepare('SELECT COUNT(*) AS count FROM sessions WHERE user_id = ?').bind(bob.data.user.id).first()).count===10,'Member session retention still enforces its ten-session bound.');
+  }finally{Date.now=actualNow;}
   env.CLIENT_IP='rate-limit-client';
   let limited;
   for(let attempt=0;attempt<31;attempt++)limited=await call('/api/auth/login',{method:'POST',body:{}});

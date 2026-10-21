@@ -6,13 +6,13 @@ class MemoryStorage {map=new Map();getItem(key){return this.map.get(key)??null;}
 const alice={id:'alice',name:'Alice',email:'alice@example.com'},bob={id:'bob',name:'Bob',email:'bob@example.com'};
 function harness(){
   const storage=new MemoryStorage(),events=new EventTarget(),garages=new Map([[alice.id,{state:{...blank(),favorites:['alice-car']},revision:0,updatedAt:null}],[bob.id,{state:blank(),revision:0,updatedAt:null}]]);
-  let signedIn=null,offline=false,writes=0,sessionFailure=null,garageUnavailable=false,garageGate=null,garageReply,protectedFailure=null;
+  let signedIn=null,offline=false,writes=0,sessionFailure=null,garageUnavailable=false,garageGate=null,garageReply,protectedFailure=null,putGate=null,sessionGate=null;
   const fetchImpl=async(path,options={})=>{
     if(offline)throw new Error('Offline');
     const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json'}});
     if(protectedFailure?.path===path)return new Response(protectedFailure.body,{status:protectedFailure.status});
     if(path==='/api/auth/session'&&sessionFailure)return json({error:sessionFailure.message},sessionFailure.status);
-    if(path==='/api/auth/session')return json({user:signedIn,provider:'password',csrfToken:signedIn?'csrf-'+signedIn.id:null});
+    if(path==='/api/auth/session'){const response=json({user:signedIn,provider:'password',csrfToken:signedIn?'csrf-'+signedIn.id:null});if(sessionGate)await sessionGate;return response;}
     if(path==='/api/auth/signup')return json({user:null,csrfToken:null,provider:'password',code:'SIGNUP_ACCEPTED',message:'If this address can be registered, your account is ready. Sign in to continue.'},201);
     if(path==='/api/auth/login'){signedIn=JSON.parse(options.body).email===bob.email?bob:alice;return json({user:signedIn,csrfToken:'csrf-'+signedIn.id});}
     if(!signedIn)return json({error:'Sign in required.'},401);
@@ -23,14 +23,14 @@ function harness(){
       if(garageReply!==undefined)return json(garageReply);
       if(garageUnavailable&&options.method!=='PUT')return json({error:{message:'Garage database temporarily unavailable.'}},503);
       const garage=garages.get(signedIn.id);
-      if(options.method==='PUT'){writes++;const data=JSON.parse(options.body);if(data.revision!==garage.revision)return json({...garage,error:'Conflict.'},409);garage.state=data.state;garage.revision++;garage.updatedAt='2026-10-18T12:00:00.000Z';}
+      if(options.method==='PUT'){writes++;if(putGate)await putGate;const data=JSON.parse(options.body);if(data.revision!==garage.revision)return json({...garage,error:'Conflict.'},409);garage.state=data.state;garage.revision++;garage.updatedAt='2026-10-18T12:00:00.000Z';}
       return json(clone(garage));
     }
     throw new Error('Unknown endpoint: '+path);
   };
   const controller=createAccountController({fetchImpl,storage,eventTarget:events});
   function change(field,value){storage.setItem(ACCOUNT_KEYS[field],JSON.stringify(value));events.dispatchEvent(new CustomEvent('apex:localchange',{detail:{key:ACCOUNT_KEYS[field]}}));}
-  return {storage,events,garages,controller,fetchImpl,change,setUser(value){signedIn=value;},setOffline(value){offline=value;},setSessionFailure(value){sessionFailure=value;},setGarageUnavailable(value){garageUnavailable=value;},setGarageGate(value){garageGate=value;},setGarageReply(value){garageReply=value;},setProtectedFailure(value){protectedFailure=value;},get writes(){return writes;}};
+  return {storage,events,garages,controller,fetchImpl,change,setUser(value){signedIn=value;},setOffline(value){offline=value;},setSessionFailure(value){sessionFailure=value;},setGarageUnavailable(value){garageUnavailable=value;},setGarageGate(value){garageGate=value;},setPutGate(value){putGate=value;},setSessionGate(value){sessionGate=value;},setGarageReply(value){garageReply=value;},setProtectedFailure(value){protectedFailure=value;},get writes(){return writes;}};
 }
 function read(h,field){return JSON.parse(h.storage.getItem(ACCOUNT_KEYS[field])||'null');}
 let checks=0;const check=(actual,expected)=>{assert.deepEqual(actual,expected);checks++;};
@@ -147,6 +147,36 @@ for(const [payload,expected]of [[{error:{message:'Database temporarily unavailab
   const controller=createAccountController({storage:new MemoryStorage(),eventTarget:new EventTarget(),fetchImpl:async()=>new Response(JSON.stringify(payload),{status:503})});
   try{await assert.rejects(()=>controller.login({email:alice.email,password:'long password'}),error=>error.message===expected);checks++;}finally{controller.destroy();}
 }
+
+// A session change arriving while PUT is busy must invalidate its response and
+// revalidate after it finishes, rather than silently ignoring the storage event.
+const busySwitch=harness();
+try{
+ await busySwitch.controller.start();await busySwitch.controller.login({email:alice.email,password:'long password'});
+ let release;busySwitch.setPutGate(new Promise(resolve=>release=resolve));busySwitch.change('favorites',['alice-in-flight']);const saving=busySwitch.controller.flush();
+ busySwitch.setUser(bob);busySwitch.storage.setItem('apex-garage-owner-v1',JSON.stringify(bob.id));busySwitch.storage.setItem(ACCOUNT_KEYS.favorites,JSON.stringify(['bob-local']));
+ const switched=new Event('storage');Object.assign(switched,{key:'apex-garage-owner-v1'});busySwitch.events.dispatchEvent(switched);
+ check(busySwitch.controller.getSnapshot().ready,false);
+ release();await saving;await new Promise(resolve=>setTimeout(resolve,0));
+ check(busySwitch.controller.getSnapshot().user.id,bob.id);check(read(busySwitch,'favorites'),[]);
+ check(busySwitch.garages.get(alice.id).state.favorites,['alice-in-flight']);check(busySwitch.garages.get(bob.id).state.favorites,[]);check(busySwitch.controller.getSnapshot().status,'synced');
+}finally{busySwitch.controller.destroy();}
+const clearedStorage=harness();
+try{
+ await clearedStorage.controller.start();await clearedStorage.controller.login({email:alice.email,password:'long password'});
+ clearedStorage.storage.map.clear();const cleared=new Event('storage');Object.assign(cleared,{key:null});clearedStorage.events.dispatchEvent(cleared);await new Promise(resolve=>setTimeout(resolve,0));
+ check(clearedStorage.controller.getSnapshot().ready,true);check(read(clearedStorage,'favorites'),['alice-car']);check(clearedStorage.garages.get(alice.id).state.favorites,['alice-car']);
+}finally{clearedStorage.controller.destroy();}
+const repeatedSwitch=harness();
+try{
+ await repeatedSwitch.controller.start();await repeatedSwitch.controller.login({email:alice.email,password:'long password'});
+ let release;repeatedSwitch.setSessionGate(new Promise(resolve=>release=resolve));
+ const ownerEvent=()=>{const event=new Event('storage');Object.assign(event,{key:'apex-garage-owner-v1'});repeatedSwitch.events.dispatchEvent(event);};
+ repeatedSwitch.setUser(bob);repeatedSwitch.storage.setItem('apex-garage-owner-v1',JSON.stringify(bob.id));ownerEvent();
+ repeatedSwitch.setUser(alice);repeatedSwitch.storage.setItem('apex-garage-owner-v1',JSON.stringify(alice.id));ownerEvent();
+ release();await new Promise(resolve=>setTimeout(resolve,0));
+ check(repeatedSwitch.controller.getSnapshot().user.id,alice.id);check(read(repeatedSwitch,'favorites'),['alice-car']);check(JSON.parse(repeatedSwitch.storage.getItem('apex-account-cache-v1')).userId,alice.id);check(repeatedSwitch.garages.get(bob.id).state.favorites,[]);
+}finally{repeatedSwitch.controller.destroy();}
 
 // Account progress is combined conservatively; repeated imports cannot farm XP.
 const academy=(xp,id)=>({version:2,xp,credits:5,completed:{[id]:{day:'2026-10-18',accuracy:100}},attempts:{},review:{},days:['2026-10-18'],awards:['lesson:'+id],unlocked:[],activity:[]});
