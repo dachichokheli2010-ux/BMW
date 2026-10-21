@@ -11,7 +11,7 @@
   document.body.append(dialog);
   const language=document.getElementById('language-select'),theme=document.getElementById('theme-toggle'),anchors=[];
   for(const control of [language,theme])if(control){const anchor=document.createComment('Header preference');(control.closest('.apex-select')||control).before(anchor);anchors.push({control,anchor});}
-  let closeTimer,closing,resolveClose,scrollY=0,priorTop='',touchStart=null,returnFocus=null;
+  let closeTimer,closing,resolveClose,scrollY=0,priorTop='',touchStart=null,returnFocus=null,destroyed=false,searchPending=false;
   function currentRoute(){
     const path=location.pathname.replace(/\/+$/,'')||'/';
     const selected=path.startsWith('/cars/')||path==='/cars'?'/models':path.startsWith('/lessons/')||path==='/glossary'||path.startsWith('/glossary/')?'/learn':path.startsWith('/questions/')||path==='/badges'||path.startsWith('/badges/')?'/play':path.startsWith('/garage/')?'/my-garage':['/login','/signup'].includes(path)?'/account':path;
@@ -24,6 +24,7 @@
     current?.setAttribute('aria-current','page');
   }
   function preferences(){
+    if(destroyed)return;
     for(const {control,anchor} of anchors){const node=control.closest('.apex-select')||control;
       if(mobile.matches)dialog.querySelector(control===language?'[data-menu-language]':'[data-menu-theme]').append(node);
       else anchor.after(node);
@@ -47,7 +48,7 @@
     closeTimer=setTimeout(()=>{dialog.close();cleanup();},200);return closing;
   }
   function open(){
-    if(dialog.open)return;
+    if(destroyed||dialog.open)return;
     currentRoute();returnFocus=document.activeElement;
     scrollY=window.scrollY;priorTop=document.body.style.top;document.body.style.top=-scrollY+'px';document.body.classList.add('navigation-open');
     header.classList.remove('is-hidden');
@@ -63,12 +64,12 @@
     if(event.target.closest('[data-menu-close]'))void close();
     if(event.target.closest('a'))void close(true);
   },{signal});
-  dialog.querySelector('.mn-search').addEventListener('click',async()=>{await close();openSearch();},{signal});
+  dialog.querySelector('.mn-search').addEventListener('click',async()=>{if(destroyed||searchPending)return;searchPending=true;try{await close();if(!destroyed)openSearch();}finally{searchPending=false;}},{signal});
   dialog.querySelector('.mn-top').addEventListener('pointerdown',event=>{if(event.pointerType==='touch'&&!event.target.closest('a,button'))touchStart={x:event.clientX,y:event.clientY};},{signal});
   dialog.querySelector('.mn-top').addEventListener('pointerup',event=>{if(touchStart&&((event.clientY-touchStart.y>70&&Math.abs(event.clientX-touchStart.x)<70)||(event.clientX-touchStart.x>90&&Math.abs(event.clientY-touchStart.y)<45)))void close();touchStart=null;},{signal});
   dialog.querySelector('.mn-top').addEventListener('pointercancel',()=>{touchStart=null;},{signal});
   for(const event of ['apex:modelselected','apex:collection','popstate'])window.addEventListener(event,currentRoute,{signal});
   currentRoute();
   mobile.addEventListener('change',preferences);preferences();
-  return {close,destroy(){close(true);events.abort();mobile.removeEventListener('change',preferences);for(const {control,anchor} of anchors){anchor.after(control.closest('.apex-select')||control);anchor.remove();}dialog.remove();button.remove();}};
+  return {close,destroy(){if(destroyed)return;destroyed=true;close(true);events.abort();mobile.removeEventListener('change',preferences);for(const {control,anchor} of anchors){anchor.after(control.closest('.apex-select')||control);anchor.remove();}dialog.remove();button.remove();}};
 }

@@ -225,3 +225,21 @@
 @media(prefers-reduced-motion:reduce){
  .garage-game *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
+
+.garage-game :is(button,a,select,.garage-pack-date,.garage-reel-heading strong){overflow-wrap:anywhere}
+.garage-game .garage-game-title>strong{min-width:0;flex-shrink:1}
+@media(max-width:650px){
+ .garage-game select{font-size:16px}
+ .garage-pack-date{white-space:normal}
+ .garage-reel-heading>span:last-child{max-width:100%;white-space:normal}
+ .garage-reel-footer button{width:100%;white-space:normal}
+}
+/* Keep the saved-card animation and its skip control practical in landscape. */
+@media(max-height:500px) and (max-width:1100px){
+ .garage-reel-window{height:220px}
+ .garage-reel-track{top:18px}
+ .garage-reel-card{height:184px}
+ .garage-reel-card img{height:76px}
+ .garage-reel-card>strong{font-size:12px}
+ .garage-reel-pointer:after{top:190px}
+}

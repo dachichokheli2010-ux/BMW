@@ -20,3 +20,24 @@ html[data-theme=light] .motron-learn .ac-visual svg [stroke="#f4a275"]{stroke:#a
 .motron-learn .ml-brand>span{padding:0;letter-spacing:normal}.motron-learn .ml-brand>span>svg{width:29px;height:29px}
 .motron-learn .ac-visual{max-width:100%;min-width:0;overflow-x:auto;overscroll-behavior-x:contain}.motron-learn .ac-visual:focus-visible{outline:3px solid var(--ml-positive);outline-offset:4px}.motron-learn .ac-visual svg{min-width:600px}.motron-learn .ac-custom-svg text{font-family:inherit;font-size:15px}.motron-learn .ac-diagram-scroll-hint{display:none}
 @media(max-width:680px){.motron-learn .ac-diagram-scroll-hint{display:block;margin-top:6px;color:var(--ml-ink)}}
+
+/* Compact layouts preserve whole controls and leave short viewports scrollable. */
+.motron-learn .ml-session-toolbar{flex-wrap:wrap}
+.motron-learn .ml-session-toolbar>button{min-width:0;overflow-wrap:anywhere;text-align:left}
+.motron-learn .ml-name-control input{min-width:0;max-width:100%}
+.motron-learn .ml-settings>button,.motron-learn .ac-primary{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+@media(max-width:760px){
+ .motron-learn :is(input,select){font-size:16px}
+ .motron-learn .ml-topbar{flex-wrap:wrap}
+ .motron-learn .ml-brand>span{flex:none}
+ .motron-learn .ml-wallet{min-width:0;flex-wrap:wrap;justify-content:flex-end}
+ .motron-learn .ml-session-toolbar>button{min-height:44px}
+ .motron-learn .ac-player-bottom .ac-primary{flex-shrink:1;gap:14px}
+}
+@media(max-width:360px){
+ .motron-learn .ml-wallet{flex:1 1 100%;justify-content:space-between}
+ .motron-learn .ml-wallet>span{display:flex}
+}
+@media(max-height:500px) and (max-width:1100px){
+ .motron-learn .ac-player-bottom{position:static;bottom:auto}
+}

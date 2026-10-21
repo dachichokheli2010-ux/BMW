@@ -17,9 +17,9 @@ html[data-theme="light"] {
   --glass-shadow: 0 8px 36px rgba(28, 55, 89, .10), 0 0 0 1px rgba(26, 52, 80, .06);
 }
 html { scroll-padding-top: 110px; }
-body { padding-top: 108px; padding-bottom: 0; }
+body { padding-top: calc(94px + max(14px, env(safe-area-inset-top, 0px))); padding-bottom: 0; }
 body { background-image: radial-gradient(ellipse 62vw 420px at 18% -140px,rgba(78,139,222,.12),transparent 80%),radial-gradient(ellipse 50vw 320px at 90% -120px,rgba(84,77,163,.08),transparent 80%); background-repeat: no-repeat; }
-main { width: 100%; max-width: 1680px; margin-inline: auto; padding-inline: var(--page-pad); }
+main { width: 100%; max-width: 1680px; margin-inline: auto; padding-left: max(var(--page-pad), env(safe-area-inset-left, 0px)); padding-right: max(var(--page-pad), env(safe-area-inset-right, 0px)); }
 main > * { min-width: 0; }
 img { max-width: 100%; }
 button, input, select, textarea { font: inherit; }
@@ -31,7 +31,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible, select:focus-visib
 .skip-link { z-index: 120; border-radius: 14px; }
 header.site-header {
   position: fixed !important;
-  inset: max(14px, env(safe-area-inset-top, 0px)) 24px auto !important;
+  inset: max(14px, env(safe-area-inset-top, 0px)) max(24px, env(safe-area-inset-right, 0px)) auto max(24px, env(safe-area-inset-left, 0px)) !important;
   display: flex; flex-wrap: nowrap !important; align-content: normal !important; align-items: center;
   justify-content: space-between;
   width: auto !important; max-width: 1392px; height: var(--chrome-height) !important;
@@ -141,7 +141,9 @@ header.site-header.is-hidden { transform: none !important; }
 .hero .hero-photo { max-width: none; object-position: 65% 50%; }
 .hero .hero-shade { background: linear-gradient(90deg,#06101ce8 0%,#07101bbc 35%,#09142333 74%),linear-gradient(0deg,#07101aeb,transparent 38%); }
 .hero .hero-content { position: relative; inset: auto; padding: clamp(40px, 5vw, 70px) clamp(28px, 4.5vw, 64px) 20px; width: 100%; max-width: 780px; }
-.hero .hero-kicker { font-size: 10px; line-height: 1.7; letter-spacing: 2px; }
+.hero .hero-kicker { min-width: 0; font-size: 10px; line-height: 1.7; letter-spacing: 2px; }
+.hero .hero-kicker > .live-dot { flex: 0 0 6px; }
+.hero .hero-kicker > span:not(.live-dot) { flex: 1; min-width: 0; white-space: normal; overflow-wrap: anywhere; line-height: 1.7; }
 .hero h1 { font-size: clamp(68px, 7.2vw, 104px); font-weight: 500; line-height: 1.02; letter-spacing: -.065em; margin: 28px 0 24px; }
 .hero .hero-content > p { font-size: 15px; line-height: 1.8; max-width: 420px; margin: 0 0 27px; color: #d1d9e3; }
 .hero .hero-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 22px; }
@@ -227,8 +229,8 @@ html:has(dialog[open]),html:has(dialog[open]) body { overflow:hidden; }
 }
 @media (max-width: 1120px) {
   :root { --chrome-height: 68px; }
-  body { padding-top: 102px; }
-  header.site-header { left: 20px !important; right: 20px !important; padding: 8px 12px 8px 20px !important; }
+  body { padding-top: calc(88px + max(14px, env(safe-area-inset-top, 0px))); }
+  header.site-header { left: max(20px, env(safe-area-inset-left, 0px)) !important; right: max(20px, env(safe-area-inset-right, 0px)) !important; padding: 8px 12px 8px 20px !important; }
   .site-header > nav { display: none !important; }
   .site-header .mobile-menu-toggle { display: inline-flex !important; }
   .site-header .header-tools > .header-account { display: none; }
@@ -236,8 +238,8 @@ html:has(dialog[open]),html:has(dialog[open]) body { overflow:hidden; }
   .site-header .header-tools > #theme-toggle { display: none; }
   .site-header .header-xp { display: flex; margin-right: 4px; }
   .mobile-navigation {
-    position: fixed; inset: auto 12px 12px !important; width: auto; max-width: 640px;
-    height: auto; max-height: min(88dvh, 820px); margin: 0 auto !important; padding: 0;
+    position: fixed; inset: auto max(12px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)) !important; width: auto; max-width: 640px;
+    height: auto; max-height: min(88dvh, 820px, calc(100dvh - max(12px, env(safe-area-inset-top, 0px)) - max(12px, env(safe-area-inset-bottom, 0px)))); margin: 0 auto !important; padding: 0;
     overflow: hidden; border: 1px solid var(--glass-edge) !important; border-radius: 30px !important;
     color: var(--white); background: var(--glass-fill) !important;
     -webkit-backdrop-filter: blur(36px) saturate(170%); backdrop-filter: blur(36px) saturate(170%);
@@ -285,7 +287,7 @@ html:has(dialog[open]),html:has(dialog[open]) body { overflow:hidden; }
   :root { --chrome-height: 62px; --page-pad: 18px; }
   html { scroll-padding-top: 96px; }
   body { padding-top: calc(88px + env(safe-area-inset-top, 0px)); padding-bottom: calc(94px + env(safe-area-inset-bottom, 0px)); }
-  header.site-header { inset: max(10px, env(safe-area-inset-top, 0px)) 12px auto !important; padding: 6px 8px 6px 15px !important; gap: 10px !important; }
+  header.site-header { inset: max(10px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) auto max(12px, env(safe-area-inset-left, 0px)) !important; padding: 6px 8px 6px 15px !important; gap: 10px !important; }
   header.site-header.glass-scrolled { top: max(10px, env(safe-area-inset-top, 0px)) !important; }
   .site-header .brand { gap: 8px; }
   .site-header .brand-name { font-size: 20px; letter-spacing: 1.7px; }
@@ -327,7 +329,7 @@ html:has(dialog[open]),html:has(dialog[open]) body { overflow:hidden; }
   .home-next-grid h2 { font-size: 30px; }
   .home-next-grid p { font-size: 13px; }
   .glass-bottom-nav {
-    position: fixed; inset: auto 16px calc(10px + env(safe-area-inset-bottom,0px)); z-index: 90;
+    position: fixed; inset: auto max(16px, env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px, env(safe-area-inset-left,0px)); z-index: 90;
     display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 3px; width: auto; max-width: 440px;
     margin: 0 auto; padding: 6px; border: 1px solid var(--glass-edge); border-radius: 30px;
     color: var(--white); background: var(--glass-fill);
@@ -345,7 +347,7 @@ html:has(dialog[open]),html:has(dialog[open]) body { overflow:hidden; }
   .glass-bottom-nav > a > span { display: block; font-size: 10px; line-height: 1.2; margin: 0; }
   .glass-bottom-nav > a[aria-current] { color: var(--white); background: var(--glass-selected); box-shadow: inset 0 1px 0 rgba(255,255,255,.13); }
   .glass-bottom-nav > a:active { background: var(--glass-selected); }
-  .mobile-navigation { inset: auto 8px max(8px,env(safe-area-inset-bottom,0px)) !important; max-height: 90dvh; border-radius: 28px !important; }
+  .mobile-navigation { inset: auto max(8px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px)) !important; max-height: min(90dvh, calc(100dvh - max(8px,env(safe-area-inset-top,0px)) - max(8px,env(safe-area-inset-bottom,0px)))); border-radius: 28px !important; }
   .mobile-navigation .mn-scroll { padding: 18px 20px 24px; }
   .mobile-navigation .mn-top { padding-inline: 20px; }
   .mobile-navigation .mn-personal > a { font-size: 16px; border-radius: 16px; }

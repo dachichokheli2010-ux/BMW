@@ -1,4 +1,9 @@
 # Preserve research originals locally while excluding unapproved photo assets.
+# Remote builds generate their own output. Do not upload local release copies
+# or the separate Sites tooling/research workspace when deploying this folder.
+dist/
+.sites-runtime/
+.openai/
 public/images/official-heritage/**
 public/images/official-modern/**
 public/images/**/_candidates/**

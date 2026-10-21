@@ -19,6 +19,18 @@ function included(filename){
 assert.ok(included('.env.example'),'The build validates the public environment template; .vercelignore must include it.');
 for(const filename of ['.env','.env.local','.env.production','.env.production.local','.data/account.sqlite','.data/account.sqlite-wal','backups/account.sqlite','backups/account.sqlite-shm'])assert.equal(included(filename),false,'Private state must remain excluded: '+filename);
 for(const filename of ['public/images/official-modern/example.webp','public/images/official-heritage/example.webp','public/images/cars/_candidates/example.webp','public/images/next/hero.webp'])assert.equal(included(filename),false,'Unapproved media must remain excluded: '+filename);
+for(const filename of ['dist/server/index.js','dist/vercel/index.html','dist/vercel/_apex/release/app.js','.sites-runtime/publish/release.tar.gz','.sites-runtime/qa/screenshot.png','.openai/hosting.json'])assert.equal(included(filename),false,'Generated output and local tooling must not enter a source upload: '+filename);
+for(const directory of ['api','server','scripts','public','worker','drizzle','sql','db']){
+ async function checkSources(relative){
+  for(const entry of await fs.readdir(path.join(project,relative),{withFileTypes:true})){
+   const filename=path.posix.join(relative,entry.name);
+   if(entry.isDirectory()){if(directory==='public'&&!included(filename))continue;await checkSources(filename);}
+   else if(entry.isFile()&&/\.(?:html|m?js|css|json|sql|ts)$/.test(filename))assert.ok(included(filename),'Required source/build input must remain in an upload: '+filename);
+  }
+ }
+ await checkSources(directory);
+}
+for(const filename of ['package.json','package-lock.json','vercel.json','.vercelignore','.env.example'])assert.ok(included(filename),'Required project root input must remain in an upload: '+filename);
 
 // Exercise the actual build check using the source inputs an upload retains.
 // No local env file, database or unapproved image enters this temporary tree.
@@ -49,7 +61,7 @@ try{
  await fs.copyFile(path.join(project,'.env.example'),template);
  const result=spawnSync(process.execPath,['scripts/check-brand.mjs'],{cwd:fixture,encoding:'utf8',timeout:30000});
  assert.equal(result.status,0,'The branding build check must run on retained Vercel inputs:\n'+(result.stderr||result.error?.message||result.stdout));
- console.log(`Vercel source inputs: ${files} retained files passed the actual branding check; private env/state and unapproved media remain excluded.`);
+ console.log(`Vercel source inputs: ${files} retained files passed the actual branding check; generated releases, local tooling, private state and unapproved media remain excluded.`);
 }finally{
  const modules=path.join(fixture,'node_modules');
  if((await fs.lstat(modules).catch(error=>error.code==='ENOENT'?null:Promise.reject(error)))?.isSymbolicLink())await fs.unlink(modules);

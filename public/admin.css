@@ -29,3 +29,19 @@
 @media(max-width:600px){.admin-account-metrics{display:flex;gap:9px;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:12px;margin-bottom:20px;scrollbar-width:thin}.admin-account-metrics .admin-metric{flex:0 0 150px;scroll-snap-align:start}.admin-person{padding:20px 16px}.admin-person-heading{align-items:flex-start;flex-wrap:wrap;gap:11px}.admin-person-heading>.admin-tag{margin-left:54px}.admin-person-facts{grid-template-columns:repeat(2,minmax(0,1fr));gap:21px 15px}.admin-person-facts dd{font-size:11px}.admin-person-heading p{font-size:11px}.admin-recent-logins [data-admin-signins]>p{grid-template-columns:1fr;gap:6px}.admin-account-list .admin-tag{white-space:normal}}
 
 .admin-brand>i>svg{display:block;width:27px;height:27px}@media(max-width:760px){.admin-brand>i>svg{width:23px;height:23px}}
+
+body{padding-inline:env(safe-area-inset-left) env(safe-area-inset-right)}
+.admin-button{max-width:100%;white-space:normal;overflow-wrap:anywhere;text-align:center}
+.admin-person-heading,.admin-record-heading,.admin-section-top{min-width:0}
+.admin-person-heading>div,.admin-section-top>div{min-width:0}
+.admin-record-date{overflow-wrap:anywhere}
+.admin-main{padding-bottom:calc(60px + env(safe-area-inset-bottom))}
+@media(max-width:760px){
+ .admin-header{padding-top:max(17px,env(safe-area-inset-top))}
+ .admin-main{padding-bottom:calc(45px + env(safe-area-inset-bottom))}
+ .admin-section-top{flex-wrap:wrap}
+ .admin-note-footer{flex-wrap:wrap;gap:8px}
+}
+@media(max-height:500px) and (max-width:1100px){
+ .admin-header,.admin-tabs{position:static}
+}
