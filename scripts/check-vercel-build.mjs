@@ -116,4 +116,7 @@ for(const route of ['/admin','/admin.html','/admin/:path*']){
 }
 assert.ok(!manifest.paths.some(route=>/^\/admin(?:\/|$)/.test(route)),'Private administration must not publish in discovery');
 assert.equal(await fs.stat(path.join(output,'images','next','hero.webp')).catch(()=>null),null,'Unapproved hero must not publish');
+const speedInsights=await fs.readFile(path.join(output,release.assetPrefix.replace(/^\/|\/$/g,''),'speed-insights.js'),'utf8');
+assert.match(speedInsights,/\/_vercel\/speed-insights\/script\.js/,'The app must load the Vercel Speed Insights script');
+assert.match(speedInsights,/dataset\.route=location\.pathname/,'Speed Insights must follow client-side route changes');
 console.log(`Vercel release checks passed: ${modules} modules, ${styles} stylesheets, ${images.size} images, ${references} asset references and ${manifest.paths.length} deep links.`);

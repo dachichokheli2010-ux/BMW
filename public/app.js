@@ -1,4 +1,5 @@
 import './page-entry.js';
+import './speed-insights.js';
 import {mountIcons} from './icons.js';
 import {account} from './account-sync.js';
 import {allModels,allElectricModels,officialCredits} from './catalog.js';

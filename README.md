@@ -66,6 +66,8 @@ Private `/admin` access also requires `ADMIN_LOGIN_EMAIL` and `ADMIN_PASSWORD_HA
 
 To enable password recovery and email verification, add `PUBLIC_ORIGIN` (the production site origin), `RESEND_API_KEY`, and `ACCOUNT_MAIL_FROM` (a sender address verified with Resend) to the Vercel project's Production environment, then redeploy. Keep the API key private; never add it to `vercel.json` or client-side code. After deployment, `/api/auth/session` should report `mailConfigured`, `passwordRecovery`, and `emailVerification` as `true`.
 
+The app loads Vercel Speed Insights from its shared browser entry and updates the tracked route during client-side navigation. Enable Speed Insights for the Vercel project in its dashboard, then deploy; local development hosts are excluded.
+
 ## Page structure
 
 The homepage is a short discovery page with the retained **More to discover** editorial section. Features have dedicated, reloadable URLs:
