@@ -13,7 +13,22 @@ const {academyLearningInterfaceTranslations}=await import('../public/academy-lea
 const {academyTranslationCoverage}=await import('../public/academy-translations.js');
 const {setLanguage,t}=await import('../public/preferences.js');
 const {account}=await import('../public/account-sync.js');
+const {lessonAccess}=await import('../public/academy-access.js');
+const {beginSession,emptyProgress}=await import('../public/academy-state.js');
+const {createLessonDraft}=await import('../public/academy-session.js');
 const {lessons,units}=createCurriculum(academyLessons,academyReferenceData.sources,partCatalog,allModels,academyReferenceData.scenarios);
+for(const chapter of units){
+  assert.equal(lessonAccess(chapter.lessons[0],{units}).allowed,true,'Every chapter starts open');
+  for(let i=1;i<chapter.lessons.length;i++)assert.equal(lessonAccess(chapter.lessons[i],{units}).allowed,false,'Later missions need all prior chapter missions');
+  const completed=Object.fromEntries(chapter.lessons.map(id=>[id,{migrated:true}]));
+  delete completed[chapter.lessons[0]];
+  assert.equal(lessonAccess(chapter.lessons.at(-1),{units,completed}).allowed,true,'Imported completed missions remain replayable despite earlier gaps');
+  delete completed[chapter.lessons.at(-1)];
+  assert.equal(lessonAccess(chapter.lessons.at(-1),{units,completed}).allowed,false,'A completed immediate neighbor cannot bypass an earlier gap');
+  assert.equal(lessonAccess(chapter.lessons.at(-1),{units,completed}).prerequisiteId,chapter.lessons[0]);
+}
+for(const lesson of lessons.filter(l=>l.puzzle))assert.equal(lessonAccess(lesson.id,{units}).allowed,true,'Puzzles are independent of chapter locks');
+for(const kind of ['daily','review'])assert.equal(lessonAccess(units[0].lessons.at(-1),{units,kind}).allowed,true,'Daily and review retain access to their question pools');
 let root=document.querySelector('#academy');
 // linkedom does not remove listeners through AbortSignal. A real remount gets
 // a fresh host, while both storage objects retain the browser's saved session.
@@ -28,8 +43,17 @@ const answerQuestion=question=>{
 let academy=mountAcademy(root,{storageKey:'journey-fixture'});
 assert.equal(root.querySelectorAll('.ac-mission-stop').length,units[0].lessons.length);
 assert.ok(root.querySelector('.ac-next-lesson'));
-assert.equal(root.querySelector('.ac-mission-stop:nth-child(2) button').disabled,true,'Learning path marks the prerequisite clearly');
+assert.equal(root.querySelector('.ac-mission-stop:nth-child(2) button').dataset.locked,'true','Learning path marks the prerequisite clearly');
 assert.ok(root.querySelector('.ac-mission-asphalt'),'The mission road remains the primary learning journey');
+assert.equal(root.querySelectorAll('.ac-mission-asphalt').length,units[0].lessons.length,'Every mission has a stretchable curve, including on mobile');
+assert.equal(root.querySelectorAll('.ac-road-sign').length,2,'Chapter road has a start and a destination');
+const beforeLocked=localStorage.getItem('journey-fixture-academy-v2');
+click('lesson',units[0].lessons[1]);
+assert.ok(root.querySelector('.ac-locked-panel'),'Locked nodes explain their prerequisite');
+assert.equal(root.querySelector('.ac-player'),null,'A locked mission cannot start a lesson session');
+assert.equal(localStorage.getItem('journey-fixture-academy-v2'),beforeLocked,'A locked preview does not mutate progress or rewards');
+assert.equal(academy.openLesson(units[0].lessons.at(-1)),false,'The public openLesson entry point enforces the same prerequisites');
+assert.equal(root.querySelector('.ac-locked-actions .ac-primary').dataset.value,units[0].lessons[0],'The CTA offers the earliest missing mission, rather than another locked mission');
 click('lesson',units[0].lessons[0]);
 const first=lessons.find(lesson=>lesson.id===units[0].lessons[0]);
 assert.equal(root.querySelector('.ac-player').dataset.stage,'intro');
@@ -53,11 +77,13 @@ assert.equal(root.querySelector('.ac-game-coins strong').textContent,'+'+(first.
 assert.equal(root.querySelector('.ac-result-actions .ac-primary').dataset.value,units[0].lessons[1],'Completion recommends the next unfinished lesson');
 click('exit');
 assert.equal(root.querySelector('.ac-mission-stop:nth-child(2) button').disabled,false,'Completing a lesson unlocks the next card');
+assert.equal(root.querySelector('.ac-mission-stop:nth-child(2) button').dataset.locked,'false');
+assert.equal(root.querySelector('.ac-mission-stop:first-child button').dataset.locked,'false','Completed missions remain replayable');
 for(const href of ['/sounds','/personality','/timeline','/legends','/my-garage'])assert.ok(root.querySelector('.ac-side-quests a[href="'+href+'"]'),'Side quest discoverable from Learn: '+href);
 academy.openLesson(first.id);click('start-questions');
 for(let i=0;i<first.questions.length;i++){if(i)click('question-next');answerQuestion(first.questions[i]);}click('finish');
 assert.equal(root.querySelector('.ac-game-coins strong').textContent,'+0 garage coins this round','Replaying checked questions does not pay more coins on the same day');
-const orderLesson=lessons.find(lesson=>lesson.questions[0]?.type==='order');
+const orderLesson=lessons.find(lesson=>lesson.puzzle&&lesson.questions[0]?.type==='order');
 academy.openLesson(orderLesson.id);click('start-questions');
 const sequence=orderLesson.questions[0];click('order',sequence.items[0].id);click('order',sequence.items[1].id);click('order-undo');
 assert.equal(root.querySelectorAll('.ac-order-slots .is-filled').length,1);
@@ -65,7 +91,7 @@ academy.destroy();replaceHost();academy=mountAcademy(root,{storageKey:'journey-f
 assert.ok(root.querySelector('.ac-resume-card'),'Leaving a lesson offers a recoverable draft');click('resume');
 assert.equal(root.querySelectorAll('.ac-order-slots .is-filled').length,1,'The selected sequence survives a remount');
 click('order-remove',0);answerQuestion(sequence);
-const matchLesson=lessons.find(lesson=>lesson.questions[0]?.type==='match');
+const matchLesson=lessons.find(lesson=>lesson.puzzle&&lesson.questions[0]?.type==='match');
 academy.openLesson(matchLesson.id);click('start-questions');
 const match=matchLesson.questions[0];click('match-left',0);click('match-right',1);click('match-left',1);click('match-right',1);
 assert.equal(root.querySelectorAll('[data-ac="match-left"].is-matched').length,1,'Moving a role removes its previous pairing');
@@ -76,5 +102,52 @@ for(const language of ['ka','ru','en']){
 assert.deepEqual(academyTranslationCoverage(academyLearningInterfaceTranslations.map(([english])=>english)).missing,[],'Every new learning interface string has Georgian and Russian copy');
 academy.destroy();replaceHost();academy=mountAcademy(root,{initialTab:'models',storageKey:'tab-fixture'});
 assert.ok(root.querySelector('.ac-challenge-grid'),'An explicit initial tab opens its requested Academy section');
+const modelsUnit=units.find(unit=>unit.id==='models');
+assert.equal(root.querySelector('[data-value="'+modelsUnit.lessons[1]+'"]').dataset.locked,'true');
+click('lesson',modelsUnit.lessons[1]);assert.ok(root.querySelector('.ac-locked-panel'),'Photo challenge cards cannot bypass prerequisites');
+academy.setTab('engines');
+const enginesUnit=units.find(unit=>unit.id==='engines');
+click('lesson',enginesUnit.lessons[1]);assert.ok(root.querySelector('.ac-locked-panel'),'Topic cards cannot bypass prerequisites');
+academy.setTab('codes');click('lesson',enginesUnit.lessons[1]);assert.ok(root.querySelector('.ac-locked-panel'),'Engine code explorer links cannot bypass prerequisites');
+academy.setTab('glossary');
+root.querySelector('[data-glossary-term="turbocharger"]').click();
+const glossaryLesson=document.querySelector('[data-glossary-lesson="turbocharging"]');assert.ok(glossaryLesson,'The glossary offers the authored lesson');glossaryLesson.click();
+assert.ok(root.querySelector('.ac-locked-panel'),'Glossary lesson links cannot bypass prerequisites');
+for(const language of ['ka','ru','en']){
+  setLanguage(language,false);
+  assert.equal(root.querySelector('.ac-locked-panel h2').textContent,t('Your next step is ready.'));
+  assert.equal(root.querySelector('.ac-locked-actions .ac-primary').textContent.trim().replace(/\s*→$/,''),t('Start prerequisite'));
+}
+academy.setTab('daily');click('daily');assert.ok(root.querySelector('.ac-player'),'Daily challenge remains available with an empty chapter');
+academy.destroy();replaceHost();academy=mountAcademy(root,{lesson:units[0].lessons.at(-1),storageKey:'deep-link-fixture'});
+assert.ok(root.querySelector('.ac-locked-panel'),'Direct lesson URLs enforce prerequisites on initial mount');
+assert.equal(root.querySelector('.ac-player'),null);
+const syncedProgress=emptyProgress();
+for(const id of units[0].lessons.slice(0,-1))syncedProgress.completed[id]={day:'2026-10-21',accuracy:100,topic:'basics'};
+const syncedValue=JSON.stringify(syncedProgress),syncEvent=new window.Event('storage');
+localStorage.setItem('deep-link-fixture-academy-v2',syncedValue);
+Object.defineProperties(syncEvent,{key:{value:'deep-link-fixture-academy-v2'},newValue:{value:syncedValue}});window.dispatchEvent(syncEvent);
+assert.equal(root.querySelector('.ac-locked-panel'),null,'Another tab unlocking the previewed mission reconciles the lock screen');
+assert.equal(root.querySelector('.ac-next-lesson').dataset.value,units[0].lessons.at(-1),'The updated road offers the newly unlocked mission without a blank panel');
+for(const language of ['ka','ru','en']){
+  setLanguage(language,false);academy.setTab('path');
+  assert.equal(root.querySelector('.ac-view-heading h1').textContent,t('Your road to BMW know-how.'));
+  assert.equal(root.querySelectorAll('.ac-mission-stop').length,units[0].lessons.length);
+  assert.equal(root.querySelector('.ac-mission-stop .ac-mission-copy strong').textContent,t(lessons.find(lesson=>lesson.id===units[0].lessons[0]).title),'Mission names stay complete in each language');
+}
+academy.destroy();replaceHost();
+localStorage.setItem('legacy-lock-fixture',JSON.stringify({'combustion:beginner':true}));
+academy=mountAcademy(root,{storageKey:'legacy-lock-fixture'});
+assert.equal(root.querySelector('[data-ac="lesson"][data-value="combustion"]').dataset.locked,'false','Actual legacy completion survives migration with earlier gaps');
+assert.equal(academy.openLesson('combustion'),true);assert.ok(root.querySelector('.ac-player'),'Migrated completed lessons can be replayed');
+academy.destroy();replaceHost();
+const lockedDraftLesson=lessons.find(lesson=>lesson.id===units[0].lessons.at(-1));
+const lockedDraft=createLessonDraft({owner:'guest',session:beginSession(lockedDraftLesson),stage:'intro',step:0,questionIndex:0,answer:null,answerState:null,orderSelection:[],matches:{},selectedMatch:null});
+sessionStorage.setItem('locked-draft-fixture-academy-v2-unfinished:guest',JSON.stringify(lockedDraft));
+academy=mountAcademy(root,{storageKey:'locked-draft-fixture'});
+assert.equal(root.querySelector('.ac-resume-card'),null,'A draft cannot advertise a locked lesson as resumable');
+const resumeAttempt=document.createElement('button');resumeAttempt.dataset.ac='resume';root.append(resumeAttempt);resumeAttempt.click();
+assert.ok(root.querySelector('.ac-locked-panel'),'The resume handler independently checks prerequisites');
+assert.equal(root.querySelector('.ac-player'),null,'An older draft cannot bypass current chapter prerequisites');
 academy.destroy();account.destroy();
-console.log('PASS Academy journey: mission road, prerequisite unlocks, first-answer scoring, explanations, sequence recovery, matching corrections, language switching and initial tabs.');
+console.log('PASS Academy journey: winding road and destinations, central prerequisites across every launcher, replayable legacy gaps, unlocked daily/puzzles/review, first-answer coins, explanations, draft recovery, full translated mission names and initial tabs.');

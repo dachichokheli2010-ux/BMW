@@ -64,7 +64,7 @@ if(!process.argv.includes('--route')){
   if(current){assert.ok(document.querySelector('.car-story'));assert.ok(document.querySelector('.model-profile'));assert.ok(document.querySelector('#vehicle-schema'));assert.ok(document.querySelector('.engineering-detail-actions a[href^="/engines/"]'));}
   if(routeURL.pathname==='/engines')assert.equal(document.querySelectorAll('.ed-card').length,30);
   if(routeURL.pathname==='/engines/s65')assert.ok(document.querySelector('.ed-detail-photo'));
-  if(['/engines','/engines/s65','/play','/parts/turbocharger'].includes(routeURL.pathname)){
+  if(['/engines','/engines/s65','/play','/parts/turbocharger','/learn','/lessons/first-engine'].includes(routeURL.pathname)){
     assert.equal(document.querySelector('.destination-heading'),null,'A destination with its own introduction should not repeat a shell title');
     assert.equal(document.querySelectorAll('#destination h1').length,1,'The destination has one primary title');
   }

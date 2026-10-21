@@ -6,6 +6,8 @@ Object.assign(globalThis,{document,window,location:new URL('https://apex.example
 window.scrollTo=()=>{};window.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});
 window.URL.createObjectURL=()=> 'blob:personality-card';window.URL.revokeObjectURL=()=>{};
 window.setTimeout=()=>0;
+const view={navigator:{},URL:window.URL,setTimeout:window.setTimeout,addEventListener:window.addEventListener.bind(window),removeEventListener:window.removeEventListener.bind(window)};Object.defineProperty(document,'defaultView',{value:view});
+let focused=null;window.HTMLElement.prototype.focus=function(){focused=this;};Object.defineProperty(document,'activeElement',{get:()=>focused||document.body});
 const {allModels}=await import('../public/catalog.js');
 const {mountPersonalityQuiz,personalityQuestions,personalityTypes,personalityResult,personalityCardSVG,personalityTranslations}=await import('../public/personality-quiz.js');
 const {mountGenerationTimeline,generationAtYear,threeSeriesGenerations,generationTimelineTranslations}=await import('../public/generation-timeline.js');
@@ -34,7 +36,9 @@ for(let i=0;i<5;i++){
 assert.equal(root.querySelector('.pq-result h2').textContent,personalityTypes.heritage.title);
 assert.ok(root.querySelector('.pq-result-photo a[target="_blank"]'),'Result photography retains attribution');
 click('[data-pq=download]');assert.ok(root.querySelector('[role=status]').textContent.includes('downloaded'));
-for(const language of ['ka','ru','en']){setLanguage(language,false);assert.equal(root.querySelector('.pq-result h2').textContent,t(personalityTypes.heritage.title));}
+root.querySelector('[data-pq=share]').focus();
+for(const language of ['ka','ru','en']){setLanguage(language,false);assert.equal(root.querySelector('.pq-result h2').textContent,t(personalityTypes.heritage.title));assert.equal(document.activeElement,root.querySelector('[data-pq=share]'),'Language changes preserve the focused result action.');}
+let releaseShare;view.navigator.share=()=>new Promise(resolve=>{releaseShare=resolve;});click('[data-pq=share]');click('[data-pq=restart]');const restartedQuestion=root.querySelector('.pq-question');releaseShare();await Promise.resolve();await Promise.resolve();assert.equal(root.querySelector('.pq-question'),restartedQuestion,'Completing an earlier share must not rebuild a restarted quiz.');delete view.navigator.share;
 quiz.destroy();replace();globalThis.location=new URL('https://apex.example/personality?result=electric');quiz=mountPersonalityQuiz(root,{catalog:allModels});
 assert.equal(root.querySelector('.pq-result h2').textContent,personalityTypes.electric.title,'A shared result link shows the selected type');click('[data-pq=restart]');assert.ok(root.querySelector('.pq-question'));
 quiz.destroy();replace();quiz=mountPersonalityQuiz(root,{catalog:[allModels.find(model=>model.id==='f10')]});
@@ -47,11 +51,14 @@ assert.deepEqual(threeSeriesGenerations.map(item=>item.launch),[1975,1982,1990,1
 for(const item of threeSeriesGenerations)assert.ok(allModels.some(model=>model.id===item.modelId&&model.source)&&item.source.startsWith('https://www.bmwgroup.com/'));
 const timeline=mountGenerationTimeline(root,{catalog:allModels});
 assert.equal(root.querySelector('.gt-generation-code').textContent,'E90');
+assert.equal(root.querySelectorAll('[data-gt-metric]').length,4,'Every generation exposes all four comparison metrics.');
 const range=root.querySelector('[data-gt-range]');range.value='2012';range.dispatchEvent(new window.Event('input',{bubbles:true}));
 assert.equal(root.querySelector('[data-gt-range]'),range,'Scrubbing preserves the native slider and keyboard focus');
 assert.equal(root.querySelector('.gt-generation-code').textContent,'F30');assert.ok(root.querySelector('.gt-generation-copy').textContent.includes('2011'),'Reveal and market launch years remain distinct');
 range.value='2025';range.dispatchEvent(new window.Event('input',{bubbles:true}));assert.equal(root.querySelector('.gt-generation-code').textContent,'G20');assert.equal(root.querySelector('[data-gt=next]').disabled,true);
-click('button[data-gt-year="1975"]');assert.equal(root.querySelector('[data-gt=previous]').disabled,true);click('[data-gt=next]');assert.equal(root.querySelector('.gt-generation-code').textContent,'E30');
+click('button[data-gt-year="1975"]');assert.equal(root.querySelector('[data-gt=previous]').disabled,true);assert.ok(root.querySelector('[data-gt-metric=price].is-missing'),'Unverified prices remain explicitly unavailable.');click('[data-gt=next]');assert.equal(root.querySelector('.gt-generation-code').textContent,'E30');
+for(const generation of threeSeriesGenerations){click('button[data-gt-year="'+generation.launch+'"]');assert.equal(root.querySelectorAll('[data-gt-metric]').length,4);for(const metric of root.querySelectorAll('[data-gt-metric]')){if(metric.classList.contains('is-missing')){assert.equal(metric.querySelector('a'),null,'Missing figures do not imply factory evidence.');continue;}assert.match(metric.querySelector('a').href,/^https:\/\/(?:www\.)?(?:press\.)?bmwgroup\.com\//,'Every displayed figure links to a primary factory record.');assert.ok(Number(metric.querySelector('[role=meter]').getAttribute('aria-valuenow'))>0);}}
+click('button[data-gt-year="1982"]');
 for(const language of ['ka','ru','en']){setLanguage(language,false);assert.equal(root.querySelector('.gt-generation h2').textContent,t(threeSeriesGenerations[1].title));}
 for(const [source] of [...personalityTranslations,...generationTimelineTranslations])for(const language of ['ka','ru'])assert.ok(hasTranslation(source,language),'Discovery copy translated: '+source);
 timeline.destroy();assert.equal(root.childNodes.length,0);

@@ -1,5 +1,6 @@
 import {escapeHTML as e,loadStyle,scopedKey,readJSON,saveJSON,modelYear} from './experience-common.js';
 import {t,registerTranslations} from './preferences.js';
+import {account} from './account-sync.js';
 
 const copy=[
  ['Before you buy','შეძენამდე','Перед покупкой'],['Choose your exact BMW','აირჩიე ზუსტი BMW','Выберите точную BMW'],['Engine concerns & evidence','ძრავის საკითხები და მტკიცებულებები','Проблемы двигателя и источники'],['Research lead · confirm applicability','კვლევის მინიშნება · გადაამოწმე შესაბამისობა','Направление проверки · уточните применимость'],['Read the manufacturer bulletin','წაიკითხე მწარმოებლის ბიულეტენი','Читать бюллетень производителя'],
@@ -49,8 +50,9 @@ export function buyerReadiness(checks={}){
 }
 export const DEFAULT_RUNNING_COSTS=Object.freeze({distance:10000,fuelConsumption:10,fuelPrice:3,electricConsumption:20,electricPrice:0.3,electricShare:50,chargingLoss:10,service:800,wear:400,reserve:1200,fixed:500,depreciation:0});
 export function estimateAnnualCosts(inputs,powertrain='fuel'){
- const n={};for(const key of Object.keys(DEFAULT_RUNNING_COSTS)){const raw=inputs[key];if(raw===''||raw===null||raw===undefined)return null;n[key]=Number(raw);if(!Number.isFinite(n[key])||n[key]<0||n[key]>10000000)return null;}
- if(n.electricShare>100||n.chargingLoss>=100)return null;
+ const required=['distance','service','wear','reserve','fixed','depreciation',...(powertrain!=='electric'?['fuelConsumption','fuelPrice']:[]),...(powertrain!=='fuel'?['electricConsumption','electricPrice','chargingLoss']:[]),...(powertrain==='hybrid'?['electricShare']:[])];
+ const n={...DEFAULT_RUNNING_COSTS};for(const key of required){const raw=inputs?.[key];if(raw===''||raw===null||raw===undefined||!['number','string'].includes(typeof raw)||typeof raw==='string'&&!raw.trim())return null;n[key]=Number(raw);if(!Number.isFinite(n[key])||n[key]<0||n[key]>10000000)return null;}
+ if(powertrain==='hybrid'&&n.electricShare>100||powertrain!=='fuel'&&n.chargingLoss>=100)return null;
  const electricShare=powertrain==='electric'?1:powertrain==='hybrid'?n.electricShare/100:0;
  const fuel=n.distance*(1-electricShare)/100*n.fuelConsumption*n.fuelPrice;
  const electricity=n.distance*electricShare/100*n.electricConsumption/(1-n.chargingLoss/100)*n.electricPrice;
@@ -59,9 +61,14 @@ export function estimateAnnualCosts(inputs,powertrain='fuel'){
 }
 export function mountBuyerResearch(container,{catalog=[],initialModel}={}){
  loadStyle('./buyer-research.css');if(!catalog.length)return {destroy(){}};
- const key=scopedKey('buyer-research'),saved=readJSON(key,{}),abort=new AbortController();
- let selected=catalog.find(model=>model.id===(initialModel||saved.model))||catalog[0],checks=saved.checks&&typeof saved.checks==='object'?saved.checks:{},inputs={...DEFAULT_RUNNING_COSTS,...saved.inputs};
- const label=key=>t(copy.find(row=>row[0]===key)?.[0]||key);
+ const abort=new AbortController();let key='',selected=catalog[0],checks={},inputs={...DEFAULT_RUNNING_COSTS};
+ function restore(){
+  const saved=readJSON(key,null),value=saved&&typeof saved==='object'&&!Array.isArray(saved)?saved:{};
+  selected=catalog.find(model=>model.id===(initialModel||value.model))||catalog[0];checks={};inputs={...DEFAULT_RUNNING_COSTS};
+  const savedChecks=value.checks&&typeof value.checks==='object'&&!Array.isArray(value.checks)?value.checks:{};
+  for(const [id,state] of Object.entries(savedChecks).slice(0,1000)){if(!/^[a-z0-9][a-z0-9-]{0,100}$/i.test(id)||!state||typeof state!=='object'||Array.isArray(state))continue;checks[id]=Object.fromEntries(['concern','service','inspection','recalls','reserve'].map(name=>[name,state[name]===true]));}
+  for(const name of Object.keys(DEFAULT_RUNNING_COSTS)){const raw=value.inputs?.[name];if(typeof raw==='number'&&Number.isFinite(raw)||typeof raw==='string'&&raw.length<=30)inputs[name]=raw;}
+ }
  function persist(){saveJSON(key,{model:selected.id,checks,inputs});}
  function update(){
   const readiness=buyerReadiness(checks[selected.id]||{}),status=container.querySelector('[data-buyer-status]');
@@ -71,14 +78,17 @@ export function mountBuyerResearch(container,{catalog=[],initialModel}={}){
   out.innerHTML=result?`<span>${e(t('Estimated annual budget'))}</span><strong>${e(money(result.total))}</strong><dl><div><dt>${e(t('Energy'))}</dt><dd>${e(money(result.energy))}</dd></div><div><dt>${e(t('Service & wear'))}</dt><dd>${e(money(result.serviceWear))}</dd></div><div><dt>${e(t('Reserve & fixed costs'))}</dt><dd>${e(money(result.reserveFixed))}</dd></div><div><dt>${e(t('Monthly equivalent'))}</dt><dd>${e(money(result.monthly))}</dd></div></dl>`:`<p role="status">${e(t('Enter valid non-negative values in every cost field.'))}</p>`;
  }
  function render(){
+  const active=container.ownerDocument.activeElement,focus=container.contains(active)?active?.dataset.review?'[data-review="'+active.dataset.review+'"]':active?.hasAttribute('data-cost')?'[name="'+active.name+'"]':active?.hasAttribute('data-buyer-model')?'[data-buyer-model]':active?.hasAttribute('data-buyer-reset')?'[data-buyer-reset]':null:null;
   const evidence=buyerEvidenceFor(selected),state=checks[selected.id]||{},field=(name,title,step='1',max='10000000')=>`<label>${e(t(title))}<input name="${name}" data-cost type="number" min="0" max="${max}" step="${step}" value="${e(inputs[name])}" inputmode="decimal" required></label>`;
   container.innerHTML=`<section class="buyer-research"><header class="buyer-heading"><span class="eyebrow">${e(t('Before you buy'))}</span><h2>${e(t('Choose your exact BMW'))}</h2><label><span class="sr-only">${e(t('Choose your exact BMW'))}</span><select data-buyer-model>${catalog.map(model=>`<option value="${e(model.id)}" ${model.id===selected.id?'selected':''}>${e(model.name+' · '+chassis(model)+' · '+model.code)}</option>`).join('')}</select></label><a href="/cars/${encodeURIComponent(selected.id)}">${e(t('Full model details'))} ↗</a></header><div class="buyer-grid"><section class="buyer-card buyer-evidence"><h3>${e(t('Engine concerns & evidence'))}</h3><p class="buyer-model-context">${e(selected.name)} · ${e(selected.code)} · ${e(selected.market||'')}</p>${evidence.issues.length?evidence.issues.map(issue=>`<article><small>${e(t('Research lead · confirm applicability'))}</small><h4>${e(t(issue.title))}</h4><p>${e(t(issue.claim))}</p><p class="buyer-scope">${e(t(issue.scope))}</p><a href="${e(issue.source.url)}" target="_blank" rel="noopener noreferrer">${e(t('Read the manufacturer bulletin'))} ↗</a></article>`).join(''):`<p>${e(t('No matching issue bulletin recorded for this catalog configuration. This is an evidence gap, not proof of trouble-free ownership.'))}</p>`}<p class="buyer-note">${e(t('A bulletin records a defined issue, not its frequency. Engine-family matching does not establish VIN eligibility or warranty coverage in Georgia.'))}</p><a href="https://www.bmwusa.com/safety-and-emission-recalls.html" target="_blank" rel="noopener noreferrer">${e(t('Recall lookup by VIN'))} ↗</a></section><section class="buyer-card"><h3>${e(t('Reliability review'))}</h3><p data-buyer-status role="status"></p><p class="buyer-note">${e(t('Your checks determine this light. It is a buying-readiness checklist, not a statistical reliability score for the model.'))}</p><div class="buyer-checklist">${[['concern','Unresolved warning, leak or inspection concern'],['service','Service records checked against the exact vehicle'],['inspection','Independent inspection completed'],['recalls','VIN recalls checked and remedies documented'],['reserve','Repair quotes and an annual reserve reviewed']].map(([key,title])=>`<label><input type="checkbox" data-review="${key}" ${state[key]===true?'checked':''}><span>${e(t(title))}</span></label>`).join('')}</div><a href="https://www.bmwusa.com/explore/bmw-value/bmw-maintenance/ultimate-care.html" target="_blank" rel="noopener noreferrer">${e(t('BMW maintenance information'))} ↗</a></section></div><section class="buyer-card buyer-cost"><header><h3>${e(t('Annual ownership planner'))}</h3><p class="buyer-note">${e(t('Example inputs are assumptions, not BMW consumption claims or current Georgian prices. Edit every amount using your driving and local quotes.'))}</p></header><div class="buyer-cost-layout"><form class="buyer-cost-fields" novalidate>${field('distance','Annual distance (km)')}${evidence.powertrain!=='electric'?field('fuelConsumption','Fuel consumption (L/100 km)','0.1')+field('fuelPrice','Fuel price (GEL/L)','0.01'):''}${evidence.powertrain!=='fuel'?field('electricConsumption','Electricity consumption (kWh/100 km)','0.1')+field('electricPrice','Electricity price (GEL/kWh)','0.01')+field('chargingLoss','Charging loss allowance (%)','1','99'):''}${evidence.powertrain==='hybrid'?field('electricShare','Electric share of distance (%)','1','100'):''}${field('service','Scheduled service / year (GEL)')}${field('wear','Tyres & wear / year (GEL)')}${field('reserve','Repair reserve / year (GEL)')}${field('fixed','Insurance, tax & fees / year (GEL)')}${field('depreciation','Depreciation / year (GEL)')}<button type="button" class="buyer-reset" data-buyer-reset>${e(t('Reset example inputs'))}</button></form><output class="buyer-cost-output" data-buyer-cost-output aria-live="polite"></output></div></section></section>`;
   container.querySelector('[data-buyer-model]').addEventListener('change',event=>{selected=catalog.find(model=>model.id===event.target.value)||selected;persist();render();});
   container.querySelectorAll('[data-review]').forEach(input=>input.addEventListener('change',()=>{checks[selected.id]={...checks[selected.id],[input.dataset.review]:input.checked};persist();update();}));
   container.querySelectorAll('[data-cost]').forEach(input=>input.addEventListener('input',()=>{inputs[input.name]=input.value;persist();update();}));
   container.querySelector('form').addEventListener('submit',event=>event.preventDefault());
-  container.querySelector('[data-buyer-reset]').addEventListener('click',()=>{inputs={...DEFAULT_RUNNING_COSTS};persist();render();});update();
+  container.querySelector('[data-buyer-reset]').addEventListener('click',()=>{inputs={...DEFAULT_RUNNING_COSTS};persist();render();});update();if(focus)container.querySelector(focus)?.focus({preventScroll:true});
  }
- render();window.addEventListener('apex:languagechange',render,{signal:abort.signal});
- return {destroy(){abort.abort();container.replaceChildren();}};
+ const unsubscribe=account.subscribe(()=>{const next=scopedKey('buyer-research');if(next===key)return;key=next;restore();render();});
+ const onStorage=event=>{if(event.key===key||event.key===null){restore();render();}};window.addEventListener('storage',onStorage,{signal:abort.signal});
+ window.addEventListener('apex:languagechange',render,{signal:abort.signal});
+ return {destroy(){abort.abort();unsubscribe();window.removeEventListener('storage',onStorage);window.removeEventListener('apex:languagechange',render);container.replaceChildren();}};
 }

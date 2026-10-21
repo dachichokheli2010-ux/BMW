@@ -69,6 +69,12 @@ export function cardRarity(model){
 }
 export const cardPrice=model=>CAREER.find(step=>step.id===model.id)?.cost??RARITIES.find(r=>r.id===cardRarity(model)).price;
 export function packOdds(catalog,state){const pool=catalog.filter(model=>!state.cards[model.id]),available=RARITIES.filter(r=>pool.some(model=>cardRarity(model)===r.id)),total=available.reduce((sum,r)=>sum+r.weight,0);return available.map(r=>({...r,percent:r.weight/total*100}));}
+// The paid draw is the receipt. Replaying its presentation never draws again.
+export function savedDailyPack(catalog,state,day=utcDay()){
+ if(!validDay(day)||!state?.packs?.includes(day))return null;
+ const card=catalog.find(model=>state.cards?.[model.id]?.source==='pack'&&state.cards[model.id].day===day);
+ return card?{card,rarity:state.cards[card.id].rarity,day}:null;
+}
 export function buyGarageCar(id,catalog,options={}){
  const loaded=load(options),{state}=loaded,model=catalog.find(car=>car.id===id),step=CAREER.findIndex(item=>item.id===id);
  if(!model||state.cards[id])return {ok:false,message:'This card is already collected or unavailable.'};

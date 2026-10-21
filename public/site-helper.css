@@ -2,3 +2,4 @@
 @media(max-width:700px){.site-helper-trigger{bottom:calc(92px + env(safe-area-inset-bottom));right:16px;font-size:12px;min-height:44px;padding:10px 16px}.site-helper-dialog{inset:auto 12px calc(84px + env(safe-area-inset-bottom));width:calc(100vw - 24px);padding:20px;max-height:calc(100dvh - 114px)}.site-helper-thread{max-height:35dvh}.site-helper-dialog h2{font-size:23px}}
 body:has(.ac-player,.play-question,.sound-question) .site-helper-trigger{display:none}
 @media(max-width:760px){body:has(.account-page) .site-helper-trigger{display:none}}
+.site-helper-dialog{box-sizing:border-box}.site-helper-dialog header>div{min-width:0}.site-helper-dialog h2,.site-helper-answer>strong,.site-helper-answer a,.site-helper-status{overflow-wrap:anywhere}.site-helper-dialog form button{flex-shrink:0}
