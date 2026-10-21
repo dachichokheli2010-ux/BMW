@@ -344,6 +344,7 @@ const copy = [
   ["Switch to light theme","ღია თემაზე გადართვა","Включить светлую тему"],
   ["Switch to dark theme","მუქ თემაზე გადართვა","Включить тёмную тему"],
   ["Use system theme","სისტემის თემის გამოყენება","Использовать системную тему"],
+  ["Shift-click to use your device theme","სისტემის თემისთვის დააჭირეთ Shift-თან ერთად","Нажмите с Shift для темы устройства"],
   ['Refine your search', 'დააზუსტეთ ძიება', 'Уточните поиск'],
   ['Powertrain', 'ამძრავის ტიპი', 'Силовая установка'],
   ['All powertrains', 'ყველა ტიპის ამძრავი', 'Все силовые установки'],
@@ -763,12 +764,34 @@ export function setLanguage(value, persist = true) {
 function updateThemeButton() {
   const button = document.getElementById('theme-toggle');
   if (!button) return;
-  const next = theme === 'system' ? 'Switch to light theme' : theme === 'light' ? 'Switch to dark theme' : 'Use system theme';
+  const effective = document.documentElement.dataset.theme;
+  const next = effective === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
   const current = theme === 'system' ? 'System theme' : theme === 'light' ? 'Light theme' : 'Dark theme';
+  // Keep this SVG mounted so CSS can animate the same sun into a crescent.
+  if (!button.querySelector('.theme-orbit')) {
+    button.innerHTML = '<svg class="theme-orbit" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><defs><mask id="motron-theme-eclipse" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><rect width="24" height="24" fill="white"/><circle class="theme-eclipse" cx="28" cy="-4" r="7" fill="black"/></mask></defs><g mask="url(#motron-theme-eclipse)"><circle class="theme-core" cx="12" cy="12" r="7" fill="currentColor"/></g><path class="theme-rays" d="M12 1v2m0 18v2M1 12h2m18 0h2M4.2 4.2l1.4 1.4m12.8 12.8 1.4 1.4M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+  }
   button.dataset.mode = theme;
-  button.setAttribute('aria-pressed', String(document.documentElement.dataset.theme === 'dark'));
+  button.dataset.effective = effective;
+  button.setAttribute('aria-pressed', String(effective === 'dark'));
   button.setAttribute('aria-label', `${t(current)}. ${t(next)}`);
-  button.title = `${t(current)} · ${t(next)}`;
+  button.setAttribute('aria-description', t('Shift-click to use your device theme'));
+  button.title = `${t(current)} · ${t(next)} · ${t('Shift-click to use your device theme')}`;
+  // The mobile menu moves this same control into its Appearance section.
+  // Offer a visible device-following choice there as well as the desktop shortcut.
+  const menu = button.closest('[data-menu-theme]');
+  if (menu && !menu.querySelector('[data-use-system-theme]')) {
+    const system = document.createElement('button');
+    system.type = 'button';
+    system.className = 'theme-device-choice';
+    system.setAttribute('data-use-system-theme', '');
+    system.addEventListener('click', () => setTheme('system'));
+    menu.append(system);
+  }
+  for (const system of document.querySelectorAll('[data-use-system-theme]')) {
+    system.textContent = t('Use system theme');
+    system.setAttribute('aria-pressed', String(theme === 'system'));
+  }
 }
 
 export function setTheme(value, persist = true) {
@@ -776,18 +799,13 @@ export function setTheme(value, persist = true) {
   theme = value;
   if (persist) writePreference(THEME_KEY, theme);
   const effective = value === 'system' ? (media?.matches ? 'dark' : 'light') : value;
-  const applyTheme = () => {
-    document.documentElement.dataset.theme = effective;
-    document.documentElement.style.colorScheme = effective;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', effective === 'dark' ? '#080b10' : '#f5f6f8');
-    updateThemeButton();
-    window.dispatchEvent(new CustomEvent('apex:themechange', { detail: { theme, effective } }));
-  };
-  if (document.documentElement.dataset.theme !== effective && typeof document.startViewTransition === 'function' && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    document.startViewTransition(applyTheme);
-  } else {
-    applyTheme();
-  }
+  // Apply synchronously. A second click must read the theme actually on screen,
+  // even while the previous icon/surface transition is still running.
+  document.documentElement.dataset.theme = effective;
+  document.documentElement.style.colorScheme = effective;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', effective === 'dark' ? '#10151c' : '#f4f6f8');
+  updateThemeButton();
+  window.dispatchEvent(new CustomEvent('apex:themechange', { detail: { theme, effective } }));
 }
 
 function init() {
@@ -795,19 +813,24 @@ function init() {
   initialized = true;
   setTheme(theme, false);
   document.getElementById('language-select')?.addEventListener('change', event => setLanguage(event.target.value));
-  document.getElementById('theme-toggle')?.addEventListener('click', () => setTheme(theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system'));
+  document.getElementById('theme-toggle')?.addEventListener('click', event => setTheme(event.shiftKey ? 'system' : document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
   observer = new MutationObserver(records => {
     // Translate only the changed nodes. The live RPM display updates every frame.
     observer.disconnect();
+    let movedTheme = false;
     for (const record of records) {
       if (record.type === 'childList') {
-        for (const node of record.addedNodes) if (node.isConnected) translateNode(node);
+        for (const node of record.addedNodes) if (node.isConnected) {
+          translateNode(node);
+          if (node.id === 'theme-toggle' || node.matches?.('[data-menu-theme]') || node.querySelector?.('#theme-toggle,[data-menu-theme]')) movedTheme = true;
+        }
       } else if (record.type === 'attributes' && record.target.id !== 'theme-toggle') {
         translateNode(record.target);
       } else if (record.type === 'characterData') {
         translateNode(record.target);
       }
     }
+    if (movedTheme) updateThemeButton();
     observe();
   });
   translatePage();

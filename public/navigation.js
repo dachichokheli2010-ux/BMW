@@ -1,6 +1,6 @@
 ﻿export function mountNavigation({openSearch}){
   const header=document.querySelector('.site-header'),tools=header.querySelector('.header-tools');
-  const events=new AbortController(),signal=events.signal,mobile=matchMedia('(max-width:1120px)'),reduced=matchMedia('(prefers-reduced-motion:reduce)');
+  const events=new AbortController(),signal=events.signal,mobile=matchMedia('(max-width:1280px)'),reduced=matchMedia('(prefers-reduced-motion:reduce)');
   const button=document.createElement('button');
   button.type='button';button.className='mobile-menu-toggle icon-button';button.setAttribute('aria-label','Open navigation');button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-expanded','false');
   button.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>';tools.append(button);

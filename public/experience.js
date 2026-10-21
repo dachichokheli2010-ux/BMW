@@ -37,6 +37,5 @@ export function mountExperience({catalog,getCurrent}={}){
     const club=document.createElement('section');club.className='home-feature owner-club-entry';club.innerHTML='<div><span class="eyebrow">THE OWNERS CLUB</span><h2>Every BMW has a person behind it.</h2><p>Meet the owners, discover their stories, and share a garage with friends. Earn credits in the community challenge to submit your own car for review.</p></div><a class="button-primary" href="/community">Meet the community ↗</a>';next.after(club);
   }
   document.querySelector('.footer-brand small').textContent='Unofficial fan site. Not affiliated with BMW AG. BMW names and trademarks belong to BMW AG.';
-  document.querySelector('.footer-group:last-child')?.insertAdjacentHTML('beforeend','<a href="/start">Beginner starter kit</a><a href="/engines">Engine directory</a><a href="/play">Games & daily challenge</a>');
   return {destroy(){siteHelper.destroy();abort.abort();unsub();navObserver.disconnect();sizeObserver?.disconnect();instances.forEach(i=>i.destroy());bottom.remove();indicator.remove();unitsControl.remove();xp.remove();}};
 }

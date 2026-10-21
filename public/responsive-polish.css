@@ -1,0 +1,80 @@
+/* Match the specificity of the original footer rules so the grid can work. */
+footer.site-footer {
+  display: grid;
+  grid-template-columns: minmax(180px, .8fr) minmax(0, 2.4fr);
+  align-items: start;
+  gap: 32px 48px;
+  margin-top: 56px;
+  padding-block: 40px 28px;
+  color: var(--muted);
+  line-height: 1.65;
+}
+footer.site-footer > * { min-width: 0; }
+footer.site-footer span { max-width: none; }
+footer.site-footer .footer-brand { grid-column: auto; max-width: 280px; }
+footer.site-footer .footer-links {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+  padding: 0;
+}
+footer.site-footer .footer-group { gap: 2px; align-items: stretch; }
+footer.site-footer .footer-group h2 { margin: 0 0 9px; color: var(--muted); line-height: 1.5; }
+footer.site-footer .footer-group a,
+footer.site-footer .footer-group button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 8px 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--white);
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: break-word;
+  font-size: 12px;
+  line-height: 1.55;
+}
+footer.site-footer .footer-group a:hover,
+footer.site-footer .footer-group button:hover { color: var(--blue); }
+footer.site-footer .footer-end {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  width: 100%;
+  padding-top: 18px;
+  font-size: 11px;
+}
+footer.site-footer .footer-end > span { max-width: 100%; overflow-wrap: anywhere; }
+footer.site-footer .footer-end > a { display: inline-flex; align-items: center; min-height: 44px; font-size: 12px; }
+/* Inline garage tabs must remain reachable even with longer translated labels. */
+.personal-garage .pg-tabs { overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; }
+.personal-garage .pg-tabs button { flex: 0 0 auto; white-space: nowrap; }
+.personal-garage .pg-tabs button:focus-visible { outline-offset: -4px; }
+@media (max-width: 1120px) {
+  footer.site-footer { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+  footer.site-footer .footer-brand { max-width: 480px; }
+}
+/* Header CSS previously hid both navigation choices between 1121 and 1280px. */
+@media (max-width: 1280px) {
+  .site-header .mobile-menu-toggle { display: inline-grid !important; }
+  header.site-header > nav { display: none !important; }
+}
+@media (max-width: 600px) {
+  footer.site-footer { margin-top: 36px; padding-block: 30px 12px; }
+  footer.site-footer .footer-links { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 22px; }
+  footer.site-footer .footer-end { flex-direction: column; align-items: flex-start; }
+  .motron-learn .ml-navigation { flex-wrap: wrap; overflow: visible; }
+  .motron-learn .ml-navigation button { flex: 1 0 auto; min-height: 44px; }
+  .personal-garage .pg-tabs { flex-wrap: wrap; overflow: visible; column-gap: 16px; row-gap: 0; }
+  .personal-garage .pg-tabs button { flex: 1 0 auto; justify-content: center; }
+}
+@media (max-width: 360px) {
+  footer.site-footer .footer-links { gap: 24px 16px; }
+}

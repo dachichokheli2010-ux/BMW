@@ -150,6 +150,94 @@
 .garage-battle-outcome p{font-size:13px}
 .garage-battle-reset{margin-top:18px}
 .garage-game-local{margin-top:32px;padding-top:22px;border-top:1px solid #32465c}
+/* Daily income has one obvious action; the rules remain available on demand. */
+.garage-income{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:18px;margin-top:28px;padding:22px;border:1px solid #50788d;border-radius:18px;background:linear-gradient(120deg,#183749,#112334)}
+.garage-income h3{font-size:clamp(20px,3vw,27px);letter-spacing:-.025em;margin:8px 0}
+.garage-income p{font-size:12px;margin:0}
+.garage-income>button{max-width:260px}
+.garage-income details{grid-column:1/-1;border-top:1px solid #57798e66;padding-top:10px}
+.garage-game summary{min-height:36px;line-height:1.5;cursor:pointer;padding-block:8px;color:var(--game-ink)}
+.garage-game summary:focus-visible{outline:3px solid #94d4ff;outline-offset:4px;border-radius:4px}
+.garage-income details>p{padding-top:6px;max-width:840px}
+.garage-income ul,.garage-transactions ul{list-style:none;padding:0;margin:16px 0 0;display:grid;gap:0}
+.garage-income li,.garage-transactions li{display:flex;justify-content:space-between;gap:18px;align-items:center;padding:10px 0;border-top:1px solid #50728a44;font-size:12px}
+.garage-income li strong,.garage-transactions li strong{flex-shrink:0;font-variant-numeric:tabular-nums;color:var(--game-ink)}
+.garage-income li small,.garage-transactions li small{display:block;font-size:11px;color:var(--game-muted);margin-top:4px}
+.garage-club-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.garage-club-pass,.garage-style-intro{padding:clamp(20px,3vw,30px);border:1px solid #41617b;background:#122437;border-radius:20px}
+.garage-club-grid h3{font-size:clamp(25px,3vw,34px);line-height:1.12;margin:12px 0}
+.garage-club-grid p,.garage-club-grid li{font-size:13px;line-height:1.7}
+.garage-club-grid ul{padding-left:19px;margin:20px 0;display:grid;gap:11px;color:var(--game-ink)}
+.garage-club-price{font-size:18px!important;font-weight:650;color:#b7deff!important}
+.garage-club-pass>button,.garage-style-intro>button{width:100%;margin-top:12px}
+.garage-club-frames{display:flex;gap:10px;margin-top:16px}
+.garage-club-frames button{flex:1;min-height:44px;padding:10px 14px;border:1px solid #607f98;border-radius:10px;background:#0c1a29;color:#c4dbec}
+.garage-club-frames button[aria-pressed=true]{background:#dceeff;color:#102337;border-color:#dceeff}
+.garage-foil-sample{display:flex;flex-direction:column;justify-content:space-between;width:min(100%,205px);min-height:240px;margin:24px auto;padding:22px;border:2px solid transparent;border-radius:16px;background:linear-gradient(145deg,#263652,#101c2b) padding-box,linear-gradient(135deg,#98e5ef,#b8a1ed,#ffdda2,#92dccc) border-box;box-shadow:0 12px 30px #0003;color:#e4f2ff;transform:rotate(-3deg)}
+.garage-foil-sample>span{font-size:10px;letter-spacing:.27em}.garage-foil-sample>strong{font-size:35px;letter-spacing:-.04em;line-height:1.05}.garage-foil-sample>small{font-size:8px;letter-spacing:.1em;color:#c1d0e3}
+.garage-card-foil{border:2px solid transparent;background:linear-gradient(145deg,#21344c,#101c2b) padding-box,linear-gradient(135deg,#98e5ef,#b8a1ed,#ffdda2,#92dccc) border-box;box-shadow:0 4px 25px #a3d9ff1c}
+.garage-card-foil>.garage-rarity{color:#d3e9f7}
+.garage-club-ice .garage-game-card:has(.garage-owned){outline:2px solid #92ccef;outline-offset:3px;box-shadow:0 0 25px #7dd2ff20}
+.garage-club-ember .garage-game-card:has(.garage-owned){outline:2px solid #edb184;outline-offset:3px;box-shadow:0 0 25px #ffad6f20}
+.garage-card-copy>.garage-finish-buy{margin-top:8px;font-size:12px}
+.garage-transactions{margin-top:25px;border-top:1px solid #3e5771;padding-top:14px}
+/* Light mode uses the same hierarchy and readable surfaces throughout the game. */
+html[data-theme=light] .garage-game{--game-ink:#172c43;--game-muted:#506479;background:#f1f6fb;border-color:#b9cbdc;color:var(--game-ink)}
+html[data-theme=light] .garage-game .eyebrow,html[data-theme=light] .garage-game-header h2 em{color:#236293}
+html[data-theme=light] .garage-coin-wallet{background:linear-gradient(145deg,#dfedf8,#f8fbff);border-color:#a1bfd5}
+html[data-theme=light] .garage-coin-wallet strong{color:#163b59}
+html[data-theme=light] .garage-coin-wallet span{color:#4b6479}
+html[data-theme=light] .garage-coin-wallet progress{accent-color:#236293}
+html[data-theme=light] .garage-game-earn a{color:#205e8e;border-color:#b0c5d7;background:#fff}
+html[data-theme=light] .garage-game-earn a:hover{background:#dfecf7;border-color:#6994b6}
+html[data-theme=light] .garage-game-nav{background:#dfE9f3;border-color:#b8cbdb}
+html[data-theme=light] .garage-game-nav button{color:#405b72}
+html[data-theme=light] .garage-game-nav button:hover{background:#f8fcff;color:#183c5d}
+html[data-theme=light] .garage-game-nav button[aria-current=page],html[data-theme=light] .garage-game-button{background:#1e5b8a;color:#fff}
+html[data-theme=light] .garage-game-button:hover:not(:disabled){background:#174973;color:#fff}
+html[data-theme=light] .garage-game-button:disabled{background:#dce6ef;color:#5e7284;border-color:#c1d0dd;opacity:1}
+html[data-theme=light] .garage-game-secondary{background:#f8fbfe;color:#205a88;border-color:#9bb6cd}
+html[data-theme=light] .garage-game select{background:#fff;color:#183349;border-color:#9ab5ca}
+html[data-theme=light] .garage-game-notice{background:#e1edf8;border-color:#86adc9;color:#244d6b}
+html[data-theme=light] .garage-career-road li{background:#fff;border-color:#c1d1df}
+html[data-theme=light] .garage-career-road li.is-next{background:linear-gradient(115deg,#deedf8,#f7fbfe);border-color:#5893bf}
+html[data-theme=light] .garage-career-road li.is-locked{background:#edf3f8}
+html[data-theme=light] .garage-career-number,html[data-theme=light] .garage-career-copy>span{color:#2b638b}
+html[data-theme=light] .garage-career-copy h3 small{color:#506479}
+html[data-theme=light] .garage-owned{color:#216546!important}
+html[data-theme=light] .garage-game-card{--card-ink:#172c43;background:linear-gradient(150deg,#edf4fa,#fff 70%);color:#172c43;border-color:#adc1d5;box-shadow:0 7px 20px #2443610c}
+html[data-theme=light] .garage-game-card .garage-rarity{color:#3b617c}
+html[data-theme=light] .garage-card-copy>span,html[data-theme=light] .garage-card-copy dt{color:#516a80}
+html[data-theme=light] .garage-card-copy dd{color:#18344c}
+html[data-theme=light] .garage-card-copy>a{color:#1f5e8f}
+html[data-theme=light] .garage-game-card>img{background:radial-gradient(ellipse,#cadbea55,transparent 70%)}
+html[data-theme=light] .garage-card-foil{border:2px solid transparent;background:linear-gradient(145deg,#edf5fc,#fff) padding-box,linear-gradient(135deg,#4595a2,#8b69bc,#b58b3a,#3b997e) border-box}
+html[data-theme=light] .garage-pack-date,html[data-theme=light] .garage-game-title>strong,html[data-theme=light] .garage-game-title>label{color:#395d79}
+html[data-theme=light] .garage-pack-date small{color:#506479}
+html[data-theme=light] .garage-pack-sealed,html[data-theme=light] .garage-pack-result{background:radial-gradient(ellipse at 20% 35%,#d6e7f5,transparent 60%),#fff;border-color:#a2bed3}
+html[data-theme=light] .garage-pack-invite>a,html[data-theme=light] .garage-pack-promise{color:#346487}
+html[data-theme=light] .garage-pack-odds{border-color:#b7cbdb;color:#3d607b}
+html[data-theme=light] .garage-pack-odds summary{color:#244d6b}
+html[data-theme=light] .garage-pack-odds li{background:#e6eff7;border-color:#b8ccdd;color:#315975}
+html[data-theme=light] .garage-pack-win h3{color:#2c5779}
+html[data-theme=light] .garage-reel-stage,html[data-theme=light] .garage-reel-footer{background:#e5eef7;border-color:#b1c9dc}
+html[data-theme=light] .garage-reel-heading,html[data-theme=light] .garage-reel-heading>span:last-child{color:#315b7b}
+html[data-theme=light] .garage-reel-window{background:#edf5fb}
+html[data-theme=light] .garage-reel-card{background:#fff;border-color:#aac4d9;color:#1b3c56}
+html[data-theme=light] .garage-reel-card>span:last-child{color:#506b81}
+html[data-theme=light] .garage-reel-card .garage-rarity{color:#355c79}
+html[data-theme=light] .garage-battle-picks label,html[data-theme=light] .garage-battle-handover label,html[data-theme=light] .garage-battle-cards>div>span{color:#395d79}
+html[data-theme=light] .garage-battle-handover,html[data-theme=light] .garage-battle-outcome{background:#e0edf7;border-color:#8eb1cb}
+html[data-theme=light] .garage-battle-handover>span{color:#325d7d}
+html[data-theme=light] .garage-battle-hidden{background:repeating-linear-gradient(45deg,#deebf7,#deebf7 16px,#d4e5f3 16px,#d4e5f3 32px);border-color:#8caec8}
+html[data-theme=light] .garage-battle-hidden>span,html[data-theme=light] .garage-battle-hidden strong{color:#34607f}
+html[data-theme=light] .garage-battle-round{color:#2b5f86!important}
+html[data-theme=light] .garage-income,html[data-theme=light] .garage-club-pass,html[data-theme=light] .garage-style-intro{background:linear-gradient(120deg,#e1edf7,#fff);border-color:#a6bfd3}
+html[data-theme=light] .garage-income details,html[data-theme=light] .garage-income li,html[data-theme=light] .garage-transactions li,html[data-theme=light] .garage-transactions,html[data-theme=light] .garage-game-local{border-color:#b8ccdc}
+html[data-theme=light] .garage-club-price{color:#245a82!important}
+html[data-theme=light] .garage-club-frames button{background:#fff;color:#315f81;border-color:#a2bcd0}
+html[data-theme=light] .garage-club-frames button[aria-pressed=true]{background:#205e8d;color:#fff}
+@media(max-width:760px){.garage-income{grid-template-columns:1fr;gap:14px;padding:18px}.garage-income>button{max-width:none;width:100%}.garage-club-grid{grid-template-columns:1fr}.garage-club-pass,.garage-style-intro{padding:21px}.garage-club-grid h3{font-size:28px}.garage-income details{grid-column:1}.garage-foil-sample{min-height:210px;width:180px}.garage-income li>span,.garage-transactions li>span{overflow-wrap:anywhere}}
 @media(max-width:800px){
  .garage-pack-sealed{gap:20px;padding:28px 22px}
  .garage-pack-foil{width:151px;height:230px;padding:20px}

@@ -2,6 +2,7 @@ import {account} from './account-sync.js';
 import {convertedPower,convertedTorque} from './comparison.js';
 
 export const COIN_POLICY=Object.freeze({perAnswer:1,dailyLimit:20,packCost:8,dailyPacks:1});
+export const GARAGE_ECONOMY=Object.freeze({dailyCap:30,income:Object.freeze({common:1,uncommon:2,rare:3,epic:5,legendary:8}),foilCost:12,clubCost:35,clubDays:7,clubBonus:5});
 export const RARITIES=Object.freeze([{id:'common',name:'Common',weight:50,price:10},{id:'uncommon',name:'Uncommon',weight:28,price:20},{id:'rare',name:'Rare',weight:15,price:40},{id:'epic',name:'Epic',weight:6,price:75},{id:'legendary',name:'Legendary',weight:1,price:120}]);
 export const STARTER=Object.freeze({id:'career-isetta',name:'BMW Isetta 300',generation:'HERITAGE / 1956',car:'images/garage-isetta.svg',power:13,powerUnit:'hp',code:'Single-cylinder petrol',gameYear:1956,source:{label:'BMW Group Classic',url:'https://www.bmwgroup-classic.com/en/models/bmw-classics/product-description-page.ad-224-1.bmw-isetta-300-standard.html'}});
 export const CAREER=Object.freeze([{id:STARTER.id,title:'Small beginnings',cost:0},{id:'e20-2002-turbo',title:'Find your boost',cost:20},{id:'e30-m3',title:'The first M3',cost:35},{id:'e92',title:'Eight cylinders',cost:60},{id:'g80-m3-cs',title:'Your M destination',cost:120}]);
@@ -11,7 +12,7 @@ const identity=()=>account.getSnapshot?.().user?.id??null;
 export const garageGameKey=userId=>'apex-garage-game-v1:'+(userId==null?'guest':'account:'+encodeURIComponent(String(userId)));
 const legacyKey=userId=>'apex-collection-v1:'+(userId??'guest');
 const getStorage=provided=>{try{return provided??globalThis.localStorage;}catch{return null;}};
-export function emptyGarageGame(){return {version:1,coins:0,earned:0,spent:0,cards:{[STARTER.id]:{rarity:'common',source:'starter',day:null}},days:{},packs:[],history:[],legacyMigrated:false};}
+export function emptyGarageGame(){return {version:1,coins:0,earned:0,spent:0,cards:{[STARTER.id]:{rarity:'common',source:'starter',day:null}},days:{},packs:[],incomeDays:{},finishes:{},clubPass:null,clubFrame:'ice',history:[],legacyMigrated:false};}
 export function restoreGarageGame(value){
  const state=emptyGarageGame();if(!value||value.version!==1)return state;
  for(const key of ['coins','earned','spent'])if(integer(value[key]))state[key]=value[key];
@@ -21,7 +22,11 @@ export function restoreGarageGame(value){
   state.days[day]={answers,earned:Math.min(COIN_POLICY.dailyLimit,Object.values(answers).reduce((sum,n)=>sum+n,0))};
  }
  state.packs=[...new Set((Array.isArray(value.packs)?value.packs:[]).filter(validDay))].slice(-3660);
- state.history=(Array.isArray(value.history)?value.history:[]).filter(item=>item&&validDay(item.day)&&['earn','pack','purchase'].includes(item.kind)&&integer(item.amount)&&typeof item.label==='string').slice(-100);
+ if(value.incomeDays&&typeof value.incomeDays==='object')for(const [day,amount]of Object.entries(value.incomeDays).filter(([day,amount])=>validDay(day)&&integer(amount,GARAGE_ECONOMY.dailyCap+GARAGE_ECONOMY.clubBonus)&&amount>0).sort().slice(-3660))state.incomeDays[day]=amount;
+ if(value.finishes&&typeof value.finishes==='object')for(const [id,finish]of Object.entries(value.finishes).slice(0,1000))if(state.cards[id]&&finish==='foil')state.finishes[id]=finish;
+ const pass=value.clubPass;if(pass&&validDay(pass.start)&&validDay(pass.end)&&Date.parse(pass.end)-Date.parse(pass.start)===(GARAGE_ECONOMY.clubDays-1)*86400000)state.clubPass={start:pass.start,end:pass.end};
+ if(['ice','ember'].includes(value.clubFrame))state.clubFrame=value.clubFrame;
+ state.history=(Array.isArray(value.history)?value.history:[]).filter(item=>item&&validDay(item.day)&&['earn','pack','purchase','income','finish','club'].includes(item.kind)&&integer(item.amount)&&typeof item.label==='string').slice(-100);
  state.legacyMigrated=value.legacyMigrated===true;return state;
 }
 function load(options={}){
@@ -32,7 +37,13 @@ function load(options={}){
  if(!state.legacyMigrated){try{const legacy=JSON.parse(storage?.getItem(legacyKey(userId))||'null');for(const id of legacy?.cards||[])if(typeof id==='string'&&/^[a-z0-9-]{1,80}$/.test(id))state.cards[id]??={rarity:'common',source:'legacy',day:null};}catch{}state.legacyMigrated=true;}
  return {state,userId,storage,key};
 }
-function save(loaded){try{if(!loaded.storage)throw Error();loaded.storage.setItem(loaded.key,JSON.stringify(loaded.state));globalThis.window?.dispatchEvent(new CustomEvent('apex:garagegame',{detail:{key:loaded.key,coins:loaded.state.coins}}));return true;}catch{return false;}}
+function save(loaded){
+ try{if(!loaded.storage)throw Error();loaded.storage.setItem(loaded.key,JSON.stringify(loaded.state));}catch{return false;}
+ // Persistence is the receipt. A listener or an unavailable event API must not
+ // report a failed purchase after the browser already saved its coin debit.
+ try{globalThis.window?.dispatchEvent(new CustomEvent('apex:garagegame',{detail:{key:loaded.key,coins:loaded.state.coins}}));}catch{}
+ return true;
+}
 export function getGarageGame(options={}){return load(options).state;}
 export function migrateLegacyGameCards(ids,catalog,options={}){const loaded=load(options),valid=new Set(catalog.map(car=>car.id));let changed=false;for(const id of ids)if(valid.has(id)&&!loaded.state.cards[id]){loaded.state.cards[id]={rarity:cardRarity(catalog.find(car=>car.id===id)),source:'legacy',day:null};changed=true;}return !changed||save(loaded);}
 export function validateGarageGameBackup(value,catalog){
@@ -43,6 +54,11 @@ export function mergeGarageGameBackup(value,catalog,options={}){
  const incoming=validateGarageGameBackup(value,catalog),loaded=load(options),current=loaded.state;
  current.earned=Math.max(current.earned,incoming.earned);current.spent=Math.max(current.spent,incoming.spent);current.coins=Math.max(0,current.earned-current.spent);
  current.cards={...incoming.cards,...current.cards};current.packs=[...new Set([...current.packs,...incoming.packs])].sort();
+ // Claim receipts and purchased cosmetics survive older backup imports. Union
+ // receipts without adding their amount to the monotonic lifetime coin totals.
+ for(const [day,amount]of Object.entries(incoming.incomeDays))current.incomeDays[day]=Math.max(current.incomeDays[day]||0,amount);
+ current.finishes={...incoming.finishes,...current.finishes};
+ if(incoming.clubPass&&(!current.clubPass||incoming.clubPass.end>current.clubPass.end)){current.clubPass=incoming.clubPass;current.clubFrame=incoming.clubFrame;}
  for(const [day,record]of Object.entries(incoming.days)){const previous=current.days[day];if(!previous){current.days[day]=record;continue;}previous.answers={...record.answers,...previous.answers};previous.earned=Math.min(COIN_POLICY.dailyLimit,Object.values(previous.answers).reduce((sum,n)=>sum+n,0));}
  current.history=[...incoming.history,...current.history].filter((item,index,all)=>all.findIndex(other=>JSON.stringify(other)===JSON.stringify(item))===index).slice(-100);
  loaded.state=restoreGarageGame(current);return save(loaded);
@@ -68,6 +84,42 @@ export function cardRarity(model){
  if(hp>=500)return 'epic';if(hp>=350||model.generation?.startsWith('M SERIES'))return 'rare';if(hp>=200)return 'uncommon';return 'common';
 }
 export const cardPrice=model=>CAREER.find(step=>step.id===model.id)?.cost??RARITIES.find(r=>r.id===cardRarity(model)).price;
+export function garageClubActive(state,day=utcDay()){return validDay(day)&&Boolean(state.clubPass&&state.clubPass.start<=day&&state.clubPass.end>=day);}
+export function garageIncome(catalog,state,day=utcDay()){
+ const rows=garageCards(catalog).filter(card=>state.cards[card.id]).map(card=>({id:card.id,name:card.name,rarity:cardRarity(card),amount:GARAGE_ECONOMY.income[cardRarity(card)]}));
+ const base=Math.min(GARAGE_ECONOMY.dailyCap,rows.reduce((sum,row)=>sum+row.amount,0)),bonus=garageClubActive(state,day)?GARAGE_ECONOMY.clubBonus:0;
+ return {rows,base,bonus,total:base+bonus,claimed:state.incomeDays?.[day]||0};
+}
+export function claimGarageIncome(catalog,options={}){
+ const loaded=load(options),{state}=loaded,day=options.day||utcDay();
+ if(!validDay(day))return {ok:false,message:'The income date is invalid.'};
+ // A single whole-garage receipt prevents buying a car after a claim from
+ // creating a second payout. A new car contributes on the next UTC day.
+ if(state.incomeDays[day])return {ok:false,message:'Today’s garage income is already collected. Come back at 00:00 UTC.'};
+ const income=garageIncome(catalog,state,day);if(!income.total)return {ok:false,message:'Collect a car to earn garage income.'};
+ state.coins+=income.total;state.earned+=income.total;state.incomeDays[day]=income.total;state.history.push({kind:'income',day,amount:income.total,label:'Daily garage income'});state.history=state.history.slice(-100);
+ return save(loaded)?{ok:true,amount:income.total,state}:{ok:false,message:'This browser could not save your income. Try again; nothing was collected.'};
+}
+export function buyGarageFinish(id,catalog,options={}){
+ const loaded=load(options),{state}=loaded,day=options.day||utcDay();
+ if(!validDay(day)||!garageCards(catalog).some(card=>card.id===id)||!state.cards[id])return {ok:false,message:'Collect this car before adding a finish.'};
+ if(state.finishes[id])return {ok:false,message:'This card already has its permanent foil finish.'};
+ if(state.coins<GARAGE_ECONOMY.foilCost)return {ok:false,message:'Earn 12 coins for a permanent foil finish.'};
+ state.coins-=GARAGE_ECONOMY.foilCost;state.spent+=GARAGE_ECONOMY.foilCost;state.finishes[id]='foil';state.history.push({kind:'finish',day,amount:GARAGE_ECONOMY.foilCost,label:'Permanent foil · '+id});state.history=state.history.slice(-100);
+ return save(loaded)?{ok:true,state}:{ok:false,message:'This browser could not save the finish. Your coins were not spent.'};
+}
+export function buyGarageClub(options={}){
+ const loaded=load(options),{state}=loaded,day=options.day||utcDay();if(!validDay(day))return {ok:false,message:'The pass date is invalid.'};
+ if(garageClubActive(state,day))return {ok:false,message:'Your Club pass is already active. It does not renew automatically.'};
+ if(state.coins<GARAGE_ECONOMY.clubCost)return {ok:false,message:'Save 35 coins for a seven-day Club pass.'};
+ const end=new Date(Date.parse(day+'T00:00:00Z')+(GARAGE_ECONOMY.clubDays-1)*86400000).toISOString().slice(0,10);
+ state.coins-=GARAGE_ECONOMY.clubCost;state.spent+=GARAGE_ECONOMY.clubCost;state.clubPass={start:day,end};state.history.push({kind:'club',day,amount:GARAGE_ECONOMY.clubCost,label:'Seven-day Club pass'});state.history=state.history.slice(-100);
+ return save(loaded)?{ok:true,state}:{ok:false,message:'This browser could not save the pass. Your coins were not spent.'};
+}
+export function setGarageClubFrame(frame,options={}){
+ const loaded=load(options);if(!['ice','ember'].includes(frame)||!garageClubActive(loaded.state,options.day||utcDay()))return false;
+ loaded.state.clubFrame=frame;return save(loaded);
+}
 export function packOdds(catalog,state){const pool=catalog.filter(model=>!state.cards[model.id]),available=RARITIES.filter(r=>pool.some(model=>cardRarity(model)===r.id)),total=available.reduce((sum,r)=>sum+r.weight,0);return available.map(r=>({...r,percent:r.weight/total*100}));}
 // The paid draw is the receipt. Replaying its presentation never draws again.
 export function savedDailyPack(catalog,state,day=utcDay()){

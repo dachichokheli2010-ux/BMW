@@ -1,0 +1,90 @@
+/* Shared palette and a small, persistent sun-to-moon theme control. */
+:root,
+html[data-theme="dark"] {
+  --bg: #10151c;
+  --surface: #18212b;
+  --surface-raised: #222e3b;
+  --line: #344252;
+  --muted: #acb8c8;
+  --white: #f4f7fb;
+  --accent: #ff956e;
+  --blue: #95c7ff;
+  --glass-fill: rgba(20, 29, 41, .86);
+  --glass-edge: rgba(188, 209, 235, .25);
+  --glass-selected: rgba(179, 212, 255, .15);
+}
+html[data-theme="light"] {
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --surface-raised: #e9eef3;
+  --line: #c8d2de;
+  --muted: #526276;
+  --white: #172435;
+  --accent: #a03f1c;
+  --blue: #205fa1;
+  --glass-fill: rgba(255, 255, 255, .91);
+  --glass-edge: rgba(129, 151, 178, .35);
+  --glass-selected: rgba(28, 81, 145, .09);
+}
+html[data-theme="dark"] header.site-header.glass-scrolled { --glass-fill: rgba(20, 29, 41, .95); }
+html[data-theme="light"] header.site-header.glass-scrolled { --glass-fill: rgba(255, 255, 255, .97); border-color: var(--line) !important; }
+html[data-theme="light"] header.site-header > nav > a { color: #526276; }
+html[data-theme="dark"] header.site-header > nav > a { color: #bfcbdb; }
+html[data-theme] header.site-header > nav > a:hover,
+html[data-theme] header.site-header > nav > a[aria-current="page"] { color: var(--white); }
+body { transition: background-color .24s ease, color .24s ease; }
+.collection-search, .compare-tray, dialog, .tool-card, .welcome-section, .reference-grid > a {
+  transition: background-color .24s ease, border-color .24s ease, color .24s ease;
+}
+html[data-theme="light"] .popular-heading > .button-link { color: var(--white); }
+html[data-theme="light"] .popular-heading > .button-link:hover { color: var(--accent); }
+html[data-theme="light"] .button-primary { background: #f17c50; color: #151515; }
+html[data-theme="light"] .collection-selects select { background-color: var(--surface); }
+html[data-theme="light"] input::placeholder, html[data-theme="light"] textarea::placeholder { color: var(--muted); opacity: 1; }
+html[data-theme="light"] dialog::backdrop { background: rgba(20, 35, 55, .58); }
+html[data-theme="dark"] dialog::backdrop { background: rgba(0, 6, 14, .74); }
+
+#theme-toggle {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  min-height: 42px;
+  padding: 9px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--white);
+  overflow: hidden;
+  transition: background-color .24s ease, color .24s ease, border-color .24s ease;
+}
+#theme-toggle:hover { background: var(--surface-raised); color: var(--accent); border-color: var(--muted); }
+#theme-toggle:active .theme-orbit { transform: scale(.84); }
+#theme-toggle .theme-orbit { width: 22px; height: 22px; overflow: visible; transition: transform .2s ease; }
+#theme-toggle .theme-core { transform-origin: 12px 12px; transform: scale(.72); transition: transform .36s cubic-bezier(.2,.7,.2,1); }
+#theme-toggle .theme-rays { transform-origin: 12px 12px; opacity: 1; transition: transform .36s ease, opacity .2s ease; }
+#theme-toggle .theme-eclipse { transform: translate(0,0); transition: transform .36s cubic-bezier(.2,.7,.2,1); }
+#theme-toggle[data-effective="dark"] .theme-core { transform: scale(1); }
+#theme-toggle[data-effective="dark"] .theme-rays { transform: rotate(65deg) scale(.5); opacity: 0; }
+#theme-toggle[data-effective="dark"] .theme-eclipse { transform: translate(-11px,11px); }
+.mobile-navigation [data-menu-theme] { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.mobile-navigation .theme-device-choice {
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--white);
+  font-size: 12px;
+  text-align: left;
+}
+.mobile-navigation .theme-device-choice[aria-pressed="true"] { border-color: var(--blue); background: var(--glass-selected); color: var(--blue); }
+@media (prefers-reduced-motion: reduce) {
+  body, .collection-search, .compare-tray, dialog, .tool-card, .welcome-section, .reference-grid > a,
+  #theme-toggle, #theme-toggle .theme-orbit, #theme-toggle .theme-core, #theme-toggle .theme-rays, #theme-toggle .theme-eclipse {
+    transition: none;
+  }
+  #theme-toggle:active .theme-orbit { transform: none; }
+}
