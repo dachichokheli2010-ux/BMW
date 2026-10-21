@@ -5,6 +5,7 @@ public/images/**/_candidates/**
 public/images/next/hero.webp
 .env
 .env.*
+!.env.example
 .data/**
 *.sqlite
 *.sqlite-wal
