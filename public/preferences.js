@@ -9,8 +9,10 @@ const savedLanguage = readPreference(LANGUAGE_KEY);
 let language = languages.includes(savedLanguage) ? savedLanguage : 'en';
 // Retire the previous German preference when the supported languages change.
 if (savedLanguage && !languages.includes(savedLanguage)) writePreference(LANGUAGE_KEY, 'en');
-let theme = ['light', 'dark', 'system'].includes(readPreference(THEME_KEY)) ? readPreference(THEME_KEY) : 'system';
-const media = typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: dark)') : null;
+const savedTheme = readPreference(THEME_KEY);
+let theme = ['light', 'dark'].includes(savedTheme) ? savedTheme : 'dark';
+// Retire device-following and invalid preferences to a stable dark default.
+if (savedTheme !== theme) writePreference(THEME_KEY, theme);
 
 const copy = [
   ["Models","მოდელები","Модели"],
@@ -340,11 +342,8 @@ const copy = [
   ["Image credits & accuracy","ფოტოების ავტორები და სიზუსტე","Авторы фотографий и точность"],
   ["Light theme","ღია თემა","Светлая тема"],
   ["Dark theme","მუქი თემა","Тёмная тема"],
-  ["System theme","სისტემის თემა","Системная тема"],
   ["Switch to light theme","ღია თემაზე გადართვა","Включить светлую тему"],
   ["Switch to dark theme","მუქ თემაზე გადართვა","Включить тёмную тему"],
-  ["Use system theme","სისტემის თემის გამოყენება","Использовать системную тему"],
-  ["Shift-click to use your device theme","სისტემის თემისთვის დააჭირეთ Shift-თან ერთად","Нажмите с Shift для темы устройства"],
   ['Refine your search', 'დააზუსტეთ ძიება', 'Уточните поиск'],
   ['Powertrain', 'ამძრავის ტიპი', 'Силовая установка'],
   ['All powertrains', 'ყველა ტიპის ამძრავი', 'Все силовые установки'],
@@ -766,7 +765,7 @@ function updateThemeButton() {
   if (!button) return;
   const effective = document.documentElement.dataset.theme;
   const next = effective === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
-  const current = theme === 'system' ? 'System theme' : theme === 'light' ? 'Light theme' : 'Dark theme';
+  const current = theme === 'light' ? 'Light theme' : 'Dark theme';
   // Keep this SVG mounted so CSS can animate the same sun into a crescent.
   if (!button.querySelector('.theme-orbit')) {
     button.innerHTML = '<svg class="theme-orbit" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><defs><mask id="motron-theme-eclipse" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><rect width="24" height="24" fill="white"/><circle class="theme-eclipse" cx="28" cy="-4" r="7" fill="black"/></mask></defs><g mask="url(#motron-theme-eclipse)"><circle class="theme-core" cx="12" cy="12" r="7" fill="currentColor"/></g><path class="theme-rays" d="M12 1v2m0 18v2M1 12h2m18 0h2M4.2 4.2l1.4 1.4m12.8 12.8 1.4 1.4M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
@@ -775,30 +774,14 @@ function updateThemeButton() {
   button.dataset.effective = effective;
   button.setAttribute('aria-pressed', String(effective === 'dark'));
   button.setAttribute('aria-label', `${t(current)}. ${t(next)}`);
-  button.setAttribute('aria-description', t('Shift-click to use your device theme'));
-  button.title = `${t(current)} · ${t(next)} · ${t('Shift-click to use your device theme')}`;
-  // The mobile menu moves this same control into its Appearance section.
-  // Offer a visible device-following choice there as well as the desktop shortcut.
-  const menu = button.closest('[data-menu-theme]');
-  if (menu && !menu.querySelector('[data-use-system-theme]')) {
-    const system = document.createElement('button');
-    system.type = 'button';
-    system.className = 'theme-device-choice';
-    system.setAttribute('data-use-system-theme', '');
-    system.addEventListener('click', () => setTheme('system'));
-    menu.append(system);
-  }
-  for (const system of document.querySelectorAll('[data-use-system-theme]')) {
-    system.textContent = t('Use system theme');
-    system.setAttribute('aria-pressed', String(theme === 'system'));
-  }
+  button.title = `${t(current)} · ${t(next)}`;
 }
 
 export function setTheme(value, persist = true) {
-  if (!['light', 'dark', 'system'].includes(value)) return;
+  if (!['light', 'dark'].includes(value)) return;
   theme = value;
   if (persist) writePreference(THEME_KEY, theme);
-  const effective = value === 'system' ? (media?.matches ? 'dark' : 'light') : value;
+  const effective = value;
   // Apply synchronously. A second click must read the theme actually on screen,
   // even while the previous icon/surface transition is still running.
   document.documentElement.dataset.theme = effective;
@@ -813,7 +796,7 @@ function init() {
   initialized = true;
   setTheme(theme, false);
   document.getElementById('language-select')?.addEventListener('change', event => setLanguage(event.target.value));
-  document.getElementById('theme-toggle')?.addEventListener('click', event => setTheme(event.shiftKey ? 'system' : document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
+  document.getElementById('theme-toggle')?.addEventListener('click', () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
   observer = new MutationObserver(records => {
     // Translate only the changed nodes. The live RPM display updates every frame.
     observer.disconnect();
@@ -834,13 +817,10 @@ function init() {
     observe();
   });
   translatePage();
-  const changed = () => { if (theme === 'system') setTheme('system', false); };
-  if (media?.addEventListener) media.addEventListener('change', changed);
-  else media?.addListener?.(changed);
   window.addEventListener('storage', event => {
     if (event.key === LANGUAGE_KEY) setLanguage(languages.includes(event.newValue) ? event.newValue : 'en', false);
-    if (event.key === THEME_KEY) setTheme(['light', 'dark', 'system'].includes(event.newValue) ? event.newValue : 'system', false);
-    if (event.key === null) { setLanguage('en', false); setTheme('system', false); }
+    if (event.key === THEME_KEY) setTheme(['light', 'dark'].includes(event.newValue) ? event.newValue : 'dark', false);
+    if (event.key === null) { setLanguage('en', false); setTheme('dark', false); }
   });
 }
 

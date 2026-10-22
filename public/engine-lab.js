@@ -40,6 +40,18 @@ const FLOW = {
   oil: { color: '#e6ad63', text: 'Lubrication: sump and pump → crank bearings, cams and turbo bearings → return to sump.' },
   fuel: { color: '#f2ca71', text: 'Fuel: supply → high-pressure rails → direct injectors → combustion chambers.' },
 };
+export const ENGINE_LAB_TOURS=Object.freeze([
+  {id:'motion',name:'From movement to power',intro:'Follow the mechanical chain, one component at a time.',steps:[{part:'pistons',flow:'none',title:'Start inside a cylinder'},{part:'rods',flow:'none',title:'Follow the connecting rod'},{part:'crankshaft',flow:'none',title:'Turn movement into rotation'},{part:'camshafts',flow:'none',title:'Keep the valves in time'}]},
+  {id:'boost',name:'Follow the air',intro:'Trace the intake and exhaust paths of this hot-V teaching model.',steps:[{part:'intake',flow:'intake',title:'Air enters from the outside'},{part:'turbos',flow:'intake',title:'The compressor raises air pressure'},{part:'chargecoolers',flow:'intake',title:'Cool the compressed air'},{part:'exhaust',flow:'exhaust',title:'Follow exhaust toward the turbines'}]},
+  {id:'care',name:'Heat and lubrication',intro:'See how supporting systems keep the moving parts working.',steps:[{part:'cooling',flow:'cooling',title:'Carry heat away'},{part:'lubrication',flow:'oil',title:'Supply the loaded surfaces'}]},
+]);
+export const ENGINE_LAB_STROKES=Object.freeze([
+  {name:'Intake stroke',movement:'Piston moves down',text:'The intake valve is open. The piston moves down and draws air into the cylinder. Fuel delivery depends on the injection system.'},
+  {name:'Compression stroke',movement:'Piston moves up',text:'Both valves are closed. The piston moves up and compresses the charge before ignition near the end of the stroke.'},
+  {name:'Power stroke',movement:'Piston moves down',text:'After spark ignition, expanding gas pushes the piston down. The connecting rod transfers this force to the crankshaft.'},
+  {name:'Exhaust stroke',movement:'Piston moves up',text:'The exhaust valve is open. The piston moves up and pushes spent gas out. The cycle then repeats.'},
+]);
+const strokeDiagram='<svg viewBox="0 0 180 140" aria-hidden="true"><path class="el-cylinder" d="M45 26V112M135 26V112M45 26h90"/><path class="el-valve el-inlet" d="M64 8v25m-9 0h18"/><path class="el-valve el-outlet" d="M116 8v25m-9 0h18"/><path class="el-charge" d="M73 50h34v30H73Z"/><g class="el-piston"><rect x="49" y="78" width="82" height="15" rx="3"/><path d="M90 93v28"/></g><path class="el-flow-arrow el-air-arrow" d="M25 17h23m-6-6 6 6-6 6"/><path class="el-flow-arrow el-exhaust-arrow" d="M137 17h23m-6-6 6 6-6 6"/></svg>';
 let sequence = 0;
 
 /** Mount an independent, accessible S63 teaching explorer. Call destroy() on unmount. */
@@ -57,24 +69,28 @@ export function mountEngineLab(container, options = {}) {
   const root = document.createElement('section');
   root.className = 'engine-lab'; root.setAttribute('aria-label', 'F10 M5 S63 engine explorer');
   root.innerHTML = `
-    <div class="el-intro"><div><span class="el-eyebrow">ENGINEERING, REVEALED</span><h2>Inside the <em>S63 V8.</em></h2><p>F10 M5 · 90° V8 · hot-V twin turbo</p></div><span class="el-model-tag">EDUCATIONAL 3D MODEL</span></div>
+    <div class="el-intro"><div><span class="el-eyebrow">ENGINEERING, REVEALED</span><h1>Inside the <em>S63 V8.</em></h1><p>F10 M5 · 90° V8 · hot-V twin turbo</p></div><span class="el-model-tag">EDUCATIONAL 3D MODEL</span></div>
     <p class="el-disclosure">An original, simplified representation of the F10 M5 S63Tü architecture. Geometry, locations, fluid routes and motion are illustrative; this is not factory CAD or a repair guide.</p>
+    <section class="el-learning" aria-labelledby="${uid}-guided"><div class="el-learning-heading"><div><span class="el-eyebrow">A GOOD PLACE TO START</span><h3 id="${uid}-guided">Follow a story through the engine.</h3><p>Choose a trail. Each step selects a component and its connected system.</p></div><a href="/engines/s63">S63 family & sources ↗</a></div><div class="el-tour-choices" role="group" aria-label="Guided engine tours">${ENGINE_LAB_TOURS.map((tour,index)=>`<button type="button" data-tour="${tour.id}" aria-pressed="false"><span>0${index+1} / ${tour.steps.length} STEPS</span><strong>${tour.name}</strong></button>`).join('')}</div><div class="el-tour-current" hidden><div><span class="el-eyebrow el-tour-progress" role="status" aria-live="polite"></span><h4 class="el-tour-title"></h4><p class="el-tour-copy"></p></div><div class="el-tour-navigation"><button type="button" data-tour-prev>← Previous</button><button type="button" data-tour-next>Next step →</button><button type="button" data-tour-exit>Explore freely</button></div></div></section>
     <div class="el-toolbar" role="group" aria-label="Engine view controls">
       <button type="button" data-action="explode" aria-pressed="false">Explode view</button><button type="button" data-action="xray" aria-pressed="true">X-ray</button><button type="button" data-action="animate" aria-pressed="false">Animate internals</button><button type="button" data-action="cycle" aria-pressed="false">Four-stroke cycle</button><button type="button" data-action="reset">Reset view</button>
       <div class="el-camera-controls" role="group" aria-label="Camera controls"><button type="button" data-camera="left" aria-label="Rotate view left" title="Rotate view left">←</button><button type="button" data-camera="right" aria-label="Rotate view right" title="Rotate view right">→</button><button type="button" data-camera="up" aria-label="Rotate view up" title="Rotate view up">↑</button><button type="button" data-camera="down" aria-label="Rotate view down" title="Rotate view down">↓</button><button type="button" data-camera="zoom-in" aria-label="Zoom in" title="Zoom in">+</button><button type="button" data-camera="zoom-out" aria-label="Zoom out" title="Zoom out">−</button><button type="button" data-camera="reset" aria-label="Reset camera" title="Reset camera">⌂</button></div>
       <label class="el-speed" for="${uid}-speed">Motion speed <input id="${uid}-speed" type="range" min="0.2" max="1" value="0.45" step="0.05" aria-label="Slowed educational animation speed"></label>
     </div>
     <p class="el-cycle-status" role="status" aria-live="polite" aria-atomic="true">Cycle: ready. Press the button to start.</p>
+    <section class="el-cycle-lesson" aria-label="Understand the four-stroke cycle"><div class="el-stroke-diagram">${strokeDiagram}<span class="el-stroke-movement"></span></div><div class="el-stroke-content"><span class="el-eyebrow">ONE CYLINDER · FOUR STROKES</span><h3 class="el-stroke-name"></h3><p class="el-stroke-explanation"></p><div class="el-stroke-choices" role="group" aria-label="Choose a four-stroke step">${ENGINE_LAB_STROKES.map((stroke,index)=>`<button type="button" data-stroke="${index}" aria-pressed="${index===0}">${index+1}. ${stroke.name.replace(' stroke','')}</button>`).join('')}</div><small>Conceptual single-cylinder diagram. Valve timing, ignition and motion in the 3D model are illustrative, not a factory firing sequence.</small></div></section>
     <div class="el-workspace"><div class="el-stage"><div class="el-viewport" tabindex="0" role="img" aria-label="Interactive engine schematic. Drag or use camera buttons to orbit; use zoom buttons or plus and minus keys to zoom. Press zero to reset. Use the component buttons to explore every part."></div><div class="el-hotspots" role="group" aria-label="Engine component hotspots"></div><div class="el-view-label"><span class="el-live-dot"></span><span>90° V8 / 8 CYLINDERS</span><span class="el-render-status">STARTING VIEWER</span></div><div class="el-viewport-note">Drag or use camera buttons to orbit · zoom buttons or + / − to zoom<br>Click to inspect · press 0 to reset</div><p class="el-fallback" hidden>3D rendering is unavailable on this device. Explore every component and its connections using the list and details below.</p></div>
     <aside class="el-inspector" aria-label="Component information"><span class="el-eyebrow">COMPONENT INSPECTOR</span><h3 class="el-part-name"></h3><p class="el-location"></p><p class="el-description"></p><section class="el-model-specific"><span>Model-specific details · F10 M5 / S63Tü</span><p></p><a href="${ENGINE_LAB_SOURCE}" target="_blank" rel="noopener noreferrer">BMW PressClub source<span aria-hidden="true">↗</span></a></section><details class="el-technical"><summary>Engineering notes</summary><p></p></details><div class="el-connections"><span>CONNECTED TO</span><div></div></div><button type="button" class="el-focus" data-action="focus">Zoom to component ↗</button><p class="el-select-status" role="status" aria-live="polite"></p></aside></div>
     <div class="el-flow-controls"><label for="${uid}-flow">Trace a system</label><select id="${uid}-flow" aria-label="Show an educational fluid flow path"><option value="none">No flow overlay</option><option value="intake">Intake air</option><option value="exhaust">Exhaust gas</option><option value="cooling">Cooling circuit</option><option value="oil">Lubrication circuit</option><option value="fuel">Fuel injection</option></select><p class="el-flow-note" role="status">Select a flow to follow its path. All routes are conceptual.</p></div>
     <div class="el-parts-heading"><label for="${uid}-search">Find a component</label><input id="${uid}-search" type="search" placeholder="Try “turbo”, “valves” or “oil”…" autocomplete="off"><span class="el-search-count" role="status"></span></div><div class="el-parts" role="group" aria-label="Engine components"></div><p class="el-no-parts" hidden>No matching component. Try a part name or system.</p>
     <footer class="el-footer"><span>Slowed motion · illustrative valve timing and firing sequence</span><a href="https://www.press.bmwgroup.com/usa/article/detail/T0114798EN_US/introducing-the-all-new-5th-generation-bmw-m5" target="_blank" rel="noopener noreferrer">Architecture source: BMW PressClub ↗</a></footer>`;
+  // Keep the actual engine central; the optional stroke lesson follows the viewer.
+  root.querySelector('.el-workspace').after(root.querySelector('.el-cycle-lesson'));
   container.append(root);
   const $ = selector => root.querySelector(selector);
   const listeners = [];
   function listen(el, event, fn, opts) { el.addEventListener(event, fn, opts); listeners.push(() => el.removeEventListener(event, fn, opts)); }
-  const state = { selected: 'turbos', explode: false, xray: true, running: false, cycle: false, speed: .45, flow: 'none' };
+  const state = { selected: 'turbos', explode: false, xray: true, running: false, cycle: false, speed: .45, flow: 'none',tour:null,tourStep:0,stroke:0 };
   const partMap = new Map(ENGINE_LAB_PARTS.map(part => [part.id, part]));
   const partButtons = new Map();
   for (const part of ENGINE_LAB_PARTS) {
@@ -113,8 +129,9 @@ export function mountEngineLab(container, options = {}) {
     controls.update(); requestRender();
   }
 
-  function selectPart(id, focus = true) {
+  function selectPart(id, focus = true, fromTour = false) {
     const part = partMap.get(id); if (!part || destroyed) return false;
+    if(!fromTour&&state.tour)exitTour();
     state.selected = id;
     $('.el-part-name').textContent = part.name; $('.el-location').textContent = part.area;
     $('.el-description').textContent = part.text; $('.el-technical p').textContent = part.detail;
@@ -145,12 +162,44 @@ export function mountEngineLab(container, options = {}) {
     const direction = camera.position.clone().sub(controls.target).normalize();
     cameraGoal = targetGoal.clone().addScaledVector(direction, state.selected === 'block' ? 5.1 : 3.5);
   }
+  function exitTour(){
+    state.tour=null;$('.el-tour-current').hidden=true;
+    for(const button of root.querySelectorAll('[data-tour]'))button.setAttribute('aria-pressed','false');
+  }
+  function selectTour(id,index=0){
+    const tour=ENGINE_LAB_TOURS.find(item=>item.id===id);if(!tour||destroyed)return false;
+    const stepIndex=Math.max(0,Math.min(tour.steps.length-1,Number.isInteger(index)?index:0)),step=tour.steps[stepIndex];
+    state.tour=id;state.tourStep=stepIndex;state.explode=false;state.xray=true;state.flow=step.flow;
+    $('[data-action="explode"]').setAttribute('aria-pressed','false');$('[data-action="xray"]').setAttribute('aria-pressed',String(!root.classList.contains('el-no-webgl')));
+    $(`#${uid}-flow`).value=step.flow;$('.el-flow-note').textContent=FLOW[step.flow]?.text||'Select a flow to follow its path. All routes are conceptual.';
+    $(`#${uid}-search`).value='';filterParts('');
+    $('.el-tour-current').hidden=false;$('.el-tour-progress').textContent=`Step ${stepIndex+1} of ${tour.steps.length}`;
+    $('.el-tour-title').textContent=step.title;$('.el-tour-copy').textContent=tour.intro;
+    $('[data-tour-prev]').disabled=stepIndex===0;$('[data-tour-next]').disabled=stepIndex===tour.steps.length-1;
+    for(const button of root.querySelectorAll('[data-tour]'))button.setAttribute('aria-pressed',String(button.dataset.tour===id));
+    selectPart(step.part,true,true);requestRender();return true;
+  }
+  function updateStrokeLesson(index){
+    const stroke=ENGINE_LAB_STROKES[index];if(!stroke)return false;
+    state.stroke=index;root.dataset.stroke=String(index);
+    $('.el-stroke-name').textContent=stroke.name;$('.el-stroke-explanation').textContent=stroke.text;$('.el-stroke-movement').textContent=stroke.movement;
+    for(const button of root.querySelectorAll('[data-stroke]'))button.setAttribute('aria-pressed',String(Number(button.dataset.stroke)===index));
+    return true;
+  }
+  function stepStroke(index){
+    if(destroyed||!Number.isInteger(index)||index<0||index>3)return false;
+    state.running=false;state.cycle=false;phase=(index+.5)*Math.PI;lastCycleStep=index;
+    $('[data-action="animate"]').setAttribute('aria-pressed','false');$('[data-action="animate"]').textContent='Animate internals';
+    $('[data-action="cycle"]').setAttribute('aria-pressed','false');$('[data-action="cycle"]').textContent='Four-stroke cycle';
+    updateStrokeLesson(index);$('.el-cycle-status').textContent=ENGINE_LAB_STROKES[index].name;requestRender();return true;
+  }
   function reset() {
     state.explode = false; state.xray = true; state.running = false; state.cycle = false; state.flow = 'none'; state.speed = .45; phase = 0;
-    for (const key of ['explode', 'xray', 'animate']) $(`[data-action="${key}"]`).setAttribute('aria-pressed', String(key === 'xray'));
+    for (const key of ['explode', 'xray', 'animate']) {const button=$(`[data-action="${key}"]`);button.setAttribute('aria-pressed', String(key === 'xray'&&!button.disabled));}
     $('[data-action="animate"]').textContent = 'Animate internals'; $(`#${uid}-flow`).value = 'none'; $(`#${uid}-speed`).value = '.45';
     $('[data-action="cycle"]').setAttribute('aria-pressed','false');$('[data-action="cycle"]').textContent='Four-stroke cycle';
     $('.el-cycle-status').textContent='Cycle: ready. Press the button to start.';
+    exitTour();updateStrokeLesson(0);lastCycleStep=-1;
     $('.el-flow-note').textContent = 'Select a flow to follow its path. All routes are conceptual.';
     $(`#${uid}-search`).value = ''; filterParts('');
     if (camera) { cameraGoal = new T.Vector3(5.8, 4.5, -6); targetGoal = new T.Vector3(0, 1, 0); }
@@ -167,6 +216,11 @@ export function mountEngineLab(container, options = {}) {
     if (words.length && first && (!partButtons.get(state.selected) || partButtons.get(state.selected).hidden)) selectPart(first, false);
   }
   listen(root, 'click', event => {
+    const tour=event.target.closest('[data-tour]');if(tour){selectTour(tour.dataset.tour);return;}
+    const stroke=event.target.closest('button[data-stroke]');if(stroke){stepStroke(Number(stroke.dataset.stroke));return;}
+    if(event.target.closest('[data-tour-prev]')){selectTour(state.tour,state.tourStep-1);return;}
+    if(event.target.closest('[data-tour-next]')){selectTour(state.tour,state.tourStep+1);return;}
+    if(event.target.closest('[data-tour-exit]')){exitTour();return;}
     const partButton = event.target.closest('button[data-part]'); if (partButton && root.contains(partButton)) { selectPart(partButton.dataset.part); return; }
     const cameraControl = event.target.closest('[data-camera]'); if (cameraControl) { orbitCamera(cameraControl.dataset.camera); return; }
     const action = event.target.closest('[data-action]')?.dataset.action;
@@ -459,7 +513,7 @@ export function mountEngineLab(container, options = {}) {
   let lastCycleStep=-1;
   function updateCycleStatus(){
     const current=Math.floor((phase%(Math.PI*4))/Math.PI);
-    if(current!==lastCycleStep){lastCycleStep=current;$('.el-cycle-status').textContent=cycleStrokes[current];}
+    if(current!==lastCycleStep){lastCycleStep=current;$('.el-cycle-status').textContent=cycleStrokes[current];updateStrokeLesson(current);}
   }
   function positionHotspots(){
     if(!camera||!scene)return;
@@ -472,10 +526,10 @@ export function mountEngineLab(container, options = {}) {
       if(visible){button.style.left=((position.x*.5+.5)*viewport.clientWidth)+'px';button.style.top=((-position.y*.5+.5)*viewport.clientHeight)+'px';}
     }
   }
-  filterParts(''); selectPart('turbos', false);
+  filterParts(''); selectPart('turbos', false);updateStrokeLesson(0);
   return {
     ready: !!renderer, parts: ENGINE_LAB_PARTS,
-    selectPart, reset,
+    selectPart, selectTour, stepStroke, reset,
     destroy() {
       if (destroyed) return; destroyed = true; cancelAnimationFrame(frameId); resizing?.disconnect(); visibilityObserver?.disconnect();
       for (const remove of listeners) remove(); controls?.dispose();

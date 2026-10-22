@@ -139,6 +139,10 @@
     {
       "source": "/legends/:path*",
       "destination": "/index.html"
+    },
+    {
+      "source": "/club/:path*",
+      "destination": "/index.html"
     }
   ],
   "framework": null,

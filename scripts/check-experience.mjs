@@ -119,7 +119,7 @@ try{
 
   await check('account changes keep collection cards and personal valuations in separate browser keys',()=>{
     const {host,storage}=fixture('/my-garage');setUser({id:'alice',name:'Alice'});const alice={...emptyHub(),cards:['e92'],values:{e92:42000}},bob={...emptyHub(),cards:['f10-m5'],values:{'f10-m5':36000}};storage.setItem('apex-collection-v1:alice',JSON.stringify(alice));storage.setItem('apex-collection-v1:bob',JSON.stringify(bob));storage.setItem('apex-favorites','[]');
-    const instance=mountGarageHub(host,{catalog:allModels});assert.match(host.querySelector('.collectible-grid').textContent,/BMW M3/);assert.ok(host.querySelector('[data-value=e92]'));
+    const instance=mountGarageHub(host,{catalog:allModels});host.querySelector('[data-hub-tab=values]').click();assert.match(host.querySelector('.collectible-grid').textContent,/BMW M3/);assert.ok(host.querySelector('[data-value=e92]'));
     setUser({id:'bob',name:'Bob'});assert.ok(host.querySelector('[data-value="f10-m5"]'));assert.equal(host.querySelector('[data-value=e92]'),null);assert.deepEqual(JSON.parse(storage.getItem('apex-collection-v1:alice')),alice);assert.deepEqual(JSON.parse(storage.getItem('apex-collection-v1:bob')),bob);instance.destroy();setUser(null);
   });
 

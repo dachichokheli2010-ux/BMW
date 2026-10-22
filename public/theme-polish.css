@@ -71,16 +71,6 @@ html[data-theme="dark"] dialog::backdrop { background: rgba(0, 6, 14, .74); }
 #theme-toggle[data-effective="dark"] .theme-rays { transform: rotate(65deg) scale(.5); opacity: 0; }
 #theme-toggle[data-effective="dark"] .theme-eclipse { transform: translate(-11px,11px); }
 .mobile-navigation [data-menu-theme] { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
-.mobile-navigation .theme-device-choice {
-  min-height: 42px;
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  color: var(--white);
-  font-size: 12px;
-  text-align: left;
-}
-.mobile-navigation .theme-device-choice[aria-pressed="true"] { border-color: var(--blue); background: var(--glass-selected); color: var(--blue); }
 @media (prefers-reduced-motion: reduce) {
   body, .collection-search, .compare-tray, dialog, .tool-card, .welcome-section, .reference-grid > a,
   #theme-toggle, #theme-toggle .theme-orbit, #theme-toggle .theme-core, #theme-toggle .theme-rays, #theme-toggle .theme-eclipse {

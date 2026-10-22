@@ -12,7 +12,7 @@ const identity=()=>account.getSnapshot?.().user?.id??null;
 export const garageGameKey=userId=>'apex-garage-game-v1:'+(userId==null?'guest':'account:'+encodeURIComponent(String(userId)));
 const legacyKey=userId=>'apex-collection-v1:'+(userId??'guest');
 const getStorage=provided=>{try{return provided??globalThis.localStorage;}catch{return null;}};
-export function emptyGarageGame(){return {version:1,coins:0,earned:0,spent:0,cards:{[STARTER.id]:{rarity:'common',source:'starter',day:null}},days:{},packs:[],incomeDays:{},finishes:{},clubPass:null,clubFrame:'ice',history:[],legacyMigrated:false};}
+export function emptyGarageGame(){return {version:1,coins:0,earned:0,spent:0,cards:{[STARTER.id]:{rarity:'common',source:'starter',day:null}},days:{},packs:[],incomeDays:{},finishes:{},clubPass:null,clubFrame:'ice',showcase:STARTER.id,profile:{name:'My BMW garage',tagline:'',tone:'ice'},profileUpdated:0,history:[],legacyMigrated:false};}
 export function restoreGarageGame(value){
  const state=emptyGarageGame();if(!value||value.version!==1)return state;
  for(const key of ['coins','earned','spent'])if(integer(value[key]))state[key]=value[key];
@@ -26,6 +26,13 @@ export function restoreGarageGame(value){
  if(value.finishes&&typeof value.finishes==='object')for(const [id,finish]of Object.entries(value.finishes).slice(0,1000))if(state.cards[id]&&finish==='foil')state.finishes[id]=finish;
  const pass=value.clubPass;if(pass&&validDay(pass.start)&&validDay(pass.end)&&Date.parse(pass.end)-Date.parse(pass.start)===(GARAGE_ECONOMY.clubDays-1)*86400000)state.clubPass={start:pass.start,end:pass.end};
  if(['ice','ember'].includes(value.clubFrame))state.clubFrame=value.clubFrame;
+ if(typeof value.showcase==='string'&&Object.hasOwn(state.cards,value.showcase))state.showcase=value.showcase;
+ if(value.profile&&typeof value.profile==='object'){
+  const name=typeof value.profile.name==='string'?value.profile.name.trim().replace(/\s+/g,' '):'',tagline=typeof value.profile.tagline==='string'?value.profile.tagline.trim().replace(/\s+/g,' '):'';
+  if(name&&name.length<=40)state.profile.name=name;if(tagline.length<=80)state.profile.tagline=tagline;
+  if(['ice','ember','heritage'].includes(value.profile.tone))state.profile.tone=value.profile.tone;
+ }
+ if(integer(value.profileUpdated,4102444800000))state.profileUpdated=value.profileUpdated;
  state.history=(Array.isArray(value.history)?value.history:[]).filter(item=>item&&validDay(item.day)&&['earn','pack','purchase','income','finish','club'].includes(item.kind)&&integer(item.amount)&&typeof item.label==='string').slice(-100);
  state.legacyMigrated=value.legacyMigrated===true;return state;
 }
@@ -48,7 +55,7 @@ export function getGarageGame(options={}){return load(options).state;}
 export function migrateLegacyGameCards(ids,catalog,options={}){const loaded=load(options),valid=new Set(catalog.map(car=>car.id));let changed=false;for(const id of ids)if(valid.has(id)&&!loaded.state.cards[id]){loaded.state.cards[id]={rarity:cardRarity(catalog.find(car=>car.id===id)),source:'legacy',day:null};changed=true;}return !changed||save(loaded);}
 export function validateGarageGameBackup(value,catalog){
  if(!value||value.version!==1||!integer(value.coins)||!integer(value.earned)||!integer(value.spent)||value.coins!==Math.max(0,value.earned-value.spent)||!value.cards||Object.keys(value.cards).length>1000||!value.days||Object.keys(value.days).length>3660)throw Error('This garage-game backup has invalid coins or collection records.');
- const state=restoreGarageGame(value),ids=new Set([STARTER.id,...catalog.map(car=>car.id)]);state.cards=Object.fromEntries(Object.entries(state.cards).filter(([id])=>ids.has(id)));return state;
+ const state=restoreGarageGame(value),ids=new Set([STARTER.id,...catalog.map(car=>car.id)]);state.cards=Object.fromEntries(Object.entries(state.cards).filter(([id])=>ids.has(id)));state.finishes=Object.fromEntries(Object.entries(state.finishes).filter(([id])=>ids.has(id)&&state.cards[id]));if(!ids.has(state.showcase)||!state.cards[state.showcase])state.showcase=STARTER.id;return state;
 }
 export function mergeGarageGameBackup(value,catalog,options={}){
  const incoming=validateGarageGameBackup(value,catalog),loaded=load(options),current=loaded.state;
@@ -58,6 +65,7 @@ export function mergeGarageGameBackup(value,catalog,options={}){
  // receipts without adding their amount to the monotonic lifetime coin totals.
  for(const [day,amount]of Object.entries(incoming.incomeDays))current.incomeDays[day]=Math.max(current.incomeDays[day]||0,amount);
  current.finishes={...incoming.finishes,...current.finishes};
+ if(incoming.profileUpdated>current.profileUpdated){current.showcase=incoming.showcase;current.profile={...incoming.profile};current.profileUpdated=incoming.profileUpdated;}
  if(incoming.clubPass&&(!current.clubPass||incoming.clubPass.end>current.clubPass.end)){current.clubPass=incoming.clubPass;current.clubFrame=incoming.clubFrame;}
  for(const [day,record]of Object.entries(incoming.days)){const previous=current.days[day];if(!previous){current.days[day]=record;continue;}previous.answers={...record.answers,...previous.answers};previous.earned=Math.min(COIN_POLICY.dailyLimit,Object.values(previous.answers).reduce((sum,n)=>sum+n,0));}
  current.history=[...incoming.history,...current.history].filter((item,index,all)=>all.findIndex(other=>JSON.stringify(other)===JSON.stringify(item))===index).slice(-100);
@@ -120,6 +128,18 @@ export function setGarageClubFrame(frame,options={}){
  const loaded=load(options);if(!['ice','ember'].includes(frame)||!garageClubActive(loaded.state,options.day||utcDay()))return false;
  loaded.state.clubFrame=frame;return save(loaded);
 }
+export function setGarageShowcase(id,catalog,options={}){
+ const loaded=load(options);if(!garageCards(catalog).some(card=>card.id===id)||!loaded.state.cards[id])return false;
+ loaded.state.showcase=id;loaded.state.profileUpdated=Date.now();return save(loaded);
+}
+export function saveGarageProfile(value,options={}){
+ const loaded=load(options),active=garageClubActive(loaded.state,options.day||utcDay());
+ const name=typeof value?.name==='string'?value.name.trim().replace(/\s+/g,' '):'',tagline=typeof value?.tagline==='string'?value.tagline.trim().replace(/\s+/g,' '):loaded.state.profile.tagline,tone=value?.tone??loaded.state.profile.tone;
+ if(!name||name.length>40||tagline.length>80||!['ice','ember','heritage'].includes(tone))return false;
+ if(!active&&(tagline!==loaded.state.profile.tagline||tone!==loaded.state.profile.tone))return false;
+ loaded.state.profile={name,tagline,tone};loaded.state.profileUpdated=Date.now();return save(loaded);
+}
+
 export function packOdds(catalog,state){const pool=catalog.filter(model=>!state.cards[model.id]),available=RARITIES.filter(r=>pool.some(model=>cardRarity(model)===r.id)),total=available.reduce((sum,r)=>sum+r.weight,0);return available.map(r=>({...r,percent:r.weight/total*100}));}
 // The paid draw is the receipt. Replaying its presentation never draws again.
 export function savedDailyPack(catalog,state,day=utcDay()){

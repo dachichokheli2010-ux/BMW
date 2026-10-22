@@ -5,7 +5,7 @@ import {mountNavigation} from './navigation.js';
 import {workspaceRoutes} from './routes.js';
 import {account} from './account-sync.js';
 import {mountAccount,mountAccountButton} from './account.js';
-import {getLanguage} from './preferences.js';
+import {getLanguage,registerTranslations} from './preferences.js';
 import {renderModelProfile} from './model-profile-ui.js';
 import {responsivePhotoAttributes,photoBlurStyle} from './responsive-photos.js';
 import './retention-translations.js';
@@ -14,6 +14,14 @@ import {mountExperience} from './experience.js';
 import {encyclopediaParts} from './parts-encyclopedia-data.js';
 import {loadStyle} from './experience-common.js';
 import {updateSEO} from './seo.js';
+
+registerTranslations([
+ ['Club membership','Club-ის წევრობა','Участие в Club'],
+ ['Your pass, perks and personal style','შენი აბონემენტი, უპირატესობები და სტილი','Твой абонемент, привилегии и стиль'],
+ ['Saved models, builds & learning','შენახული მოდელები, პროექტები და სწავლა','Сохранённые модели, проекты и обучение'],
+ ['Open your personal library','გახსენი პირადი ბიბლიოთეკა','Открой личную библиотеку'],
+ ['Share what you collect. Find your people.','გააზიარე შენი კოლექცია. გაიცანი თანამოაზრეები.','Делись коллекцией. Находи единомышленников.'],
+]);
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pages={
@@ -32,6 +40,7 @@ const pages={
   '/tuning-garage':{id:'tuning-garage',title:'Build. Test. Understand.',kicker:'THE TUNING GARAGE',description:'Choose a BMW and explore how changes interact. Save your ideas and compare the tradeoffs behind a build.',label:'EDUCATIONAL SIMULATION'},
   '/compare':{id:'compare',title:'A closer comparison.',kicker:'THE DETAILS MAKE THE DIFFERENCE',description:'The same badge. A different character. Line up to three BMWs side by side and discover what sets them apart.',label:'YOUR SHORTLIST, SIDE BY SIDE'},
   '/my-garage':{id:'my-garage',title:'A space for your obsession.',kicker:'YOUR PERSONAL GARAGE',description:'Your favorite BMWs, saved builds, and learning progress. Ready whenever curiosity calls.',label:'YOUR SAVED COLLECTION'},
+  '/club':{id:'club',title:'Make it yours.',kicker:'MOTRON CLUB',description:'A personal garage, a little more character, and a clear choice of benefits.',label:'YOUR MEMBERSHIP'},
   '/community':{id:'community',view:'community',title:'Real cars. Real stories.',kicker:'THE Motron OWNERS CLUB',description:'Meet owner cars, connect with friends and make your garage part of the story.',label:'THE OWNERS CLUB'},
   '/friends':{id:'community',view:'friends',title:'Find your people.',kicker:'YOUR Motron FRIENDS',description:'Connect with other BMW enthusiasts and keep your requests in one place.',label:'YOUR PEOPLE'},
   '/submit-car':{id:'community',view:'submission',title:'Your car has a story.',kicker:'SUBMIT YOUR BMW',description:'Earn community credits, prepare your car’s profile and send it for review before publication.',label:'OWNER SUBMISSIONS'},
@@ -54,7 +63,7 @@ export function mountPlatform({catalog,getCurrent,selectModel,showCollection,ope
   }
   nav.innerHTML='<a href="/models" id="collectionnav">Cars</a><a href="/engines">Engines</a><a href="/parts">Parts</a><a href="/learn">Learn</a><a href="/play">Play</a><a href="/my-garage" class="nav-garage">Garage</a>';
   function markNavigation(id){
-    const href=id==='models'?'/models':id==='community'?'/my-garage':workspaceRoutes[id]||'/'+id;
+    const href=id==='models'?'/models':['community','club'].includes(id)?'/my-garage':workspaceRoutes[id]||'/'+id;
     for(const a of nav.querySelectorAll('a')){const selected=a.getAttribute('href')===href;a.classList.toggle('active',selected);if(selected)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');}
   }
   const accountUI=mountAccountButton(document.querySelector('.header-tools'),{accountController:account});
@@ -63,7 +72,7 @@ export function mountPlatform({catalog,getCurrent,selectModel,showCollection,ope
   document.querySelector('.header-tools').insertAdjacentHTML('afterbegin','<button class="icon-button global-search-trigger" data-global-search aria-label="Search everything (Control K)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg></button>');
   document.querySelector('.footer-brand').innerHTML='<a href="/" class="footer-wordmark">Motron<span>.</span></a><p>Independent BMW stories, specifications and engineering guides.</p><small>Not affiliated with BMW AG.</small>';
   const footerLinks=document.querySelector('.footer-links'),creditsButton=footerLinks.querySelector('#credits');
-  footerLinks.innerHTML='<div class="footer-group"><h2>Discover</h2><a href="/models">BMW models</a><a href="/electric">Electric BMWs</a><a href="/parts">Inside BMW</a><a href="/legends">BMW legends</a><a href="/generation-guides">Buyer guides</a><a href="/timeline">3 Series timeline</a></div><div class="footer-group"><h2>Explore</h2><a href="/learn">Motron Learn</a><a href="/play">Games &amp; daily challenge</a><a href="/sounds">Engine sounds</a><a href="/engines">Engine directory</a><a href="/engine-lab">Engine lab</a><a href="/compare">Compare cars</a><a href="/personality">Which BMW are you?</a></div><div class="footer-group"><h2>Owners club</h2><a href="/my-garage">My garage</a><a href="/tuning-garage">Tuning garage</a><a href="/spotter">Spotted list</a><a href="/community">Community cars</a><a href="/friends">Friends &amp; shared garages</a><a href="/submit-car">Submit your BMW</a></div><div class="footer-group"><h2>Sources</h2><a href="/start">Beginner starter kit</a><a href="/account">Account &amp; sync</a><a href="/about">About Motron</a></div>';
+  footerLinks.innerHTML='<div class="footer-group"><h2>Discover</h2><a href="/models">BMW models</a><a href="/electric">Electric BMWs</a><a href="/parts">Inside BMW</a><a href="/legends">BMW legends</a><a href="/generation-guides">Buyer guides</a><a href="/timeline">3 Series timeline</a></div><div class="footer-group"><h2>Explore</h2><a href="/learn">Motron Learn</a><a href="/play">Games &amp; daily challenge</a><a href="/sounds">Engine sounds</a><a href="/engines">Engine directory</a><a href="/engine-lab">Engine lab</a><a href="/compare">Compare cars</a><a href="/personality">Which BMW are you?</a></div><div class="footer-group"><h2>Owners club</h2><a href="/my-garage">My garage</a><a href="/club">Club membership</a><a href="/tuning-garage">Tuning garage</a><a href="/spotter">Spotted list</a><a href="/community">Community cars</a><a href="/friends">Friends &amp; shared garages</a><a href="/submit-car">Submit your BMW</a></div><div class="footer-group"><h2>Sources</h2><a href="/start">Beginner starter kit</a><a href="/account">Account &amp; sync</a><a href="/about">About Motron</a></div>';
   creditsButton.textContent='Photos & sources';footerLinks.querySelector('.footer-group:last-child').append(creditsButton);
   document.querySelector('.footer-end').innerHTML='<span>Guest data stays on this device. Sign in to sync your garage.</span><a href="#main-content">Back to top ↑</a>';
   document.querySelector('#modelsearch')?.setAttribute('placeholder','Find a BMW, chassis or engine code…');
@@ -102,7 +111,7 @@ export function mountPlatform({catalog,getCurrent,selectModel,showCollection,ope
     destination=document.createElement('section');destination.className='destination-page';destination.id='destination';
     // These destinations already supply their own page introduction. Rendering
     // the shell introduction as well repeats two large titles before the content.
-    const ownsHeading=['engines','part-detail','play','compare','account','community','spotter','sounds','personality','timeline','legends','academy'].includes(page.id);
+    const ownsHeading=['engines','part-detail','play','compare','account','community','spotter','sounds','personality','timeline','legends','academy','my-garage','club','engine-lab'].includes(page.id);
     const parent=page.id==='community'&&path!=='/community'?['/community','Owners club']:engineSlug?['/engines','Engines']:partSlug?['/parts','Parts']:null;
     const breadcrumb=parent?`<a href="${parent[0]}">${parent[1]}</a><span aria-hidden="true">/</span><span data-destination-crumb aria-current="page">Details</span>`:`<span aria-current="page">${esc(page.title.replace(/\.$/,''))}</span>`;
     destination.innerHTML=`<nav class="destination-breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span>${breadcrumb}</nav>${ownsHeading?'':`<div class="destination-heading"><div><span class="eyebrow">${page.kicker}</span><h1>${page.title}</h1><p>${page.description}</p></div><span class="destination-label">${page.label}</span></div>`}<div class="destination-panel" id="${page.id}" tabindex="-1"><div class="workspace-loading" role="status"><span class="loading-orbit" aria-hidden="true"></span>Opening ${esc(page.title.toLowerCase())}…</div></div>`;
@@ -130,11 +139,13 @@ export function mountPlatform({catalog,getCurrent,selectModel,showCollection,ope
       if(page.id==='generation-guides'){const {mountGenerationGuides}=await import('./generation-guides.js');panel.replaceChildren();instances[page.id]=mountGenerationGuides(panel,{catalog});}
       if(page.id==='compare'){panel.replaceChildren();instances[page.id]=mountComparison(panel);}
       if(page.id==='account'){panel.replaceChildren();instances[page.id]=mountAccount(panel,{accountController:account});}
+      if(page.id==='club'){const {mountClubMembership}=await import('./club-membership.js');panel.replaceChildren();instances[page.id]=mountClubMembership(panel);}
       if(page.id==='my-garage'){
         const {mountPersonalGarage}=await import('./personal-garage.js');panel.replaceChildren();
-        const club=document.createElement('aside');club.className='owner-club-entry';club.setAttribute('aria-label','Your owners club');club.innerHTML='<div><span class="eyebrow">YOUR GARAGE, TOGETHER</span><h2>Good cars deserve company.</h2><p>Choose what to share, connect with friends, or send your BMW to the owner gallery for review.</p></div><nav aria-label="Garage community tools"><a href="/community#share-garage">Share your garage ↗</a><a href="/friends">Find friends ↗</a><a href="/submit-car">Submit your car ↗</a></nav>';panel.append(club);
+        const club=document.createElement('aside');club.className='owner-club-entry garage-community-shortcuts';club.setAttribute('aria-label','Your owners club');club.innerHTML='<div><span class="eyebrow">YOUR GARAGE, TOGETHER</span><h2>Good cars deserve company.</h2><p>Share what you collect. Find your people.</p></div><nav aria-label="Garage community tools"><a href="/community#share-garage">Share your garage ↗</a><a href="/friends">Find friends ↗</a><a href="/club">Club membership ↗</a><a href="/submit-car">Submit your car ↗</a></nav>';
         const {mountGarageHub}=await import('./garage-hub.js');const hub=document.createElement('section');panel.append(hub);instances['collection-hub']=mountGarageHub(hub,{catalog});
-        instances[page.id]=mountPersonalGarage({container:panel,catalog,onModel:openCatalogModel,onBuild:(id,modelId)=>{location.href='/tuning-garage?build='+encodeURIComponent(id)+'&garage='+encodeURIComponent(modelId);},onLesson:(id,level)=>{location.href='/learn?lesson='+encodeURIComponent(id)+(level?'&level='+encodeURIComponent(level):'');},onCompare:compareModels});
+        const library=document.createElement('details');library.className='garage-saved-library';library.innerHTML='<summary>Saved models, builds &amp; learning <span>Open your personal library</span></summary><div data-garage-library></div>';panel.append(library,club);
+        instances[page.id]=mountPersonalGarage({container:library.querySelector('[data-garage-library]'),catalog,onModel:openCatalogModel,onBuild:(id,modelId)=>{location.href='/tuning-garage?build='+encodeURIComponent(id)+'&garage='+encodeURIComponent(modelId);},onLesson:(id,level)=>{location.href='/learn?lesson='+encodeURIComponent(id)+(level?'&level='+encodeURIComponent(level):'');},onCompare:compareModels});
       }
       const instance=instances[page.id];
       if(page.id==='tuning-garage'){if(entry.get('build')&&instance?.loadBuild?.(entry.get('build'))){}else if(entry.get('garage'))instance?.selectModel?.(entry.get('garage'));}

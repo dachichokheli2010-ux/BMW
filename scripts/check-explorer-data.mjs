@@ -74,6 +74,7 @@ check('engine discovery supports beginner searches and leaves a useful empty sta
   assert.equal(typeof cleanup.destroy,'function','The platform lifecycle must be able to dispose an engine page.');
   // linkedom has a getter-only select.value; browsers provide the setter.
   Object.defineProperty(container.querySelector('[data-ed-kind]'),'value',{value:'all',writable:true});
+  Object.defineProperty(container.querySelector('[data-ed-layout]'),'value',{value:'all',writable:true});
   assert.equal(container.querySelectorAll('.ed-card').length,30);
   const input=container.querySelector('[data-ed-search]');input.value='S58';input.dispatchEvent(new window.Event('input'));
   assert.equal(container.querySelectorAll('.ed-card').length,1);assert.equal(container.querySelector('.ed-card').getAttribute('href'),'/engines/s58');
