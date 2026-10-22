@@ -1,6 +1,18 @@
 {
   "rewrites": [
     {
+      "source": "/api/membership/:path*",
+      "destination": "/api/router?__apex_route=membership/:path*"
+    },
+    {
+      "source": "/api/membership",
+      "destination": "/api/router?__apex_route=membership"
+    },
+    {
+      "source": "/api/collector/:path*",
+      "destination": "/api/router?__apex_route=collector/:path*"
+    },
+    {
       "source": "/api/ask",
       "destination": "/api/router?__apex_route=ask"
     },

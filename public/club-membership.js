@@ -1,75 +1,78 @@
 import {account} from './account-sync.js';
 import {escapeHTML as e,loadStyle} from './experience-common.js';
-import {GARAGE_ECONOMY,garageGameKey,getGarageGame,garageClubActive,buyGarageClub} from './garage-game-state.js';
 import {icon} from './icons.js';
 import {motronMark} from './brand-mark.js';
 import {t,getLanguage} from './preferences.js';
-import './garage-economy-translations.js';
 import './club-membership-translations.js';
 
-const utcDay=()=>new Date().toISOString().slice(0,10);
-const identity=session=>session?.user?.id==null?null:String(session.user.id);
-const copy=(key,vars)=>e(t(key,vars));
-const item=(name,label,vars)=>`<li><span class="cm-perk-icon">${icon(name)}</span><span>${copy(label,vars)}</span></li>`;
+const identity=s=>s?.user?.id==null?null:String(s.user.id),copy=(key,vars)=>e(t(key,vars));
+const item=(name,label)=>`<li><span class="cm-perk-icon">${icon(name)}</span><span>${copy(label)}</span></li>`;
+const planned={monthly:{amount:400,currency:'usd'},annual:{amount:3600,currency:'usd'}};
+const validPrice=p=>Number.isSafeInteger(p?.amount)&&p.amount>0&&p.currency==='usd';
+function normalize(value){
+  if(typeof value?.configured!=='boolean'||!['free','collector'].includes(value.membership?.plan)||typeof value.membership.active!=='boolean')throw Error('Invalid membership.');
+  if(value.membership.expiresAt!=null&&(typeof value.membership.expiresAt!=='string'||!Number.isFinite(Date.parse(value.membership.expiresAt))))throw Error('Invalid expiry.');
+  const pricingOK=!value.configured||validPrice(value.plans?.monthly)&&validPrice(value.plans?.annual);
+  return {...value,pricingOK,plans:value.configured?(pricingOK?value.plans:null):planned};
+}
+const money=p=>new Intl.NumberFormat(({en:'en-US',ka:'ka-GE',ru:'ru-RU'})[getLanguage()],{style:'currency',currency:'USD',minimumFractionDigits:p.amount%100?2:0,maximumFractionDigits:2}).format(p.amount/100);
+function billingURL(value){try{const u=new URL(value);return u.protocol==='https:'&&['checkout.stripe.com','billing.stripe.com'].includes(u.hostname)&&!u.username&&!u.password?u.href:null;}catch{return null;}}
 
-export function mountClubMembership(container,{accountController=account}={}){
-  if(typeof container==='string')container=document.querySelector(container);
-  if(!container)throw new Error('Club membership needs a container.');
+export function mountClubMembership(container,{accountController=account,fetchImpl=(...args)=>fetch(...args),navigate}={}){
+  if(typeof container==='string')container=document.querySelector(container);if(!container)throw Error('Collector Plus needs a container.');
   loadStyle('./club-membership.css');
-  const doc=container.ownerDocument||document,win=doc.defaultView||globalThis.window,cleanups=[];
-  let session=accountController.getSnapshot?.()||{user:null},userId=identity(session),destroyed=false,busy=false,timer=null,signature='',notice=null;
-  const on=(target,name,listener)=>{target?.addEventListener(name,listener);cleanups.push(()=>target?.removeEventListener(name,listener));};
-  function focusedKey(){return doc.activeElement?.closest?.('[data-club-focus]')?.dataset.clubFocus;}
-  function restoreFocus(key){if(!key)return;[...container.querySelectorAll('[data-club-focus]')].find(node=>node.dataset.clubFocus===key)?.focus?.({preventScroll:true});}
-  function schedule(){
-    clearTimeout(timer);if(destroyed)return;
-    const now=new Date(),next=Date.parse(now.toISOString().slice(0,10)+'T00:00:00Z')+86400000;
-    timer=setTimeout(()=>{timer=null;refresh();},Math.max(50,next-now.getTime()+50));timer.unref?.();
+  const doc=container.ownerDocument||document,win=doc.defaultView||globalThis.window,cleanups=[],requests=new Set(),leave=navigate||(url=>win.location.assign(url));
+  let session=accountController.getSnapshot?.()||{user:null},userId=identity(session),details=null,loading=false,error=false,busy=false,destroyed=false,interval='monthly',notice=null,timer=null,readEpoch=0,actionEpoch=0,pending=null;
+  const on=(target,name,fn)=>{target?.addEventListener(name,fn);cleanups.push(()=>target?.removeEventListener(name,fn));};
+  const focused=()=>doc.activeElement?.closest?.('[data-club-focus]')?.dataset.clubFocus;
+  const focus=key=>{if(key)[...container.querySelectorAll('[data-club-focus]')].find(n=>n.dataset.clubFocus===key)?.focus?.({preventScroll:true});};
+  const active=()=>Boolean(details?.membership.plan==='collector'&&details.membership.active&&(!details.membership.expiresAt||Date.parse(details.membership.expiresAt)>Date.now()));
+  const checking=()=>session.status==='loading'&&session.ready===false;
+  function schedule(){clearTimeout(timer);if(destroyed)return;const now=Date.now(),midnight=Date.parse(new Date(now).toISOString().slice(0,10)+'T00:00:00Z')+86400000,expiry=Date.parse(details?.membership.expiresAt||'');timer=setTimeout(()=>{timer=null;update();void refresh();},Math.max(50,(expiry>now?Math.min(midnight,expiry):midnight)-now+50));timer.unref?.();}
+  function showNotice(){const n=container.querySelector('[data-club-notice]');if(!n)return;n.textContent=notice?t(notice.key):'';n.hidden=!notice;n.classList.toggle('is-error',Boolean(notice?.error));n.setAttribute('role',notice?.error?'alert':'status');}
+  function announce(key,isError=false){notice={key,error:isError};showNotice();}
+  function sessionChanged(next){if(identity(next)===userId){session=next;return false;}session=next;userId=identity(next);details=null;notice=null;error=false;readEpoch++;actionEpoch++;pending=null;busy=false;loading=false;for(const r of requests)r.abort();showNotice();return true;}
+  function shell(){
+    const key=focused(),open=new Set([...container.querySelectorAll('[data-club-faq][open]')].map(n=>n.dataset.clubFaq));
+    container.innerHTML=`<section class="club-membership" aria-labelledby="club-membership-title"><header class="cm-hero"><div class="cm-hero-copy"><span class="cm-kicker">${copy('Collector Plus')}</span><h1 id="club-membership-title">${copy('Budget every part. Keep every decision.')}</h1><p>${copy('Keep budgets, costs, research notes and milestones together. Start one build free, then make room for more projects and a longer budget history.')}</p><span class="cm-promise">${icon('check')}${copy('More planning space. The same free love of cars.')}</span></div><div class="cm-visual" aria-hidden="true"><div class="cm-orbit"></div><div class="cm-pass"><span class="cm-pass-brand">${motronMark()}MOTRON</span><strong>Collector<span>+</span></strong><span>${copy('Your next build, thought through.')}</span><div class="cm-pass-icons">${icon('garage')}${icon('list')}${icon('clock')}</div></div><span class="cm-bonus">${icon('plus')}<strong>20</strong></span></div></header><section class="cm-summary" data-club-summary aria-label="${copy('YOUR MEMBERSHIP')}"></section><p class="cm-notice" data-club-notice tabindex="-1" role="status" aria-live="polite" hidden></p><div data-club-payment-state></div><div class="cm-plans"><article class="cm-plan cm-plan-free"><span class="cm-kicker">${copy('START WITH ONE BUILD')}</span><h2>${copy('Free')}</h2><p class="cm-plan-price">${copy('Always open')}</p><ul class="cm-perks">${item('garage','One cloud project when signed in')}${item('list','Budgets, actual costs, notes and milestones')}${item('clock','3 budget checkpoints per project')}${item('share','JSON exports and printable reports')}${item('engine','Every car, engine, lesson and quiz stays free')}</ul><a class="cm-button cm-secondary" href="/my-garage?view=planner" data-club-focus="free-planner">${copy('Try the build planner')}${icon('next')}</a></article><article class="cm-plan cm-plan-club"><span class="cm-kicker">${copy('FOR MULTIPLE BUILDS')}</span><h2>${copy('Collector Plus')}</h2><div class="cm-billing-switch" role="group" aria-label="${copy('Billing interval')}">${['monthly','annual'].map(v=>`<button type="button" data-club-interval="${v}" data-club-focus="${v}">${copy(v==='monthly'?'Monthly':'Yearly')}</button>`).join('')}</div><div data-club-price></div><p class="cm-includes">${copy('Everything in Free, with more room')}</p><ul class="cm-perks">${item('garage','20 cloud projects for separate builds')}${item('clock','50 budget checkpoints per project')}${item('list','Keep each build’s costs and research together')}</ul><div data-club-action></div></article></div><p class="cm-timing">${icon('info')}<span>${copy('Membership adds planning capacity. Cars, lessons, quizzes and Garage coins stay free.')}</span></p><section class="cm-backup"><span class="cm-backup-icon">${icon('garage')}</span><div><h2>${copy('Start planning before you pay.')}</h2><p>${copy('Try a browser draft, or sign in to save one project to your account. Track estimated and actual costs, collect research notes, add milestones and export your plan on Free.')}</p><a href="/my-garage?view=planner" data-club-focus="planner-tools">${copy('Open my build planner')}${icon('next')}</a></div></section><section class="cm-faq" aria-labelledby="club-faq-title"><h2 id="club-faq-title">${copy('Questions, answered.')}</h2>${[['free','What stays free?','Your first signed-in cloud project includes budgets, estimated and actual costs, research notes, milestones, three budget checkpoints, JSON export and print reports. Cars, engines, learning and games remain open.'],['history','What does a budget checkpoint save?','A checkpoint records the date, budget total, estimated total, actual total and a note. Free keeps three per project; Collector Plus keeps up to fifty per project.'],['billing','How will billing work?','Collector Plus uses monthly or yearly billing through secure checkout when payments are open. Manage your membership from the billing portal. Garage coins are a separate game currency and cannot buy this membership.']].map(([id,title,body])=>`<details data-club-faq="${id}" ${open.has(id)?'open':''}><summary data-club-focus="faq-${id}">${copy(title)}</summary><p>${copy(body)}</p></details>`).join('')}</section></section>`;
+    showNotice();update();focus(key);
   }
-  function renderNotice(){
-    const node=container.querySelector('[data-club-notice]');if(!node)return;
-    node.textContent=notice?t(notice.key,notice.vars):'';node.hidden=!notice;
-    node.classList.toggle('is-error',Boolean(notice?.error));node.setAttribute('role',notice?.error?'alert':'status');
+  function update(){
+    if(destroyed)return;const key=focused(),isActive=active(),m=details?.membership,expires=m?.expiresAt?new Date(m.expiresAt).toISOString().slice(0,10):null;
+    const status=loading&&!details?'Checking membership…':error&&!details?'Membership unavailable':isActive?'Collector Plus active':'Free planner';
+    container.querySelector('[data-club-summary]').innerHTML=`<div class="cm-summary-top"><span class="cm-kicker">${copy('YOUR MEMBERSHIP')}</span><span>${copy(userId===null?'Sign in to save a cloud project':'Membership belongs to your account')}</span></div><dl class="cm-metrics"><div><dt>${copy('Current plan')}</dt><dd class="cm-status ${isActive?'is-active':''}" data-club-status>${copy(status)}</dd></div><div><dt>${copy('Cloud projects')}</dt><dd data-club-project-limit>${isActive?20:1}</dd></div><div><dt>${copy('Budget checkpoints per project')}</dt><dd data-club-history-limit>${isActive?50:3}</dd></div></dl>${isActive&&expires?`<p class="cm-period"><time datetime="${e(m.expiresAt)}" data-club-expiry>${copy(m.cancelAtPeriodEnd?'Access through {date}. Renewal is canceled.':'Current billing period ends {date}.',{date:expires})}</time></p>`:''}`;
+    const retry=`<button type="button" class="cm-text-button" data-club-retry data-club-focus="retry">${copy('Retry membership check')}${icon('refresh')}</button>`;
+    container.querySelector('[data-club-payment-state]').innerHTML=error?`<div class="cm-availability is-error" role="alert"><strong>${copy('Membership details are unavailable.')}</strong><p>${copy('You can still use the free build planner. Please retry before opening checkout.')}</p>${retry}</div>`:details&&!details.pricingOK?`<div class="cm-availability is-error" role="alert"><strong>${copy('Current membership pricing is unavailable.')}</strong><p>${copy('Checkout is paused until current prices can be verified.')}</p>${retry}</div>`:details?.configured&&details.testMode?`<div class="cm-availability"><strong>${copy('Test payments only')}</strong><p>${copy('Test checkout uses test data. No real payment will be taken.')}</p></div>`:details?.configured===false?`<div class="cm-availability"><strong>${copy('Membership payments are not open yet')}</strong><p>${copy('Prices below are planned. You cannot subscribe or be charged here yet. Try the free planner now.')}</p></div>`:'';
+    const price=details?.plans?.[interval],saving=details?.plans?Math.round((1-details.plans.annual.amount/(details.plans.monthly.amount*12))*100):0;
+    container.querySelector('[data-club-price]').innerHTML=price?`<span class="cm-price-label">${copy(details.configured?'Membership price':'Planned price')}</span><p class="cm-plan-price"><strong data-club-amount>${e(money(price))}</strong><span>${copy(interval==='annual'?'per year':'per month')}<small>${copy(interval==='annual'?'Billed yearly':'Billed monthly')}</small></span></p>${interval==='annual'&&saving>0?`<p class="cm-savings">${copy('Save {percent}% compared with monthly billing',{percent:saving})}</p>`:''}`:`<p class="cm-pricing-wait">${copy(error||details&&!details.pricingOK?'Pricing unavailable':'Checking current pricing…')}</p>`;
+    for(const b of container.querySelectorAll('[data-club-interval]')){b.setAttribute('aria-pressed',String(b.dataset.clubInterval===interval));b.disabled=busy;}
+    const canPay=details?.configured&&details.pricingOK&&!error&&!loading&&!checking();
+    let action=`<a class="cm-button cm-primary" data-club-focus="main-action" href="/my-garage?view=planner">${copy(isActive?'Open my build planner':'Try the build planner')}${icon('next')}</a>`;
+    if(canPay&&!isActive)action=userId===null?`<a class="cm-button cm-primary" data-club-focus="main-action" href="/account?return_to=%2Fclub">${copy('Sign in to choose Collector Plus')}${icon('next')}</a>`:`<button type="button" class="cm-button cm-primary" data-club-checkout data-club-focus="main-action" ${busy?'disabled':''}>${copy(busy?'Opening secure checkout…':details.testMode?'Test checkout':'Continue to secure checkout')}${icon('next')}</button><p class="cm-action-detail">${copy('Your membership changes only after payment is confirmed.')}</p>`;
+    if((details?.billingAvailable??canPay)&&m?.hasCustomer)action+=`<button type="button" class="cm-button cm-secondary cm-manage" data-club-portal data-club-focus="billing" ${busy?'disabled':''}>${copy(busy?'Opening billing…':'Manage billing')}${icon('external')}</button>`;
+    container.querySelector('[data-club-action]').innerHTML=action;focus(key);schedule();
   }
-  function announce(key,vars={},error=false){notice={key,vars,error};renderNotice();}
-  function renderShell(){
-    const focused=focusedKey(),open=new Set([...container.querySelectorAll('[data-club-faq][open]')].map(node=>node.dataset.clubFaq));
-    container.innerHTML=`<section class="club-membership" aria-labelledby="club-membership-title"><header class="cm-hero"><div class="cm-hero-copy"><span class="cm-kicker">${copy('Motron Club')}</span><h1 id="club-membership-title">${copy('A garage that feels like you.')}</h1><p>${copy('Keep exploring for free. Use earned Garage coins to give your collection a personal finish.')}</p><span class="cm-promise">${icon('check')}${copy('No payments. No automatic renewal.')}</span></div><div class="cm-visual" aria-hidden="true"><div class="cm-orbit"></div><div class="cm-pass"><span class="cm-pass-brand">${motronMark()}MOTRON</span><strong>Club<span>.</span></strong><span>${copy('Your garage. Your style.')}</span><div class="cm-pass-icons">${icon('garage')}${icon('star')}${icon('wheel')}</div></div><span class="cm-bonus">${icon('plus')}<strong>${GARAGE_ECONOMY.clubBonus}</strong></span></div></header><section class="cm-summary" data-club-summary aria-label="${copy('YOUR MEMBERSHIP')}"></section><p class="cm-notice" data-club-notice tabindex="-1" role="status" aria-live="polite" hidden></p><div class="cm-plans"><article class="cm-plan cm-plan-free"><span class="cm-kicker">${copy('FOR EVERY DRIVER')}</span><h2>${copy('Free')}</h2><p class="cm-plan-price">${copy('Always open')}</p><ul class="cm-perks">${item('engine','Explore every car, lesson and card battle')}${item('quiz','Earn coins by learning and collecting cars')}${item('garage','Name your garage and choose a showcase car')}</ul><a class="cm-button cm-secondary" href="/my-garage?view=collection" data-club-focus="free-showcase">${copy('Start your showcase')}${icon('next')}</a></article><article class="cm-plan cm-plan-club"><span class="cm-kicker">${copy('MADE FOR YOUR COLLECTION')}</span><h2>Club</h2><p class="cm-plan-price"><strong>${GARAGE_ECONOMY.clubCost}</strong><span>${copy('Garage coins')}<small>${copy('for {days} UTC days',{days:GARAGE_ECONOMY.clubDays})}</small></span></p><p class="cm-includes">${copy('Everything in Free, plus')}</p><ul class="cm-perks">${item('plus','+{coins} coins with each daily garage claim',{coins:GARAGE_ECONOMY.clubBonus})}${item('star','Ice and Ember card frames')}${item('user','A personal showcase subtitle')}${item('garage','Ice, Ember and Heritage banner tones')}</ul><div data-club-action></div><p class="cm-plan-fine">${copy('No payments. No automatic renewal.')}</p></article></div><p class="cm-timing">${icon('clock')}<span>${copy('Club starts today. It covers today and the next six UTC days.')}</span></p><section class="cm-backup"><span class="cm-backup-icon">${icon('garage')}</span><div><h2>${copy('Keep your progress close.')}</h2><p>${copy('Garage coins, Club passes and showcase choices are browser progress, kept separately for each account or guest. They do not sync across devices. Export a garage backup to keep a copy.')}</p><a href="/my-garage?view=collection" data-club-focus="backups">${copy('Open collection & backups')}${icon('next')}</a></div></section><section class="cm-faq" aria-labelledby="club-faq-title"><h2 id="club-faq-title">${copy('Questions, answered.')}</h2>${[['coins','How do I earn Garage coins?','Learn and play for quiz coins, then collect daily income from your owned cars. Rarer cars earn more. Visit your garage for the rates and daily caps.'],['renew','Does Club renew automatically?','No. Each activation spends earned coins once and covers seven UTC days. Activate before collecting today’s income to receive today’s Club bonus. There are no payments or cash purchases.'],['expiry','What happens when Club ends?','Your cars, coins, garage name, showcase car and permanent foil finishes stay yours. Club frames and subtitles pause, and your banner returns to Ice. Saved style choices return when you activate Club again.']].map(([id,title,body])=>`<details data-club-faq="${id}" ${open.has(id)?'open':''}><summary data-club-focus="faq-${id}">${copy(title)}</summary><p>${copy(body)}</p></details>`).join('')}</section></section>`;
-    signature='';renderNotice();refresh();restoreFocus(focused);
+  async function load(){
+    if(typeof accountController.getMembership==='function')return accountController.getMembership();
+    const controller=new AbortController();requests.add(controller);const timeout=setTimeout(()=>controller.abort(),15000);
+    try{const r=await fetchImpl('/api/membership',{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'},signal:controller.signal});if(!r.ok)throw Error('Unavailable');return await r.json();}finally{clearTimeout(timeout);requests.delete(controller);}
   }
   function refresh(){
-    if(destroyed||busy)return;
-    session=accountController.getSnapshot?.()||session;
-    const nextId=identity(session);if(nextId!==userId){userId=nextId;notice=null;renderNotice();}
-    const state=getGarageGame({userId}),today=utcDay(),active=garageClubActive(state,today),checking=session.status==='loading'&&session.ready===false;
-    const nextSignature=JSON.stringify([userId,state.coins,state.clubPass,today,getLanguage(),checking]);
-    schedule();if(nextSignature===signature)return;signature=nextSignature;
-    const focused=focusedKey(),expired=Boolean(state.clubPass&&state.clubPass.end<today),days=active?Math.max(0,Math.round((Date.parse(state.clubPass.end)-Date.parse(today))/86400000)+1):0;
-    const status=active?'Club active':expired?'Club expired':'Free garage';
-    container.querySelector('[data-club-summary]').innerHTML=`<div class="cm-summary-top"><span class="cm-kicker">${copy('YOUR MEMBERSHIP')}</span><span>${copy(userId===null?'Guest progress on this browser':'Account progress on this browser')}</span></div><dl class="cm-metrics"><div><dt>${copy('Your Garage coins')}</dt><dd data-club-balance>${state.coins}</dd></div><div><dt>${copy('Current plan')}</dt><dd class="cm-status ${active?'is-active':''}" data-club-status>${copy(status)}</dd>${active?`<small data-club-days="${days}">${copy(days===1?'1 UTC day remaining':'{count} UTC days remaining',{count:days})}</small>`:''}</div><div><dt>${copy('Pass valid through')}</dt><dd class="cm-expiry">${state.clubPass?`<time datetime="${e(state.clubPass.end)}T23:59:59Z" data-club-expiry>${copy(active?'Through {date} · UTC':'Ended {date} · UTC',{date:state.clubPass.end})}</time>`:copy('No pass yet')}</dd></div></dl>`;
-    const shortfall=Math.max(0,GARAGE_ECONOMY.clubCost-state.coins);
-    const action=checking?`<button type="button" class="cm-button cm-primary" data-club-focus="main-action" disabled>${copy('Checking your garage…')}</button>`:active?`<a class="cm-button cm-primary" data-club-focus="main-action" href="/my-garage?view=club">${copy('Style my garage')}${icon('next')}</a><p class="cm-action-detail">${copy('Club is active through {date} UTC. Your next renewal is your choice.',{date:state.clubPass.end})}</p>`:shortfall?`<a class="cm-button cm-primary" data-club-focus="main-action" href="/play">${copy('Earn {coins} more coins to join',{coins:shortfall})}${icon('next')}</a><p class="cm-action-detail">${copy('Your balance needs {coins} more coins to activate Club.',{coins:shortfall})}</p>`:`<button type="button" class="cm-button cm-primary" data-club-activate data-club-focus="main-action">${copy('Activate Club · {coins} coins',{coins:GARAGE_ECONOMY.clubCost})}${icon('next')}</button><p class="cm-action-detail">${copy('Join before today’s garage claim to include today’s +{coins} bonus.',{coins:GARAGE_ECONOMY.clubBonus})}</p>`;
-    container.querySelector('[data-club-action]').innerHTML=action;restoreFocus(focused);
+    if(destroyed)return Promise.resolve();sessionChanged(accountController.getSnapshot?.()||session);if(pending)return pending;
+    const epoch=++readEpoch,id=userId;loading=true;update();
+    pending=(async()=>{try{const value=normalize(await load());if(destroyed||epoch!==readEpoch||identity(accountController.getSnapshot?.()||session)!==id)return;details=value;error=false;}catch{if(!destroyed&&epoch===readEpoch){error=true;details=null;}}finally{if(!destroyed&&epoch===readEpoch){loading=false;pending=null;update();}}})();return pending;
   }
-  function activate(event){
-    const button=event.target.closest('[data-club-activate]');if(!button||button.disabled||destroyed||busy)return;
-    const latest=accountController.getSnapshot?.()||session;
-    if(identity(latest)!==userId){refresh();announce('Your account changed. Review this garage’s balance before activating Club.',{},true);return;}
-    if(latest.status==='loading'&&latest.ready===false){refresh();return;}
-    busy=true;button.disabled=true;
-    let result;try{result=buyGarageClub({userId});}catch{result={ok:false,message:'Could not save Club. Your coins were not spent.'};}
-    busy=false;signature='';refresh();
-    if(result.ok)announce('Club activated. Your pass runs through {date} UTC.',{date:result.state.clubPass.end});
-    else announce(result.message||'Could not save Club. Your coins were not spent.',{},true);
-    container.querySelector('[data-club-notice]')?.focus?.({preventScroll:true});
+  async function billing(kind){
+    if(destroyed||busy)return;const latest=accountController.getSnapshot?.()||session;
+    if(identity(latest)!==userId){sessionChanged(latest);await refresh();announce('Your account changed. Review membership before continuing.',true);return;}
+    if(!details?.configured||!details.pricingOK||error||loading||checking()||userId===null||kind==='checkout'&&active()||kind==='portal'&&!details.membership.hasCustomer)return;
+    const epoch=++actionEpoch,id=userId;busy=true;notice=null;showNotice();update();
+    try{const result=kind==='checkout'?await accountController.startMembershipCheckout(interval):await accountController.openMembershipPortal();if(destroyed||epoch!==actionEpoch||identity(accountController.getSnapshot?.()||session)!==id)return;const url=billingURL(result?.url);if(!url)throw Error('Invalid redirect.');announce(kind==='checkout'?'Opening secure checkout…':'Opening billing…');leave(url);}
+    catch{if(!destroyed&&epoch===actionEpoch){announce(kind==='checkout'?'We couldn’t open secure checkout. Try again.':'We couldn’t open billing. Try again.',true);container.querySelector('[data-club-notice]')?.focus?.({preventScroll:true});}}
+    finally{if(!destroyed&&epoch===actionEpoch){busy=false;update();}}
   }
-  on(container,'click',activate);
-  on(win,'storage',event=>{if(event.key===null||event.key===garageGameKey(userId))refresh();});
-  on(win,'apex:garagegame',event=>{if(!event.detail?.key||event.detail.key===garageGameKey(userId))refresh();});
-  on(win,'apex:languagechange',()=>{if(!destroyed)renderShell();});
-  on(win,'pageshow',refresh);on(win,'focus',refresh);
-  on(doc,'visibilitychange',()=>{if(!doc.hidden)refresh();});
-  renderShell();
-  const unsubscribe=accountController.subscribe?.(snapshot=>{if(destroyed)return;session=snapshot;refresh();})||(()=>{});
-  return {refresh,destroy(){if(destroyed)return;destroyed=true;clearTimeout(timer);unsubscribe();for(const cleanup of cleanups)cleanup();container.replaceChildren();}};
+  on(container,'click',event=>{const b=event.target.closest('button');if(!b||b.disabled||destroyed)return;if(b.dataset.clubInterval){interval=b.dataset.clubInterval==='annual'?'annual':'monthly';update();}else if(b.hasAttribute('data-club-retry'))void refresh();else if(b.hasAttribute('data-club-checkout'))void billing('checkout');else if(b.hasAttribute('data-club-portal'))void billing('portal');});
+  on(win,'apex:languagechange',()=>{if(!destroyed)shell();});on(win,'apex:membershipchange',()=>void refresh());on(win,'pageshow',()=>void refresh());on(win,'focus',()=>void refresh());on(doc,'visibilitychange',()=>{if(!doc.hidden)void refresh();});
+  shell();const ready=refresh();const unsubscribe=accountController.subscribe?.(s=>{if(destroyed)return;const changed=sessionChanged(s);update();if(changed)void refresh();})||(()=>{});
+  return {ready,refresh,destroy(){if(destroyed)return;destroyed=true;readEpoch++;actionEpoch++;clearTimeout(timer);for(const r of requests)r.abort();unsubscribe();for(const fn of cleanups)fn();container.replaceChildren();}};
 }

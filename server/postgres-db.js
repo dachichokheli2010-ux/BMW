@@ -1,5 +1,6 @@
 import {neon} from '@neondatabase/serverless';
 import {communitySchemaStatements,communityTableNames} from './community-schema.js';
+import {collectorSchemaStatements,collectorTableNames,collectorTableColumns} from './collector-schema.js';
 import {environmentValue} from './environment-values.js';
 
 // App-owned tables live separately from any tables created in Neon SQL Editor.
@@ -23,7 +24,8 @@ export const postgresSchemaStatements=[
  `CREATE TABLE IF NOT EXISTS apex.user_preferences (user_id TEXT PRIMARY KEY REFERENCES apex.users(id) ON DELETE CASCADE, language TEXT NOT NULL CHECK (language IN ('en','ka','ru')))`
 ];
 postgresSchemaStatements.push(...communitySchemaStatements.map(sql=>sql.replace(/(CREATE TABLE IF NOT EXISTS |REFERENCES | ON )(community_[a-z_]+|users)(?=\s|\()/g,'$1apex.$2')));
-const tableNames=new Set(['users','sessions','user_login_activity','auth_limits','user_garages','account_tokens','user_verifications','user_preferences',...communityTableNames]);
+postgresSchemaStatements.push(...collectorSchemaStatements.map(sql=>sql.replace(/(CREATE TABLE IF NOT EXISTS |REFERENCES )(collector_[a-z_]+|users)(?=\s|\()/g,'$1apex.$2')));
+const tableNames=new Set(['users','sessions','user_login_activity','auth_limits','user_garages','account_tokens','user_verifications','user_preferences',...communityTableNames,...collectorTableNames]);
 const required={schema_migrations:['name','applied_at'],users:['id','provider','email','name','password_hash','created_at','updated_at'],sessions:['token_hash','user_id','csrf_token','created_at','expires_at'],auth_limits:['key','attempts','window_start','expires_at'],user_garages:['user_id','state','revision','updated_at'],account_tokens:['token_hash','user_id','purpose','created_at','expires_at'],user_verifications:['user_id','verified_at'],user_preferences:['user_id','language']};
 Object.assign(required,{
  user_login_activity:['user_id','sign_in_count','last_signed_in_at'],
@@ -38,6 +40,7 @@ Object.assign(required,{
  community_photos:['id','car_id','mime','data','width','height','caption','position'],
  community_audit:['id','actor_id','action','car_id','note','created_at']
 });
+Object.assign(required,collectorTableColumns);
 const numericTypes=new Set(['integer','bigint','double precision','real','numeric']);
 const textTypes=new Set(['text','character varying','character']);
 const legacyTypes={

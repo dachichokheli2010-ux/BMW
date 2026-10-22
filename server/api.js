@@ -7,9 +7,11 @@ import {administratorUser} from './admin-policy.js';
 import {ADMIN_AUTH_PATHS,getAdminSession,handleAdminAuth} from './admin-auth.js';
 import {handleAdminAccounts} from './admin-accounts.js';
 import {handleSiteAsk} from './site-helper.js';
+import {COLLECTOR_PATHS,handleCollector} from './collector-api.js';
+import {MEMBERSHIP_PATHS,handleMembership,handleMembershipWebhook} from './membership-api.js';
 
 const SESSION_MS=7*24*60*60*1000;
-export const AUTH_PATHS=new Set(['/api/auth/session','/api/auth/signup','/api/auth/login','/api/auth/logout','/api/auth/forgot-password','/api/auth/reset-password','/api/auth/verify-email','/api/auth/resend-verification','/api/account/profile','/api/garage','/api/admin/accounts',...COMMUNITY_PATHS,...ADMIN_AUTH_PATHS]);
+export const AUTH_PATHS=new Set(['/api/auth/session','/api/auth/signup','/api/auth/login','/api/auth/logout','/api/auth/forgot-password','/api/auth/reset-password','/api/auth/verify-email','/api/auth/resend-verification','/api/account/profile','/api/garage','/api/admin/accounts',...COMMUNITY_PATHS,...ADMIN_AUTH_PATHS,...COLLECTOR_PATHS,...MEMBERSHIP_PATHS]);
 const json=(body,status=200,headers={})=>Response.json(body,{status,headers:{'Cache-Control':'no-store','Pragma':'no-cache','X-Content-Type-Options':'nosniff','Vary':'Cookie',...headers}});
 class ApiError extends Error {constructor(message,status=400,code){super(message);this.status=status;this.code=code;}}
 const only=(body,keys)=>body&&typeof body==='object'&&!Array.isArray(body)&&Object.keys(body).every(key=>keys.includes(key));
@@ -128,17 +130,20 @@ async function garageSnapshot(env,userId,{internal=false}={}){
 export async function handleApi(request,env={}){
   const pathname=new URL(request.url).pathname;
   if(pathname==='/api/ask')return handleSiteAsk(request);
-  if(!AUTH_PATHS.has(pathname))return pathname.startsWith('/api/auth/')||pathname.startsWith('/api/account/')||pathname.startsWith('/api/admin/')?json({error:'Not found.'},404):null;
+  if(!AUTH_PATHS.has(pathname))return pathname.startsWith('/api/auth/')||pathname.startsWith('/api/account/')||pathname.startsWith('/api/admin/')||pathname.startsWith('/api/collector/')||pathname.startsWith('/api/membership/')?json({error:'Not found.'},404):null;
   if(!env.DB)return json({error:'Account storage is unavailable. Please try again later.'},503);
   let session;
   try{
     const method=request.method,write=['POST','PUT','PATCH','DELETE'].includes(method);
+    if(pathname==='/api/membership/webhook')return await handleMembershipWebhook(request,env,{ApiError,json});
     if(write)requireOrigin(request);
     if(ADMIN_AUTH_PATHS.has(pathname))return await handleAdminAuth(request,env,{ApiError,readJSON,requireCSRF,limit,json});
     const adminRoute=pathname.startsWith('/api/admin/');
     const adminSession=adminRoute||pathname==='/api/community/car-photo'?await getAdminSession(request,env):null;
     session=adminRoute?adminSession:await getSession(request,env);
     if(session)session.user=administratorUser(env,session.user);
+    if(COLLECTOR_PATHS.has(pathname))return await handleCollector(request,env,{session,ApiError,readJSON,requireCSRF,authRequired,limit,json,sessionHeaders});
+    if(MEMBERSHIP_PATHS.has(pathname))return await handleMembership(request,env,{session,ApiError,readJSON,requireCSRF,authRequired,limit,json,sessionHeaders});
     if(pathname==='/api/admin/accounts')return await handleAdminAccounts(request,env,{adminSession,ApiError,json});
     if(COMMUNITY_PATHS.has(pathname))return await handleCommunity(request,env,{session,adminSession,ApiError,readJSON,requireCSRF,authRequired,limit,json,sessionHeaders});
     const info=providerInfo(env);

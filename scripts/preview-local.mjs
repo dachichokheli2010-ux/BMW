@@ -6,6 +6,7 @@ import {resolvePage} from '../public/routes.js';
 import {handleApi} from '../server/api.js';
 import {createLocalDatabase} from '../server/local-db.mjs';
 import {createPostgresDatabase,databaseURL} from '../server/postgres-db.js';
+import {membershipEnvironment} from '../server/membership-api.js';
 
 const project=fileURLToPath(new URL('../',import.meta.url));
 const root=path.join(project,'public');
@@ -14,7 +15,7 @@ const configuredOrigin=process.env.PUBLIC_ORIGIN?new URL(process.env.PUBLIC_ORIG
 if(configuredOrigin&&!/^https?:/.test(configuredOrigin))throw new Error('PUBLIC_ORIGIN must be an HTTP or HTTPS origin.');
 const neonConnection=databaseURL();
 let database=neonConnection?null:await createLocalDatabase(path.resolve(project,process.env.DATABASE_PATH||'.data/bmw-garage.sqlite'));
-const env={AUTH_PROVIDER:'password',PUBLIC_ORIGIN:process.env.PUBLIC_ORIGIN,RESEND_API_KEY:process.env.RESEND_API_KEY,ACCOUNT_MAIL_FROM:process.env.ACCOUNT_MAIL_FROM,ADMIN_LOGIN_EMAIL:process.env.ADMIN_LOGIN_EMAIL,ADMIN_PASSWORD_HASH:process.env.ADMIN_PASSWORD_HASH};
+const env={AUTH_PROVIDER:'password',...membershipEnvironment(process.env),PUBLIC_ORIGIN:process.env.PUBLIC_ORIGIN,RESEND_API_KEY:process.env.RESEND_API_KEY,ACCOUNT_MAIL_FROM:process.env.ACCOUNT_MAIL_FROM,ADMIN_LOGIN_EMAIL:process.env.ADMIN_LOGIN_EMAIL,ADMIN_PASSWORD_HASH:process.env.ADMIN_PASSWORD_HASH};
 const maxBodyBytes=1024*1024;
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.png':'image/png','.mp3':'audio/mpeg','.ogg':'audio/ogg','.svg':'image/svg+xml','.woff2':'font/woff2','.json':'application/json'};
 function securityHeaders(res){res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');res.setHeader('X-Frame-Options','SAMEORIGIN');}

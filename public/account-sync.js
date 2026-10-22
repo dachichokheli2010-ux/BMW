@@ -83,7 +83,7 @@ export function createAccountController({fetchImpl=(...args)=>fetch(...args),sto
       if(!response.ok){const error=new Error(apiErrorMessage(data));error.status=response.status;error.data=data;throw error;}
       if(!data||typeof data!=='object'||Array.isArray(data))throw new Error('The account service is unavailable. Please try again.');
       return data;
-    }catch(error){if(error.status===401&&requestIdentity===identity&&user&&['/api/auth/session','/api/auth/logout','/api/auth/resend-verification','/api/account/profile','/api/garage'].includes(path)){requireGuest('session-expired',{preserveCache:true});ready=true;setStatus('expired','Your session ended. Sign in again to sync.');}if(error.name==='AbortError')throw new Error('The account service took too long to respond. Please try again.');throw error;}
+    }catch(error){if(error.status===401&&requestIdentity===identity&&user&&['/api/auth/session','/api/auth/logout','/api/auth/resend-verification','/api/account/profile','/api/garage','/api/collector/workspace','/api/membership','/api/membership/checkout','/api/membership/portal'].includes(path)){requireGuest('session-expired',{preserveCache:true});ready=true;setStatus('expired','Your session ended. Sign in again to sync.');}if(error.name==='AbortError')throw new Error('The account service took too long to respond. Please try again.');throw error;}
     finally{clearTimeout(timer);}
   }
   function normalizeSession(data){provider=data.provider||'password';signInUrl=data.signInUrl||'';signOutUrl=data.signOutUrl||'';csrfToken=data.csrfToken||null;capabilities=data.capabilities||capabilities;adminAccess=data.adminAccess||{};}
@@ -196,6 +196,11 @@ export function createAccountController({fetchImpl=(...args)=>fetch(...args),sto
   }
   async function updateName(name){const generation=identity,result=await request('/api/account/profile',{method:'PUT',body:{name}});if(generation!==identity)return snapshot();user=result.user;adminAccess=result.adminAccess||adminAccess;announce();return snapshot();}
   async function updateLanguage(language){const generation=identity,result=await request('/api/account/profile',{method:'PUT',body:{language}});if(generation!==identity)return snapshot();user=result.user;adminAccess=result.adminAccess||adminAccess;announce();return snapshot();}
+  async function getCollectorWorkspace(){return request('/api/collector/workspace');}
+  async function saveCollectorWorkspace(revision,state){return request('/api/collector/workspace',{method:'PUT',body:{revision,state}});}
+  async function getMembership(){return request('/api/membership');}
+  async function startMembershipCheckout(interval){return request('/api/membership/checkout',{method:'POST',body:{interval}});}
+  async function openMembershipPortal(){return request('/api/membership/portal',{method:'POST',body:{}});}
   async function forgotPassword(email,language){return request('/api/auth/forgot-password',{method:'POST',body:{email,language}});}
   async function resetPassword(token,password){const result=await request('/api/auth/reset-password',{method:'POST',body:{token,password}});requireGuest('password-reset');setStatus('guest',result.message||'Your password has been reset. Sign in with your new password.');return result;}
   async function verifyEmail(token){const result=await request('/api/auth/verify-email',{method:'POST',body:{token}});if(user)await retry();return result;}
@@ -230,6 +235,6 @@ export function createAccountController({fetchImpl=(...args)=>fetch(...args),sto
     const generation=identity;starting=(async()=>{try{const data=await request('/api/auth/session');if(generation===identity)await openSession(data,{initial:true});}catch(error){if(generation===identity){requireGuest('account-unavailable',{preserveCache:true,notify:false});ready=true;setStatus('offline',error.message||'Account service unavailable. Exploring as a guest; your guest data stays in this browser.');}}return snapshot();})();
     return starting;
   }
-  return {start,retry,login:fields=>authenticate('login',fields),signup:fields=>authenticate('signup',fields),logout,importGuest,resolveConflict,updateName,updateLanguage,forgotPassword,resetPassword,verifyEmail,resendVerification,flush,getSnapshot:snapshot,subscribe(fn){listeners.add(fn);fn(snapshot());return()=>listeners.delete(fn);},destroy(){stopped=true;identity++;clearTimeout(debounce);clearTimeout(retryTimer);localEvents.forEach(event=>eventTarget?.removeEventListener(event,changed));eventTarget?.removeEventListener('storage',handleStorage);eventTarget?.removeEventListener('online',online);globalThis.document?.removeEventListener('visibilitychange',pageHidden);listeners.clear();}};
+  return {start,retry,login:fields=>authenticate('login',fields),signup:fields=>authenticate('signup',fields),logout,importGuest,resolveConflict,updateName,updateLanguage,forgotPassword,resetPassword,verifyEmail,resendVerification,getCollectorWorkspace,saveCollectorWorkspace,getMembership,startMembershipCheckout,openMembershipPortal,flush,getSnapshot:snapshot,subscribe(fn){listeners.add(fn);fn(snapshot());return()=>listeners.delete(fn);},destroy(){stopped=true;identity++;clearTimeout(debounce);clearTimeout(retryTimer);localEvents.forEach(event=>eventTarget?.removeEventListener(event,changed));eventTarget?.removeEventListener('storage',handleStorage);eventTarget?.removeEventListener('online',online);globalThis.document?.removeEventListener('visibilitychange',pageHidden);listeners.clear();}};
 }
 export const account = createAccountController();

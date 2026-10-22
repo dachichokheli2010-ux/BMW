@@ -1,6 +1,7 @@
 import {registerTranslations} from './preferences.js';
 
 export const engineLabTranslations=[
+  ['Plan a build with this engine','ამ ძრავით პროექტის დაგეგმვა','Спланировать проект с этим двигателем'],
   ['Layout','განლაგება','Компоновка'],
   ['Induction','ჰაერის მიწოდება','Наддув'],
   ['Powertrain','ძალოვანი სისტემა','Силовая установка'],

@@ -1,5 +1,6 @@
 import {registerTranslations} from './preferences.js';
 export const garageWorkspaceTranslationEntries=[
+ ['Build planner','პროექტის დამგეგმავი','Планировщик проекта'],
  ['{coins} coins ready from 1 collected car.','1 შეგროვებული მანქანიდან მზადაა {coins} მონეტა.','От 1 собранной машины готово {coins} монет.'],
  ['Garage income collected today','დღევანდელი ავტოფარეხის მონეტები მიღებულია','Сегодняшний доход гаража получен'],
  ['{count} coins ready from your cars','შენი მანქანებიდან მზადაა {count} მონეტა','От твоих машин готово {count} монет'],
@@ -8,7 +9,7 @@ export const garageWorkspaceTranslationEntries=[
  ['My BMW garage','ჩემი BMW ავტოფარეხი','Мой гараж BMW'],
  ['Overview','მიმოხილვა','Обзор'],
  ['Personalize your garage','მოარგე ავტოფარეხი შენს სტილს','Настрой свой гараж'],
- ['Club active through {date}','Club აქტიურია {date}-ის ჩათვლით','Club действует по {date}'],
+ ['Garage Pass active through {date}','Garage Pass აქტიურია {date}-ის ჩათვლით','Garage Pass действует по {date}'],
  ['{count} collected · {coins} Garage coins ·','შეგროვებულია {count} · {coins} ავტოფარეხის მონეტა ·','Собрано: {count} · Монеты гаража: {coins} ·'],
  ['Ways to earn & spend','მონეტების მიღება და ხარჯვა','Как получать и тратить монеты'],
  ['YOUR SHOWCASE','შენი გამორჩეული მანქანა','ТВОЯ ВИТРИНА'],
@@ -71,17 +72,17 @@ export const garageWorkspaceTranslationEntries=[
  ['Active through {date} · UTC · 1 day remaining','აქტიურია {date}-ის ჩათვლით · UTC · დარჩა 1 დღე','Действует по {date} · UTC · Остался 1 день'],
  ['YOUR GARAGE IDENTITY','შენი ავტოფარეხის სტილი','СТИЛЬ ТВОЕГО ГАРАЖА'],
  ['Make the welcome yours.','შექმენი შენი მისალმება.','Создай своё приветствие.'],
- ['Your garage name and showcase car are free. Club adds a custom subtitle and banner tones while your pass is active.','ავტოფარეხის სახელი და გამორჩეული მანქანის არჩევა უფასოა. აქტიური Club ამატებს პირად წარწერასა და ფონის ტონებს.','Название гаража и выбор машины для витрины бесплатны. Пока Club активен, доступны свой подзаголовок и цветовые оформления.'],
+ ['Your garage name and showcase car are free. Garage Pass adds a custom subtitle and banner tones while your pass is active.','ავტოფარეხის სახელი და გამორჩეული მანქანის არჩევა უფასოა. აქტიური Garage Pass ამატებს პირად წარწერასა და ფონის ტონებს.','Название гаража и выбор машины для витрины бесплатны. Пока Garage Pass активен, доступны свой подзаголовок и цветовые оформления.'],
  ['Garage name','ავტოფარეხის სახელი','Название гаража'],
- ['Showcase subtitle · Club','გამორჩეული მანქანის წარწერა · Club','Подзаголовок витрины · Club'],
+ ['Showcase subtitle · Garage Pass','გამორჩეული მანქანის წარწერა · Garage Pass','Подзаголовок витрины · Garage Pass'],
  ['Your collection. Your story.','შენი კოლექცია. შენი ისტორია.','Твоя коллекция. Твоя история.'],
- ['Showcase banner · Club','გამორჩეული მანქანის ფონი · Club','Оформление витрины · Club'],
+ ['Showcase banner · Garage Pass','გამორჩეული მანქანის ფონი · Garage Pass','Оформление витрины · Garage Pass'],
  ['Ice · cool blue','ყინული · გრილი ლურჯი','Лёд · прохладный синий'],
  ['Ember · warm copper','ნაკვერჩხალი · თბილი სპილენძი','Угли · тёплый медный'],
  ['Heritage · racing green','მემკვიდრეობა · სარბოლო მწვანე','Наследие · гоночный зелёный'],
  ['Save garage identity','შეინახე ავტოფარეხის სტილი','Сохранить стиль гаража'],
  ['Your garage identity is saved.','ავტოფარეხის სტილი შენახულია.','Стиль гаража сохранён.'],
- ['Enter a garage name up to 40 characters and a subtitle up to 80 characters. Club styling needs an active pass; your browser must allow storage.','შეიყვანე სახელი 40 სიმბოლომდე და წარწერა 80 სიმბოლომდე. Club გაფორმებას აქტიური აბონემენტი სჭირდება; ბრაუზერმა შენახვა უნდა დაუშვას.','Введи название до 40 символов и подзаголовок до 80 символов. Для оформления Club нужен активный пропуск, а браузер должен разрешать сохранение.'],
+ ['Enter a garage name up to 40 characters and a subtitle up to 80 characters. Garage Pass styling needs an active pass; your browser must allow storage.','შეიყვანე სახელი 40 სიმბოლომდე და წარწერა 80 სიმბოლომდე. Garage Pass გაფორმებას აქტიური აბონემენტი სჭირდება; ბრაუზერმა შენახვა უნდა დაუშვას.','Введи название до 40 символов и подзаголовок до 80 символов. Для оформления Garage Pass нужен активный пропуск, а браузер должен разрешать сохранение.'],
  ['Total coins earned','სულ მიღებული მონეტები','Всего заработано монет'],
  ['Total coins spent','სულ დახარჯული მონეტები','Всего потрачено монет'],
  ['Available balance','ხელმისაწვდომი ბალანსი','Доступный баланс'],
@@ -103,6 +104,6 @@ export const garageWorkspaceTranslationEntries=[
  ['Try another search, collect a game card, or save a favorite from the model collection.','სცადე სხვა ძებნა, შეაგროვე სათამაშო ბარათი ან მოდელების კოლექციიდან შეინახე რჩეული.','Попробуй другой запрос, собери игровую карточку или сохрани избранную модель из каталога.'],
  ['Show more saved models · {count} remaining','აჩვენე მეტი შენახული მოდელი · დარჩა {count}','Показать ещё сохранённые модели · Осталось: {count}'],
  ['Backups & collection tools','სარეზერვო ასლები და კოლექციის ხელსაწყოები','Резервные копии и инструменты коллекции'],
- ['Collection cards, Club, showcase, service log and valuations stay in this account’s browser storage. Keep an export as a backup.','კოლექციის ბარათები, Club, გამორჩეული მანქანა, სერვისის ჟურნალი და შეფასებები ინახება ამ ანგარიშის ბრაუზერში. სარეზერვო ასლად შეინახე ექსპორტი.','Карточки, Club, витрина, журнал обслуживания и оценки хранятся в браузере этого аккаунта. Сохрани экспорт как резервную копию.']
+ ['Collection cards, Garage Pass, showcase, service log and valuations stay in this account’s browser storage. Keep an export as a backup.','კოლექციის ბარათები, Garage Pass, გამორჩეული მანქანა, სერვისის ჟურნალი და შეფასებები ინახება ამ ანგარიშის ბრაუზერში. სარეზერვო ასლად შეინახე ექსპორტი.','Карточки, Garage Pass, витрина, журнал обслуживания и оценки хранятся в браузере этого аккаунта. Сохрани экспорт как резервную копию.']
 ];
 registerTranslations(garageWorkspaceTranslationEntries);

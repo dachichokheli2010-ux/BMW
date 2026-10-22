@@ -17,3 +17,5 @@
 html[data-theme=light] .ed-primary{background:#245e94;color:#fff}html[data-theme=light] .ed-primary:hover{color:#fff;background:#174b7c}
 @media(max-width:1000px){.ed-toolbar{flex-wrap:wrap}.ed-search{flex-basis:100%}.ed-select{flex:1}.ed-select select{width:100%;max-width:none}.ed-topic-buttons{grid-template-columns:1fr}}
 @media(max-width:600px){.ed-learning-paths{padding:20px}.ed-learning-paths h2{font-size:23px}.ed-topic-buttons>button,.ed-topic-buttons>a{min-height:78px;padding:15px}.ed-compare{padding:18px}.ed-comparison-heading{flex-direction:column;gap:8px}.ed-compare .ed-table-wrap{margin-inline:-6px}.ed-card-shell .ed-compare-toggle{padding:12px 18px}.ed-select select{font-size:16px}}
+
+.ed-planner-link{display:block;width:fit-content;max-width:100%;margin-top:16px;color:var(--blue);font-size:13px;line-height:1.6;text-underline-offset:4px}.ed-planner-link:hover{text-decoration:underline}

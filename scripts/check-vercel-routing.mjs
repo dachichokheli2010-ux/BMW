@@ -9,7 +9,7 @@ const handler=createRoutedVercelHandler({environment:{DATABASE_URL:'postgresql:/
   return Response.json({reached:true});
 }});
 let checks=0;
-for(const route of [...AUTH_PATHS].filter(path=>/^\/api\/(?:admin|community)(?:\/|$)/.test(path))){
+for(const route of [...AUTH_PATHS].filter(path=>/^\/api\/(?:admin|community|membership|collector)(?:\/|$)/.test(path))){
   const query=new URLSearchParams({__apex_route:route.slice(5),id:'photo-123',token:'shared-link'});
   const response=await handler(new Request(origin+'/api/router?'+query));
   assert.equal(response.status,200,route+' reaches the shared function');
